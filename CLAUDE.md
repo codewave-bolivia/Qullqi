@@ -564,3 +564,79 @@ A feature cannot be considered complete until:
 - The final implementation is ready for human review.
 
 Spec Kit is mandatory for feature development, not an optional documentation tool.
+
+---
+
+## 14. Local Data Source — SQLDelight
+
+The application is frontend-only. Until a backend exists, **SQLDelight is the single local data
+source**. The SQLDelight schema is where mock data and the relationships between tables are
+defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardcoded Kotlin lists.
+
+> Status (2026-11-12): SQLDelight is **not yet installed**. Adding the Gradle plugin, the
+> dependencies and the first schema is a feature delivered through Spec Kit, and requires approval
+> because it changes high-risk shared Gradle files (§9).
+
+### 14.1 Location
+
+- Schema files (`.sq`) live in `shared/src/commonMain/sqldelight/com/codewave/qullqi/db/`, one
+  file per table or aggregate (for example `Account.sq`, `Transaction.sq`).
+- Migrations (`.sqm`) live in the same directory, named `<version>.sqm`.
+- The generated database class and the `SqlDriver` factory are the only database-specific entry
+  points. Generated code under `build/` MUST NOT be edited or committed.
+
+### 14.2 Schema and relationships
+
+- Every table MUST declare a primary key.
+- Relationships between tables MUST be declared with `FOREIGN KEY ... REFERENCES` and an
+  explicit `ON DELETE` policy. Relations MUST NOT be implied only by naming conventions.
+- Many-to-many relations MUST use an explicit join table.
+- Foreign-key enforcement MUST be turned on for every connection (`PRAGMA foreign_keys = ON`);
+  SQLite disables it by default.
+- Amounts MUST be stored as integers in minor units (e.g. cents) together with a currency code;
+  floating-point amounts are forbidden.
+- Dates MUST be stored as ISO-8601 text or epoch milliseconds, consistently across all tables.
+- Indexes are added for columns used in joins or frequent filters.
+- Queries MUST be named, typed SQLDelight queries. No raw SQL strings built in Kotlin.
+
+### 14.3 Mock data
+
+- Mock (seed) data MUST be defined as `INSERT` statements in the `.sq` files (or a dedicated
+  `Seed.sq`), so the seed is created together with the schema and respects all foreign keys.
+- Seed data MUST be synthetic: fictitious names, numbers and balances. No real personal,
+  financial or account data.
+- Seed data MUST be deterministic: fixed IDs and values, so tests and screenshots are
+  reproducible.
+- Seed data MUST cover the states the UI needs (e.g. empty lists, verified and unverified users,
+  pending and failed transactions) as defined in each feature specification.
+- Changes to seed data that other features depend on are shared-file changes (§9) and require
+  coordination.
+
+### 14.4 Architecture boundaries
+
+- SQLDelight belongs exclusively to the data layer (`data/`). Repository implementations map
+  generated SQLDelight types to domain models. ViewModels and UI MUST NOT import generated
+  SQLDelight classes.
+- Repository interfaces are the contract. When a backend is provided, it is added behind the same
+  interfaces (as a remote source, with SQLDelight as cache or replaced), without changes to
+  ViewModels or UI.
+- Reactive reads use SQLDelight's coroutines extensions (`asFlow()` / `mapToList`) and are
+  exposed as `Flow` from repositories.
+- Data-layer tests run against an in-memory database with the same schema and seed.
+
+### 14.5 Platform drivers
+
+- SQLDelight needs one `SqlDriver` per platform: Android (`androidMain`), iOS (`iosMain`) and
+  Desktop (`jvmMain`).
+- `iosMain` and `jvmMain` are protected (§2, §6). The Android driver may be implemented in this
+  scope; the iOS and Desktop drivers MUST be requested from the Builder or explicitly authorized,
+  and the plan MUST state this.
+- Schema, queries, seed data and migrations live in `commonMain` and MUST stay platform-agnostic.
+
+### 14.6 Schema changes
+
+- Before the first release, schema changes may edit `.sq` files directly and reset the local
+  database; this MUST be stated in the specification.
+- After a release (or once real user data exists), every schema change MUST include a `.sqm`
+  migration, and the migration MUST be verified (`verifySqlDelightMigration`).
+- Schema files are high-risk shared resources (§9): check history and coordinate before editing.

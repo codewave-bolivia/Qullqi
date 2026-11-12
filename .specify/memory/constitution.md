@@ -1,24 +1,22 @@
 <!--
 Sync Impact Report
-- Version change: template (unversioned) → 1.0.0
-- Modified principles: all template placeholders replaced (initial ratification)
-  - [PRINCIPLE_1_NAME] → I. Frontend-Only with Replaceable Data Sources
-  - [PRINCIPLE_2_NAME] → II. MVVM with Unidirectional State
-  - [PRINCIPLE_3_NAME] → III. Kotlin Multiplatform Portability
-  - [PRINCIPLE_4_NAME] → IV. Platform Boundaries and Builder Ownership
-  - [PRINCIPLE_5_NAME] → V. Collaborative Integrity (NON-NEGOTIABLE)
-- Added principles: VI. Responsive and Adaptive UI; VII. Spec-Driven, Verified Delivery
-- Added sections: Technical Constraints; Development Workflow and Quality Gates
+- Version change: 1.0.0 → 1.1.0 (MINOR: materially expanded data-source guidance)
+- Modified principles:
+  - I. Frontend-Only with Replaceable Data Sources: "mock or in-memory data sources" →
+    SQLDelight as single local data source; mock data and table relations defined in the schema
+- Modified sections:
+  - Technical Constraints: added "Local persistence: SQLDelight" rules
+  - Development Workflow and Quality Gates: Constitution Check now lists SQLDelight tables,
+    relations, seed data and migrations
+- Added sections: none (CLAUDE.md gained §14 "Local Data Source — SQLDelight")
 - Removed sections: none
 - Templates requiring updates: none modified by this command
-  - .specify/templates/plan-template.md: ⚠ review at next /speckit-plan that its
-    "Constitution Check" gates map to principles I–VII
-  - .specify/templates/tasks-template.md: ⚠ review that tasks never target iosApp/,
-    desktopApp/, iosMain or jvmMain without approval
+  - .specify/templates/plan-template.md: ⚠ review at next /speckit-plan (data-model step should
+    map to SQLDelight tables and seed)
 - Follow-up TODOs:
-  - docs/references-views/ARCHITECTURE.md describes state as "UDF / MVI" and lists Koin,
-    DataStore and SwiftUI screens; this constitution adopts MVVM with unidirectional state
-    and does not mandate a DI library. Reconcile the document in a later approved change.
+  - SQLDelight plugin, dependencies, drivers and schema are not installed yet (deferred feature).
+  - iOS/Desktop SqlDriver require Builder or explicit approval (Principle IV).
+  - docs/references-views/ARCHITECTURE.md still lists MVI, Koin and DataStore; reconcile later.
 -->
 
 # Qullqi Constitution
@@ -30,8 +28,13 @@ Sync Impact Report
 Qullqi is a frontend application. No backend exists yet; one will provide the data in the future.
 
 - All data MUST be accessed through repository interfaces declared in `shared/commonMain`.
-- Until a backend exists, repositories MUST be backed by local mock or in-memory data sources
-  containing synthetic data only. Real personal, financial or account data MUST NOT be committed.
+- Until a backend exists, SQLDelight is the single local data source. Mock data and the
+  relationships between tables MUST be defined in the SQLDelight schema (`.sq` files): tables with
+  primary keys, explicit foreign keys, and deterministic synthetic seed data as `INSERT`
+  statements. Mock data MUST NOT be hardcoded in ViewModels, Composables or Kotlin lists.
+- Seed data MUST be synthetic only. Real personal, financial or account data MUST NOT be committed.
+- SQLDelight generated types MUST stay inside the data layer; repositories map them to domain
+  models.
 - ViewModels and UI MUST depend only on repository interfaces or use cases, never on a concrete
   data source, so that a backend-backed implementation can replace the mock without changing
   presentation code.
@@ -155,6 +158,17 @@ divergent implementations.
   - `presentation/`: ViewModels, UI state and UI events.
   - `ui/` or `designsystem/`: Composables, theme and design tokens.
   Dependencies point inward: `ui → presentation → domain ← data`.
+- Local persistence: SQLDelight, following `CLAUDE.md` §14.
+  - Schema, queries, seed data and migrations in
+    `shared/src/commonMain/sqldelight/com/codewave/qullqi/db/`.
+  - Relationships declared with `FOREIGN KEY` and explicit `ON DELETE`; foreign keys enabled on
+    every connection; many-to-many through join tables.
+  - Money stored as integer minor units plus currency code; no floating-point amounts.
+  - One `SqlDriver` per platform. The Android driver is in scope; iOS (`iosMain`) and Desktop
+    (`jvmMain`) drivers fall under Principle IV and require the Builder or explicit approval.
+  - Before first release, schema changes may reset the local database; afterwards every change
+    MUST ship a verified `.sqm` migration.
+  - Data-layer tests use an in-memory database with the same schema and seed.
 - Dependency injection: constructor injection is mandatory. Adopting a DI library is an
   architectural decision that requires approval and an amendment to this section.
 - Data: synthetic fixtures only. No real personal or financial data, secrets or production
@@ -173,7 +187,8 @@ divergent implementations.
   - Which code is portable (`commonMain`) and which is Android-specific (`androidMain`,
     `androidApp`).
   - That no task modifies Builder-owned paths, or which approval permits it.
-  - The repository interfaces involved and their mock data sources.
+  - The repository interfaces involved, the SQLDelight tables, relations and seed data they
+    require, and whether a migration is needed.
   - The responsive strategy for each new screen.
 - Gates before a feature is considered done:
   1. `./gradlew :shared:allTests` (or the subset runnable on the host) passes.
@@ -201,4 +216,4 @@ divergent implementations.
 - Compliance: every plan includes a Constitution Check; every review verifies Principles III–V
   and the quality gates. Unjustified complexity or new dependencies are grounds for rejection.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-12
+**Version**: 1.1.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-12
