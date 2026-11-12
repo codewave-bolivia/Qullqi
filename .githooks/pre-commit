@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Refuse direct commits on shared branches (spec 001, FR-007).
+# Activate once per clone: git config core.hooksPath .githooks
+branch=$(git symbolic-ref --short -q HEAD || true)
+case $branch in
+  develop | master)
+    echo "Direct commits on '$branch' are not allowed (CLAUDE.md §15, FR-007)." >&2
+    echo "Create a work branch: git switch -c <type>/<NNN>-<short-name>" >&2
+    exit 1 ;;
+esac
+exit 0

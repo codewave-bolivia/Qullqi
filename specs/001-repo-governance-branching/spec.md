@@ -4,9 +4,13 @@
 
 **Created**: 2026-11-12
 
-**Status**: Draft
+**Status**: Ready
 
 **Owner**: krypton612
+
+**Depends on**: none
+
+**Contract**: none
 
 **Input**: User description: "first spec Repository Architecture and Development Governance, ramas de trabajo y ramas que dependen de otros para poder funcionar."
 

@@ -59,8 +59,9 @@ Initial classification (authoritative copy goes in CLAUDE.md §2):
 | Pattern | Class |
 |---------|-------|
 | `shared/src/commonMain/**`, `shared/src/commonTest/**`, `shared/src/androidMain/**`, `shared/src/androidHostTest/**`, `androidApp/src/**` | authorized |
-| `*.gradle.kts`, `gradle/**`, `gradle.properties`, `CLAUDE.md`, `.specify/memory/**`, `scripts/**`, `.githooks/**`, `**/sqldelight/**`, `**/designsystem/**`, `**/navigation/**`, domain models, repository interfaces | shared |
+| `*.gradle.kts`, `gradle/**`, `gradle.properties`, `CLAUDE.md`, `.specify/**`, `.claude/**`, `scripts/**`, `.githooks/**`, `**/sqldelight/**`, `**/designsystem/**`, `**/navigation/**`, `**/domain/model/**`, `**/domain/repository/**` | shared |
 | `iosApp/**`, `desktopApp/**`, `shared/src/iosMain/**`, `shared/src/iosTest/**`, `shared/src/jvmMain/**`, `shared/src/jvmTest/**`, `**/build/**` | protected |
+| everything else (e.g. `specs/**`, `docs/**`) | authorized |
 
 Rule precedence: `protected` > `shared` > `authorized` (e.g. `desktopApp/build.gradle.kts` is
 protected).

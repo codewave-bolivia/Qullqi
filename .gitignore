@@ -21,3 +21,5 @@ node_modules/
 .python-version
 main.py
 pyproject.toml
+.env*
+*.log
