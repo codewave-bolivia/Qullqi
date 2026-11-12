@@ -680,7 +680,7 @@ Defined by `specs/001-repo-governance-branching/`. Tooling: `scripts/branches.sh
 
 ### 15.1 Branches and naming
 
-- `develop` is the **integration branch**; `master` is the **stable branch** and only receives
+- `develop` is the **integration branch**; `master` is the **stable branch** and only receives manual
   promotions from `develop` (§15.5).
 - No direct commits on `develop` or `master`. All work happens on short-lived work branches.
 - Work branch name: `<type>/<NNN>-<short-name>`, `type` ∈ `feature | fix | docs | chore | hotfix`,
@@ -727,7 +727,8 @@ A feature that needs another unfinished feature declares it in its spec header:
 
 1. Set the spec header `**Status**: Ready`.
 2. `scripts/branches.sh check <branch>` must print `OK`. It fails if the name is invalid, the spec
-   is not `Ready`, has no owner, or any parent is not yet integrated (parents always go first).
+   is not `Ready` (`docs/`, `fix/`, `chore/` and `hotfix/` branches amending an already
+   `Integrated` spec are also accepted), has no owner, or any parent is not yet integrated (parents always go first).
 3. Constitution quality gates pass (tests, compilation for authorized targets, responsive check).
 4. If `check` printed `APPROVAL REQUIRED`, the other developer approves before merging. Otherwise
    the developer may integrate their own work. `PROTECTED PATH` requires the approval recorded in
@@ -740,8 +741,13 @@ A feature that needs another unfinished feature declares it in its spec header:
 
 ### 15.5 Promote and hotfix
 
-- Promotion is a team decision:
+- **Promotion to `master` is manual and performed only by the developers.** Claude MUST NOT
+  suggest, recommend or list promotion as a next step, and MUST NOT run any command that updates
+  `master` or creates release tags. Only when a developer explicitly asks for it in the current
+  request may Claude perform it.
+- Reference for the developers (manual):
   `git switch master && git merge --ff-only develop && git tag -a vMAJOR.MINOR.PATCH -m "<summary>"`.
 - Feature branches are never merged into `master`.
 - Hotfix: `git switch -c hotfix/NNN-short-name master`, fix, then `git merge --no-ff` into `master`
-  (tag a PATCH version) and into `develop`.
+  (tag a PATCH version) and into `develop`. The merge into `master` and the tag follow the same
+  manual-only rule.
