@@ -1,0 +1,41 @@
+# CI: syntax/compile verification for every pull request (CLAUDE.md §16).
+# Clean build of shared code and the Android/Desktop entry points. Produces no APK.
+name: PR check
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: Compile (no APK)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      # Matches gradle/gradle-daemon-jvm.properties (Azul 21).
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      # Also validates the Gradle wrapper checksum.
+      - uses: gradle/actions/setup-gradle@v4
+
+      # iOS targets cannot compile on Linux; they are Builder-owned (CLAUDE.md §6).
+      - name: Clean compile
+        run: >
+          ./gradlew clean
+          :shared:compileAndroidMain
+          :shared:compileKotlinJvm
+          :androidApp:compileDebugKotlin
+          :desktopApp:compileKotlin
+          --no-configuration-cache

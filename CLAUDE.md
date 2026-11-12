@@ -88,6 +88,7 @@ Qullqi/
 │   ├── branches.sh                   # Branch/spec view and integration checks (§15)
 │   └── test-branches.sh              # Self-check for branches.sh and the pre-commit hook
 ├── .githooks/pre-commit              # Refuses commits on develop/master (§15)
+├── .github/workflows/                # CI (pr-check.yml) and CD (develop-release.yml), §16
 ├── .specify/                         # Spec Kit: constitution, templates, scripts, workflows
 └── .claude/skills/                   # Spec Kit agent skills
 ```
@@ -105,7 +106,7 @@ Every path belongs to exactly one class. Precedence: **protected > shared > auth
 | Class | Paths | Required action |
 |-------|-------|-----------------|
 | **protected** | `iosApp/**`, `desktopApp/**`, `shared/src/iosMain/**`, `shared/src/iosTest/**`, `shared/src/jvmMain/**`, `shared/src/jvmTest/**`, `**/build/**` | Builder involvement or written approval recorded in the feature plan |
-| **shared** (high-risk) | `*.gradle.kts`, `gradle/**`, `gradle.properties`, `CLAUDE.md`, `.specify/**`, `.claude/**`, `scripts/**`, `.githooks/**`, `**/sqldelight/**`, `**/designsystem/**`, `**/navigation/**`, `**/domain/model/**` (shared models), `**/domain/repository/**` (repository interfaces) | Check recent history and coordinate before editing; the other developer approves the integration (§15.4) |
+| **shared** (high-risk) | `*.gradle.kts`, `gradle/**`, `gradle.properties`, `CLAUDE.md`, `.specify/**`, `.claude/**`, `scripts/**`, `.githooks/**`, `.github/**`, `**/sqldelight/**`, `**/designsystem/**`, `**/navigation/**`, `**/domain/model/**` (shared models), `**/domain/repository/**` (repository interfaces) | Check recent history and coordinate before editing; the other developer approves the integration (§15.4) |
 | **authorized** | everything else, notably `shared/src/commonMain/**`, `shared/src/commonTest/**`, `shared/src/androidMain/**`, `shared/src/androidHostTest/**`, `androidApp/src/**`, `specs/**`, `docs/**` | None beyond the normal workflow |
 
 Layers inside `shared/src/commonMain/kotlin/com/codewave/qullqi/` follow the constitution:
@@ -745,3 +746,41 @@ A feature that needs another unfinished feature declares it in its spec header:
 - Feature branches are never merged into `master`.
 - Hotfix: `git switch -c hotfix/NNN-short-name master`, fix, then `git merge --no-ff` into `master`
   (tag a PATCH version) and into `develop`.
+
+---
+
+## 16. CI/CD (GitHub Actions)
+
+Workflows live in `.github/workflows/` (high-risk shared area). They only run once the
+repository is pushed to GitHub.
+
+### 16.1 Pull requests — `pr-check.yml`
+
+- Runs on every pull request targeting `develop` or `master`.
+- Clean compile only, **no APK**:
+  `./gradlew clean :shared:compileAndroidMain :shared:compileKotlinJvm :androidApp:compileDebugKotlin :desktopApp:compileKotlin`.
+- iOS targets cannot be compiled on Linux runners and are Builder-owned (§6).
+- Run the same command locally before opening a pull request.
+
+### 16.2 Develop release — `develop-release.yml`
+
+- Runs **only when a pull request into `develop` is closed as merged**. Closed-unmerged pull
+  requests and direct pushes do not trigger it.
+- Builds `:androidApp:assembleRelease` from the merge commit, signs it with `apksigner` using
+  repository secrets, and publishes it as a GitHub **pre-release** tagged `develop-build-<run>`.
+  It never touches `master`.
+- Required repository secrets (Settings → Secrets and variables → Actions):
+  `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+  `ANDROID_KEY_PASSWORD`. If any is missing the job fails. The keystore and passwords MUST NOT
+  be committed.
+
+### 16.3 Required GitHub settings (manual, repository admin)
+
+Workflows cannot enforce approval by themselves. Protect `develop` with a branch rule:
+
+- Require a pull request before merging, with at least 1 approval.
+- Require the status check **"Compile (no APK)"** to pass, with the branch up to date.
+- Block force pushes and deletions.
+
+With this rule, every merge into `develop` comes from an approved pull request whose branch
+passed the compile check, which is what triggers the develop release.

@@ -1,0 +1,82 @@
+# CD: when an approved pull request is merged into develop, build the signed release APK
+# and publish it as a GitHub pre-release (CLAUDE.md §16). Never touches master.
+#
+# Required repository secrets:
+#   ANDROID_KEYSTORE_BASE64   base64 of the .jks/.keystore file
+#   ANDROID_KEYSTORE_PASSWORD keystore password
+#   ANDROID_KEY_ALIAS         key alias
+#   ANDROID_KEY_PASSWORD      key password
+name: Develop release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: develop-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release APK
+    # Closed without merging → nothing to do. Approval is enforced by branch protection.
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      TAG: develop-build-${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build release APK (unsigned)
+        run: ./gradlew :androidApp:assembleRelease --no-configuration-cache
+
+      - name: Sign APK
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for v in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            [[ -n ${!v} ]] || { echo "::error::Missing secret for $v (see workflow header)"; exit 1; }
+          done
+          ks="$RUNNER_TEMP/release.keystore"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$ks"
+          bt=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          unsigned=$(ls androidApp/build/outputs/apk/release/*-unsigned.apk)
+          out="$RUNNER_TEMP/qullqi-${TAG}.apk"
+          "$bt/zipalign" -p -f 4 "$unsigned" "$RUNNER_TEMP/aligned.apk"
+          "$bt/apksigner" sign --ks "$ks" --ks-pass env:KEYSTORE_PASSWORD \
+            --ks-key-alias "$KEY_ALIAS" --key-pass env:KEY_PASSWORD \
+            --out "$out" "$RUNNER_TEMP/aligned.apk"
+          "$bt/apksigner" verify "$out"
+          rm -f "$ks"
+          echo "APK=$out" >> "$GITHUB_ENV"
+
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          gh release create "$TAG" "$APK" \
+            --target "$MERGE_SHA" \
+            --prerelease \
+            --title "Develop build ${{ github.run_number }}" \
+            --notes "Release APK from develop after merging #${PR_NUMBER}: ${PR_TITLE}"
