@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-9e593f0b-2d24-4540-a647-e08ac052dbeb/styles.css">
+<script src="_ds/nocturne-9e593f0b-2d24-4540-a647-e08ac052dbeb/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+html,body{margin:0;height:100%;background:#0e0f18;-webkit-font-smoothing:antialiased}
+*::-webkit-scrollbar{display:none}
+button,input{font-family:inherit;color:inherit}
+a{color:var(--ac);text-decoration:underline}a:hover{opacity:.75}
+:root,[data-theme="dark"]{--page:#0e0f18;--bg:var(--color-bg);--s1:var(--color-surface);--s2:#2c2e3c;--s3:var(--color-neutral-800);--ln:var(--color-divider);--tx:var(--color-text);--tx2:var(--color-neutral-500);--ac:var(--color-accent);--ac-t:var(--color-accent-900);--ac-tx:var(--color-accent-300);--neg:oklch(0.72 0.13 25);--warn:oklch(0.82 0.11 80);--nav:color-mix(in srgb,var(--color-bg) 90%,transparent);--cardv:linear-gradient(140deg,var(--color-section-glow),var(--color-section) 60%,#1c1f48);--rp:12px}
+[data-theme="light"]{--page:#c4c8db;--bg:var(--color-neutral-200);--s1:var(--color-neutral-100);--s2:#d9ddee;--s3:var(--color-neutral-300);--ln:color-mix(in srgb,#161826 13%,transparent);--tx:#161826;--tx2:var(--color-neutral-700);--ac:var(--color-accent-600);--ac-t:var(--color-accent-200);--ac-tx:var(--color-accent-700);--neg:oklch(0.55 0.16 25);--warn:oklch(0.56 0.12 70);--nav:color-mix(in srgb,var(--color-neutral-200) 92%,transparent)}
+[data-accent="lime"]{--ac:oklch(0.9 0.2 125);--ac-t:oklch(0.3 0.06 125);--ac-tx:oklch(0.9 0.17 125);--cardv:linear-gradient(140deg,#2b3414,#151909 65%,#0e1107)}
+[data-theme="light"][data-accent="lime"]{--ac:oklch(0.52 0.15 130);--ac-t:oklch(0.92 0.1 125);--ac-tx:oklch(0.4 0.12 130)}
+[data-density="compact"]{--rp:8px}[data-density="comfortable"]{--rp:14px}
+@keyframes qIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes qBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes qFade{from{opacity:0}to{opacity:1}}
+@keyframes qUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes qRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes qSpin{to{transform:rotate(360deg)}}
+@keyframes qScan{0%{top:8%}50%{top:88%}100%{top:8%}}
+@keyframes qPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.88);opacity:.55}}
+@keyframes qPop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes qShim{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes qVeilIn{from{opacity:0}to{opacity:1}}
+@keyframes qVeilOut{from{opacity:1}to{opacity:0}}
+@keyframes qEnter{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" data-accent="{{ accent }}" data-density="{{ density }}" style="height:100vh;display:grid;place-items:center;overflow:hidden;background:var(--page);font-family:var(--font-body)">
+<div style="width:420px;height:880px;padding:10px;border-radius:50px;background:#08090e;box-shadow:0 40px 90px -20px rgba(0,0,0,.6),inset 0 0 0 1.5px #3f424d;zoom:{{ scale }};flex:none">
+<div style="position:relative;width:400px;height:860px;border-radius:40px;overflow:hidden;background:var(--bg);color:var(--tx)">
+
+<sc-if value="{{ is.home }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;overflow-y:auto;padding:40px 0 110px;animation:{{ anim }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px 0">
+    <button onClick="{{ openProfile }}" style="display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer">
+      <div style="width:40px;height:40px;border-radius:20px;background:var(--ac-t);color:var(--ac-tx);box-shadow:0 0 0 1px var(--ac);display:grid;place-items:center;font:500 14px var(--font-heading)">{{ user.ini }}</div>
+      <div style="text-align:left"><div style="font:400 12px var(--font-body);color:var(--tx2)">Hola,</div><div style="font:500 15px var(--font-body)">{{ user.first }}</div></div>
+    </button>
+    <div style="display:flex;gap:4px">
+      <button onClick="{{ startScan }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-scan" style="font-size:22px"></i></button>
+      <button onClick="{{ openNotifs }}" style-hover="background:var(--s1)" style="position:relative;width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-bell" style="font-size:22px"></i><sc-if value="{{ hasUnread }}"><span style="position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:4px;background:var(--ac);box-shadow:0 0 8px var(--ac)"></span></sc-if></button>
+    </div>
+  </div>
+  <sc-if value="{{ kb.show }}"><div onClick="{{ kb.onClick }}" style-hover="background:var(--s2)" style="margin:16px 16px 0;padding:12px 14px;border-radius:14px;background:var(--s1);border:1px solid {{ kb.bd }};display:flex;align-items:center;gap:12px;cursor:pointer;animation:qRise .4s ease"><i class="{{ kb.icon }}" style="font-size:22px;color:{{ kb.c }}"></i><div style="flex:1"><div style="font:500 14px var(--font-body)">{{ kb.title }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ kb.sub }}</div></div><sc-if value="{{ kb.cta }}"><span style="font:500 13px var(--font-body);color:var(--ac)">Verificar</span></sc-if></div></sc-if>
+  <div style="padding:36px 20px 0;animation:qRise .5s cubic-bezier(.2,.8,.2,1)">
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onClick="{{ openAccounts }}" style-hover="color:var(--tx)" style="display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:0;cursor:pointer;font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">{{ home.label }}<i class="ph ph-caret-down" style="font-size:13px"></i></button>
+      <button onClick="{{ toggleHide }}" style="background:none;border:0;padding:4px;cursor:pointer;color:var(--tx2);display:grid"><i class="{{ home.eyeCls }}" style="font-size:16px"></i></button>
+    </div>
+    <div onClick="{{ openBalance }}" style="display:flex;align-items:baseline;gap:8px;margin-top:12px;cursor:pointer">
+      <span style="font:400 26px var(--font-heading);color:var(--tx2)">{{ home.sym }}</span>
+      <span style="font:500 60px/1 var(--font-heading);letter-spacing:-.045em;font-variant-numeric:tabular-nums">{{ home.int }}<span style="font-size:28px;color:var(--tx2);letter-spacing:-.02em">{{ home.dec }}</span></span>
+    </div>
+    <button onClick="{{ openBalance }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:none;border:0;padding:0;cursor:pointer;font:400 13px var(--font-body);color:var(--tx2)">{{ home.total }}<i class="ph ph-caret-right" style="font-size:13px"></i></button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:30px 16px 0;animation:qRise .55s .08s cubic-bezier(.2,.8,.2,1) both">
+    <sc-for list="{{ quick }}" as="q" hint-placeholder-count="4">
+      <button onClick="{{ q.onClick }}" style-active="transform:scale(.95)" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:0;transition:transform .12s">
+        <span style="width:100%;height:58px;border-radius:14px;background:{{ q.bg }};border:1px solid {{ q.bd }};box-shadow:{{ q.sh }};color:{{ q.fg }};display:grid;place-items:center"><i class="{{ q.icon }}" style="font-size:24px"></i></span>
+        <span style="font:500 12px var(--font-body)">{{ q.label }}</span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="padding:32px 20px 10px;font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Cuentas</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px;animation:qRise .55s .16s cubic-bezier(.2,.8,.2,1) both">
+    <sc-for list="{{ accts }}" as="a" hint-placeholder-count="2">
+      <button onClick="{{ a.onClick }}" style-hover="background:var(--s2)" style="height:104px;border-radius:14px;background:var(--s1);border:0;padding:14px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;cursor:pointer;transition:background .15s">
+        <span style="display:flex;align-items:center;justify-content:space-between;width:100%"><span style="font:500 12px var(--font-body);color:var(--tx2)">{{ a.code }}</span><span style="width:16px;height:2px;border-radius:1px;background:{{ a.mark }}"></span></span>
+        <span><span style="display:block;font:500 19px var(--font-heading);letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ a.bal }}</span><span style="display:block;font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ a.name }}</span></span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:28px 20px 8px"><span style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Actividad reciente</span><button onClick="{{ goActivity }}" style="background:none;border:0;font:500 13px var(--font-body);color:var(--ac);cursor:pointer">Ver todo</button></div>
+  <div style="margin:0 16px;background:var(--s1);border-radius:14px;padding:4px 0;animation:qRise .55s .24s cubic-bezier(.2,.8,.2,1) both">
+    <sc-if value="{{ noTx }}"><div style="padding:16px 14px"><div style="font:500 14px var(--font-body)">Aún no tienes movimientos</div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:2px">{{ noTxSub }}</div></div></sc-if>
+    <sc-for list="{{ recent }}" as="t" hint-placeholder-count="4">
+      <div onClick="{{ t.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="{{ t.iconCls }}" style="font-size:20px;color:{{ t.iconColor }}"></i></div>
+        <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ t.meta }}</div></div>
+        <div style="text-align:right;flex:none"><div style="font:500 14.5px var(--font-body);font-variant-numeric:tabular-nums;color:{{ t.color }}">{{ t.amtStr }}</div><sc-if value="{{ t.hasStatus }}"><div style="font:500 11px var(--font-body);color:{{ t.stColor }};margin-top:2px">{{ t.stLabel }}</div></sc-if></div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.balance }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Resumen de saldo</div></div>
+  <div style="flex:1;overflow-y:auto;padding:12px 20px 32px">
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Patrimonio total en Bs</div>
+    <div style="font:500 46px/1.05 var(--font-heading);letter-spacing:-.04em;margin-top:10px;font-variant-numeric:tabular-nums">{{ bo.total }}</div>
+    <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:3px;margin-top:22px"><sc-for list="{{ bo.bars }}" as="b" hint-placeholder-count="2"><span style="width:{{ b.w }};background:{{ b.bg }};border-radius:4px"></span></sc-for></div>
+    <div style="margin-top:18px;background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ bo.rows }}" as="r" hint-placeholder-count="2">
+        <div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+          <span style="width:40px;height:40px;border-radius:20px;background:var(--s2);display:grid;place-items:center;font:500 12px var(--font-body)">{{ r.sym }}</span>
+          <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ r.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.equiv }}</div></div>
+          <div style="text-align:right"><div style="font:500 14.5px var(--font-body);font-variant-numeric:tabular-nums">{{ r.bal }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.pct }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      <div style="background:var(--s1);border-radius:14px;padding:14px"><div style="display:flex;align-items:center;gap:6px;font:400 12px var(--font-body);color:var(--tx2)"><i class="ph ph-arrow-down-left" style="color:var(--ac)"></i>Entró en nov</div><div style="font:500 19px var(--font-heading);margin-top:6px">{{ sumIn }}</div></div>
+      <div style="background:var(--s1);border-radius:14px;padding:14px"><div style="display:flex;align-items:center;gap:6px;font:400 12px var(--font-body);color:var(--tx2)"><i class="ph ph-arrow-up-right"></i>Salió en nov</div><div style="font:500 19px var(--font-heading);margin-top:6px">{{ sumOut }}</div></div>
+    </div>
+    <div style="font:400 12.5px/1.5 var(--font-body);color:var(--tx2);margin-top:16px">Los saldos en dólares se convierten al tipo de cambio oficial de hoy, 1 USD = Bs 6.96.</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.activity }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;overflow-y:auto;padding:40px 0 110px;animation:{{ anim }}">
+  <div style="padding:14px 20px 0;display:flex;justify-content:space-between;align-items:flex-end"><div style="font:500 32px var(--font-heading);letter-spacing:-.03em">Actividad</div><div style="font:500 11px var(--font-body);letter-spacing:.08em;color:var(--tx2);padding-bottom:8px">NOVIEMBRE</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px 16px 0">
+    <div style="background:var(--s1);border-radius:14px;padding:12px 14px"><div style="display:flex;align-items:center;gap:6px;font:400 12px var(--font-body);color:var(--tx2)"><i class="ph ph-arrow-down-left" style="color:var(--ac)"></i>Entró</div><div style="font:500 19px var(--font-heading);letter-spacing:-.02em;margin-top:4px">{{ sumIn }}</div></div>
+    <div style="background:var(--s1);border-radius:14px;padding:12px 14px"><div style="display:flex;align-items:center;gap:6px;font:400 12px var(--font-body);color:var(--tx2)"><i class="ph ph-arrow-up-right"></i>Salió</div><div style="font:500 19px var(--font-heading);letter-spacing:-.02em;margin-top:4px">{{ sumOut }}</div></div>
+  </div>
+  <div style="display:flex;gap:8px;padding:12px 16px 0">
+    <div style="position:relative;flex:1"><i class="ph ph-magnifying-glass" style="position:absolute;left:12px;top:13px;font-size:19px;color:var(--tx2)"></i><input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Buscar movimientos" style="width:100%;height:46px;border:1px solid var(--ln);outline:none;border-radius:8px;background:var(--s1);padding:0 12px 0 40px;font:400 14.5px var(--font-body);color:var(--tx);caret-color:var(--ac)"></div>
+    <button onClick="{{ openFilters }}" style-hover="background:var(--s2)" style="position:relative;width:46px;height:46px;border-radius:8px;border:1px solid var(--ln);background:var(--s1);display:grid;place-items:center;cursor:pointer"><i class="ph ph-sliders-horizontal" style="font-size:20px"></i><sc-if value="{{ hasFilterCount }}"><span style="position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--ac-t);color:var(--ac-tx);box-shadow:0 0 0 1px var(--ac);font:500 10.5px var(--font-body);display:grid;place-items:center">{{ filterCount }}</span></sc-if></button>
+  </div>
+  <div style="display:flex;gap:6px;overflow-x:auto;padding:12px 16px 2px">
+    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5"><button onClick="{{ c.onClick }}" style="flex:none;height:32px;padding:0 12px;border-radius:8px;border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};font:500 13px var(--font-body);cursor:pointer;transition:all .15s">{{ c.label }}</button></sc-for>
+  </div>
+  <sc-if value="{{ loading }}">
+    <div style="margin:14px 16px 0;background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ skel }}" as="s" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:12px;padding:12px 14px;animation:qShim 1.1s ease-in-out infinite"><div style="width:40px;height:40px;border-radius:10px;background:var(--s2)"></div><div style="flex:1"><div style="width:60%;height:11px;border-radius:4px;background:var(--s2)"></div><div style="width:35%;height:9px;border-radius:4px;background:var(--s2);margin-top:8px"></div></div><div style="width:56px;height:11px;border-radius:4px;background:var(--s2)"></div></div></sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hasResults }}">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+      <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:20px 20px 8px">{{ g.label }}</div>
+      <div style="margin:0 16px;background:var(--s1);border-radius:14px;padding:4px 0">
+        <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="3">
+          <div onClick="{{ t.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="{{ t.iconCls }}" style="font-size:20px;color:{{ t.iconColor }}"></i></div>
+            <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ t.meta }}</div></div>
+            <div style="text-align:right;flex:none"><div style="font:500 14.5px var(--font-body);font-variant-numeric:tabular-nums;color:{{ t.color }}">{{ t.amtStr }}</div><sc-if value="{{ t.hasStatus }}"><div style="font:500 11px var(--font-body);color:{{ t.stColor }};margin-top:2px">{{ t.stLabel }}</div></sc-if></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </sc-if>
+  <sc-if value="{{ isEmpty }}">
+    <div style="padding:52px 32px 0;animation:qRise .4s ease">
+      <div style="width:56px;height:56px;border-radius:14px;background:var(--s1);display:grid;place-items:center"><i class="ph ph-magnifying-glass" style="font-size:26px;color:var(--tx2)"></i></div>
+      <div style="font:500 20px var(--font-heading);margin-top:16px">{{ emptyTitle }}</div>
+      <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px;max-width:280px">{{ emptyBody }}</div>
+      <sc-if value="{{ hasFilt }}"><button onClick="{{ clearFilters }}" style-hover="background:color-mix(in srgb,var(--ac) 14%,transparent)" style="margin-top:18px;height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:500 14px var(--font-body);cursor:pointer">Limpiar filtros</button></sc-if>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.receive }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;overflow-y:auto;padding:40px 0 110px;animation:{{ anim }}">
+  <div style="padding:14px 20px 0"><div style="font:500 32px var(--font-heading);letter-spacing:-.03em">Cobrar</div><div style="font:400 14px var(--font-body);color:var(--tx2);margin-top:2px">Todo lo que entra a tu cuenta</div></div>
+  <button onClick="{{ openMyQR }}" style-active="transform:scale(.98)" style="display:flex;width:calc(100% - 32px);margin:18px 16px 0;border:1px solid var(--ac);border-radius:14px;background:radial-gradient(120% 120% at 100% 0%,color-mix(in srgb,var(--ac) 22%,transparent),var(--s1) 60%);box-shadow:0 0 36px -14px var(--ac);padding:18px;gap:14px;align-items:stretch;text-align:left;cursor:pointer;transition:transform .12s">
+    <span style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+      <span style="font:500 11px var(--font-body);letter-spacing:.1em;color:var(--ac)">TU QR PERSONAL</span>
+      <span><span style="display:block;font:500 22px/1.15 var(--font-heading);letter-spacing:-.02em">Muestra tu código y recibe al instante</span><span style="display:inline-flex;align-items:center;gap:4px;font:400 13px var(--font-body);color:var(--tx2);margin-top:10px">@ronald.dz<i class="ph ph-arrow-right"></i></span></span>
+    </span>
+    <span style="width:104px;height:104px;border-radius:8px;background:#f3f5fe;padding:6px;flex:none"><div role="img" aria-label="QR" style="width:100%;height:100%;background-image:{{ qrMineCss }};background-size:contain;background-repeat:no-repeat;background-position:center"></div></span>
+  </button>
+  <div style="margin:10px 16px 0;background:var(--s1);border-radius:14px;padding:4px 0">
+    <sc-for list="{{ recvActions }}" as="r" hint-placeholder-count="3">
+      <div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;flex:none"><i class="{{ r.icon }}" style="font-size:20px"></i></div>
+        <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ r.label }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.sub }}</div></div>
+        <i class="ph ph-caret-right" style="font-size:18px;color:var(--tx2)"></i>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:26px 20px 8px"><span style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Solicitudes</span><button onClick="{{ openReqHistory }}" style="background:none;border:0;font:500 13px var(--font-body);color:var(--ac);cursor:pointer">Historial</button></div>
+  <div style="margin:0 16px;background:var(--s1);border-radius:14px;padding:4px 0">
+    <sc-if value="{{ noReqs }}"><div style="padding:16px 14px;font:400 13px var(--font-body);color:var(--tx2)">Aún no creaste solicitudes de pago.</div></sc-if>
+    <sc-for list="{{ reqsTop }}" as="q" hint-placeholder-count="3">
+      <div onClick="{{ q.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="ph ph-hand-coins" style="font-size:20px;color:{{ q.stColor }}"></i></div>
+        <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.desc }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ q.meta }}</div></div>
+        <div style="text-align:right;flex:none"><div style="font:500 14.5px var(--font-body)">{{ q.amtStr }}</div><div style="font:500 11px var(--font-body);color:{{ q.stColor }};margin-top:2px">{{ q.stLabel }}</div></div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.cards }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;overflow-y:auto;padding:40px 0 110px;animation:{{ anim }}">
+  <div style="padding:14px 16px 0 20px;display:flex;justify-content:space-between;align-items:center"><div style="font:500 32px var(--font-heading);letter-spacing:-.03em">Tarjetas</div><button onClick="{{ newCard }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-plus" style="font-size:22px"></i></button></div>
+  <div style="margin:14px 16px 0;padding:3px;border-radius:8px;border:1px solid var(--ln);display:grid;grid-template-columns:1fr 1fr;gap:3px">
+    <sc-for list="{{ cardTabs }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onClick }}" style="height:34px;border:1px solid {{ c.bd }};border-radius:6px;background:{{ c.bg }};color:{{ c.fg }};font:500 13.5px var(--font-body);cursor:pointer;transition:all .15s">{{ c.label }}</button></sc-for>
+  </div>
+  <div style="padding:16px 16px 0">
+    <div style="position:relative">
+      <sc-if value="{{ cv.isV }}">
+        <div style="height:224px;border-radius:14px;background:var(--cardv);color:#e9e9ed;padding:20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 40%,transparent),0 18px 40px -16px rgba(0,0,0,.6);animation:qRise .35s ease">
+          <span style="position:absolute;right:-90px;top:-100px;width:300px;height:300px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 45%,transparent)"></span>
+          <span style="position:absolute;right:-40px;top:-50px;width:200px;height:200px;border-radius:50%;border:1px solid color-mix(in srgb,var(--ac) 30%,transparent)"></span>
+          <div style="display:flex;justify-content:space-between;align-items:center;position:relative"><span style="font:500 22px var(--font-heading);letter-spacing:-.03em">qullqi<span style="color:var(--ac)">.</span></span><span style="font:500 10.5px var(--font-body);letter-spacing:.12em;color:#b2b6ca">VIRTUAL</span></div>
+          <div style="position:relative"><div style="font:500 18px var(--font-body);letter-spacing:.12em;font-variant-numeric:tabular-nums">{{ cv.num }}</div><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px"><span style="font:500 11px var(--font-body);letter-spacing:.1em;color:#cfd3e5">RONALD DIAZ</span><span style="font:500 italic 14px var(--font-heading);color:#e9e9ed">débito</span></div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ cv.isP }}">
+        <div style="height:224px;border-radius:14px;background:radial-gradient(120% 90% at 85% 0%,#3f424d 0%,#1d1f29 55%,#121320 100%);color:#e9e9ed;padding:20px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 0 0 1px #3f424d,0 18px 40px -16px rgba(0,0,0,.6);animation:qRise .35s ease">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 22px var(--font-heading);letter-spacing:-.03em">qullqi<span style="color:var(--ac)">.</span></span><span style="font:500 10.5px var(--font-body);letter-spacing:.12em;color:#9397ab">FÍSICA</span></div>
+          <div style="width:42px;height:32px;border-radius:6px;background:linear-gradient(135deg,#cfd3e5,#75798c)"></div>
+          <div><div style="font:500 18px var(--font-body);letter-spacing:.12em">{{ cv.num }}</div><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px"><span style="font:500 11px var(--font-body);letter-spacing:.1em;color:#b2b6ca">RONALD DIAZ</span><span style="font:500 italic 14px var(--font-heading)">débito</span></div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ cv.frozen }}">
+        <div style="position:absolute;inset:0;border-radius:14px;background:color-mix(in srgb,#cfd3e5 22%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:grid;place-items:center;animation:qFade .3s ease"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#f3f5fe"><i class="ph ph-snowflake" style="font-size:36px"></i><span style="font:500 14px var(--font-body)">Tarjeta congelada</span></div></div>
+      </sc-if>
+      <sc-if value="{{ cv.inactive }}">
+        <div style="position:absolute;inset:0;border-radius:14px;background:rgba(14,15,24,.55);display:grid;place-items:center;animation:qFade .3s ease"><span style="font:500 11px var(--font-body);letter-spacing:.12em;color:#e9e9ed;padding:6px 12px;border-radius:6px;border:1px solid #75798c">POR ACTIVAR</span></div>
+      </sc-if>
+    </div>
+  </div>
+  <sc-if value="{{ cv.inactive }}">
+    <div style="margin:10px 16px 0;background:var(--s1);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="ph ph-truck" style="font-size:20px"></i></div>
+      <div style="flex:1"><div style="font:500 14.5px var(--font-body)">¿Ya te llegó?</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">Actívala para usarla en tiendas y cajeros</div></div>
+      <button onClick="{{ startActivate }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="height:36px;padding:0 14px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:500 13.5px var(--font-body);cursor:pointer">Activar</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ cv.active }}">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:16px 16px 0">
+      <sc-for list="{{ cardActions }}" as="q" hint-placeholder-count="4">
+        <button onClick="{{ q.onClick }}" style-active="transform:scale(.95)" style="display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:0;cursor:pointer;padding:0">
+          <span style="width:100%;height:54px;border-radius:14px;background:{{ q.bg }};border:1px solid {{ q.bd }};color:{{ q.fg }};display:grid;place-items:center;transition:all .25s"><i class="{{ q.icon }}" style="font-size:22px"></i></span>
+          <span style="font:500 12px var(--font-body)">{{ q.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="margin:16px 16px 0;background:var(--s1);border-radius:14px;padding:14px">
+      <div style="display:flex;justify-content:space-between;font:400 12.5px var(--font-body);color:var(--tx2)"><span>Gastado en noviembre</span><span>Límite {{ cv.monthly }}</span></div>
+      <div style="font:500 22px var(--font-heading);letter-spacing:-.02em;margin-top:4px">{{ cv.spent }}</div>
+      <div style="height:4px;border-radius:2px;background:var(--s2);margin-top:12px;overflow:hidden"><div style="height:100%;width:{{ cv.pct }};background:var(--ac);box-shadow:0 0 10px var(--ac);transition:width .4s"></div></div>
+    </div>
+  </sc-if>
+  <div style="padding:24px 20px 8px;font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Movimientos de la tarjeta</div>
+  <sc-if value="{{ hasCardTx }}">
+    <div style="margin:0 16px;background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ cardTx }}" as="t" hint-placeholder-count="3">
+        <div onClick="{{ t.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="{{ t.iconCls }}" style="font-size:20px"></i></div>
+          <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body)">{{ t.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ t.meta }}</div></div>
+          <div style="text-align:right;flex:none"><div style="font:500 14.5px var(--font-body);color:{{ t.color }}">{{ t.amtStr }}</div><sc-if value="{{ t.hasStatus }}"><div style="font:500 11px var(--font-body);color:{{ t.stColor }};margin-top:2px">{{ t.stLabel }}</div></sc-if></div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ noCardTx }}">
+    <div style="margin:0 16px;border:1px dashed var(--s3);border-radius:14px;padding:22px 18px"><i class="ph ph-receipt" style="font-size:24px;color:var(--tx2)"></i><div style="font:500 14px var(--font-body);margin-top:8px">Aún no hay movimientos</div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:2px">Tus compras con esta tarjeta aparecerán aquí.</div></div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.acct }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">{{ av.title }}</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 16px 32px">
+    <div style="padding:8px 4px 0"><div style="font:500 11px var(--font-body);letter-spacing:.08em;color:var(--tx2)">{{ av.code }} · DISPONIBLE</div><div style="font:500 46px/1.05 var(--font-heading);letter-spacing:-.04em;margin-top:8px;font-variant-numeric:tabular-nums">{{ av.bal }}</div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:6px">{{ av.equiv }}</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px">
+      <sc-for list="{{ av.actions }}" as="q" hint-placeholder-count="3"><button onClick="{{ q.onClick }}" style-hover="background:var(--s2)" style="height:46px;border-radius:8px;border:0;background:var(--s1);display:flex;align-items:center;justify-content:center;gap:6px;font:500 13.5px var(--font-body);cursor:pointer"><i class="{{ q.icon }}" style="font-size:18px"></i>{{ q.label }}</button></sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:24px 4px 8px">Datos de la cuenta</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ av.rows }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;padding:10px 14px"><div style="flex:1"><div style="font:400 12px var(--font-body);color:var(--tx2)">{{ r.l }}</div><div style="font:500 14.5px var(--font-body);margin-top:2px;font-variant-numeric:tabular-nums">{{ r.v }}</div></div><sc-if value="{{ r.copy }}"><button onClick="{{ r.onCopy }}" style-hover="background:var(--s2)" style="width:36px;height:36px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ac)"><i class="ph ph-copy" style="font-size:18px"></i></button></sc-if></div></sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:24px 4px 8px">Tipo de cambio</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ av.rates }}" as="r" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;padding:11px 14px;font:400 14px var(--font-body)"><span style="color:var(--tx2)">{{ r.l }}</span><span style="font-weight:500;font-variant-numeric:tabular-nums">{{ r.v }}</span></div></sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:24px 4px 8px">Movimientos en {{ av.code }}</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ av.txs }}" as="t" hint-placeholder-count="3">
+        <div onClick="{{ t.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="{{ t.iconCls }}" style="font-size:20px;color:{{ t.iconColor }}"></i></div>
+          <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body)">{{ t.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ t.meta }}</div></div>
+          <div style="font:500 14.5px var(--font-body);color:{{ t.color }}">{{ t.amtStr }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.add }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Agregar dinero</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 16px 32px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em;padding:4px 4px 0">¿Cómo quieres agregar dinero?</div>
+    <button onClick="{{ openAccounts }}" style="display:inline-flex;align-items:center;gap:6px;margin:14px 4px 0;height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 13px var(--font-body);cursor:pointer">A tu cuenta en {{ home.cname }}<i class="ph ph-caret-down" style="font-size:13px;color:var(--tx2)"></i></button>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px">
+      <sc-for list="{{ methods }}" as="m" hint-placeholder-count="3">
+        <button onClick="{{ m.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:16px 14px;border:0;border-radius:14px;background:var(--s1);text-align:left;cursor:pointer;transition:background .15s">
+          <span style="width:44px;height:44px;border-radius:10px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;flex:none"><i class="{{ m.icon }}" style="font-size:22px"></i></span>
+          <span style="flex:1"><span style="display:block;font:500 15px var(--font-body)">{{ m.title }}</span><span style="display:block;font:400 12.5px var(--font-body);color:var(--tx2);margin-top:3px">{{ m.sub }}</span></span>
+          <span style="font:500 11px var(--font-body);color:var(--tx2)">{{ m.time }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.depInstr }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">{{ dep.title }}</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 16px 24px">
+    <div style="font:400 14.5px/1.5 var(--font-body);color:var(--tx2);padding:0 4px">{{ dep.intro }}</div>
+    <sc-if value="{{ dep.hasQr }}"><div style="margin-top:16px;width:200px;height:200px;border-radius:14px;background:#f3f5fe;padding:12px;box-shadow:0 0 0 1px var(--ac),0 0 30px -10px var(--ac)"><div role="img" aria-label="QR" style="width:100%;height:100%;background-image:{{ dep.qrCss }};background-size:contain;background-repeat:no-repeat;background-position:center"></div></div></sc-if>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0;margin-top:16px">
+      <sc-for list="{{ dep.rows }}" as="r" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:12px;padding:10px 14px"><div style="flex:1"><div style="font:400 12px var(--font-body);color:var(--tx2)">{{ r.l }}</div><div style="font:500 14.5px var(--font-body);margin-top:2px;font-variant-numeric:tabular-nums">{{ r.v }}</div></div><sc-if value="{{ r.copy }}"><button onClick="{{ r.onCopy }}" style-hover="background:var(--s2)" style="width:36px;height:36px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ac)"><i class="ph ph-copy" style="font-size:18px"></i></button></sc-if></div></sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:24px 4px 10px">Pasos</div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding:0 4px">
+      <sc-for list="{{ dep.steps }}" as="s" hint-placeholder-count="3"><div style="display:flex;gap:12px;align-items:flex-start"><span style="width:24px;height:24px;border-radius:12px;border:1px solid var(--ac);color:var(--ac);display:grid;place-items:center;font:500 12px var(--font-body);flex:none">{{ s.n }}</span><span style="font:400 14px/1.5 var(--font-body);padding-top:2px">{{ s.t }}</span></div></sc-for>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ resetHome }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Entendido</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.sendRecip }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Enviar a</div></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px">
+    <div style="position:relative"><i class="ph ph-magnifying-glass" style="position:absolute;left:12px;top:13px;font-size:19px;color:var(--tx2)"></i><input value="{{ recipQ }}" onChange="{{ onRecipQ }}" placeholder="Nombre, @usuario o celular" style="width:100%;height:46px;border:1px solid var(--ln);outline:none;border-radius:8px;background:var(--s1);padding:0 12px 0 40px;font:400 14.5px var(--font-body);color:var(--tx);caret-color:var(--ac)"></div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:22px 4px 12px">Recientes</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+      <sc-for list="{{ recents }}" as="r" hint-placeholder-count="4"><button onClick="{{ r.onClick }}" style-active="transform:scale(.94)" style="display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;cursor:pointer;padding:0"><span style="width:54px;height:54px;border-radius:27px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 16px var(--font-heading)">{{ r.ini }}</span><span style="font:400 12px var(--font-body)">{{ r.first }}</span></button></sc-for>
+    </div>
+    <div onClick="{{ newRecip }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;margin-top:20px;background:var(--s1);border-radius:14px;cursor:pointer"><div style="width:40px;height:40px;border-radius:20px;border:1px dashed var(--ac);color:var(--ac);display:grid;place-items:center"><i class="ph ph-user-plus" style="font-size:19px"></i></div><div style="font:500 14.5px var(--font-body)">Nuevo destinatario</div></div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:22px 4px 8px">Contactos</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ contacts }}" as="r" hint-placeholder-count="5">
+        <div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+          <div style="width:40px;height:40px;border-radius:20px;background:var(--s2);display:grid;place-items:center;font:500 13px var(--font-heading);flex:none">{{ r.ini }}</div>
+          <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ r.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.sub }}</div></div>
+          <i class="ph ph-caret-right" style="font-size:18px;color:var(--tx2)"></i>
+        </div>
+      </sc-for>
+      <sc-if value="{{ noContacts }}"><div style="padding:20px 14px;font:400 14px var(--font-body);color:var(--tx2)">Nadie coincide con “{{ recipQ }}”.</div></sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.amount }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">{{ am.title }}</div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:4px 16px 0;min-height:0">
+    <sc-if value="{{ am.hasParty }}">
+      <div onClick="{{ am.partyClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--s1);cursor:pointer">
+        <div style="width:40px;height:40px;border-radius:20px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 14px var(--font-heading)">{{ am.party.ini }}</div>
+        <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:4px;font:500 14.5px var(--font-body)">{{ am.party.name }}<sc-if value="{{ am.party.verified }}"><i class="ph-fill ph-seal-check" style="font-size:16px;color:var(--ac)"></i></sc-if></div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ am.party.sub }}</div></div>
+        <i class="ph ph-info" style="font-size:20px;color:var(--tx2)"></i>
+      </div>
+    </sc-if>
+    <sc-if value="{{ am.isExchange }}">
+      <div style="position:relative;display:flex;flex-direction:column;gap:6px">
+        <div style="background:var(--s1);border-radius:14px;padding:14px">
+          <div style="font:400 12px var(--font-body);color:var(--tx2)">Cambias</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px">
+            <button onClick="{{ pickFrom }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14px var(--font-body);cursor:pointer;flex:none">{{ am.fromCode }}<i class="ph ph-caret-down" style="font-size:13px"></i></button>
+            <div style="font:500 32px var(--font-heading);letter-spacing:-.035em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums">{{ am.disp }}</div>
+          </div>
+          <div style="font:400 12px var(--font-body);color:{{ am.availColor }};margin-top:8px">{{ am.availLabel }}</div>
+        </div>
+        <button onClick="{{ swapEx }}" style-active="transform:rotate(180deg)" style="position:absolute;left:50%;top:50%;margin:-19px 0 0 -19px;width:38px;height:38px;border-radius:8px;border:1px solid var(--ac);background:var(--bg);color:var(--ac);display:grid;place-items:center;cursor:pointer;z-index:2;box-shadow:0 0 18px -6px var(--ac);transition:transform .3s"><i class="ph ph-arrows-down-up" style="font-size:18px"></i></button>
+        <div style="background:var(--s1);border-radius:14px;padding:14px">
+          <div style="font:400 12px var(--font-body);color:var(--tx2)">Recibes</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px">
+            <button onClick="{{ pickTo }}" style="display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14px var(--font-body);cursor:pointer;flex:none">{{ am.toCode }}<i class="ph ph-caret-down" style="font-size:13px"></i></button>
+            <div style="font:500 32px var(--font-heading);letter-spacing:-.035em;color:var(--ac-tx);white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums">{{ am.recv }}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:0 4px;font:400 12.5px var(--font-body);color:var(--tx2)"><span style="width:6px;height:6px;border-radius:3px;background:var(--ac);box-shadow:0 0 8px var(--ac);animation:qPulse 1.6s infinite"></span>{{ am.rate }} · Sin comisión</div>
+      <div style="flex:1"></div>
+    </sc-if>
+    <sc-if value="{{ am.notExchange }}">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:140px;padding:0 4px">
+        <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">{{ am.kicker }}</div>
+        <div style="font-family:var(--font-heading);font-weight:500;font-size:{{ am.size }};letter-spacing:-.045em;line-height:1.05;margin-top:8px;color:{{ am.dispColor }};font-variant-numeric:tabular-nums;transition:font-size .15s">{{ am.disp }}</div>
+        <sc-if value="{{ am.showCurToggle }}"><div style="display:flex;gap:6px;margin-top:14px"><sc-for list="{{ am.curOpts }}" as="c" hint-placeholder-count="2"><button onClick="{{ c.onClick }}" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid {{ c.bd }};background:transparent;color:{{ c.fg }};font:500 13px var(--font-body);cursor:pointer">{{ c.label }}</button></sc-for></div></sc-if>
+        <sc-if value="{{ am.showSrc }}"><button onClick="{{ openAccounts }}" style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;margin-top:14px;height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:400 12.5px var(--font-body);color:{{ am.availColor }};cursor:pointer">{{ am.availLabel }}<i class="ph ph-caret-down" style="font-size:13px"></i></button></sc-if>
+      </div>
+    </sc-if>
+  </div>
+  <div style="flex:none;padding:0 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style-hover="background:var(--s1)" style-active="transform:scale(.93)" style="height:54px;border:0;background:transparent;border-radius:8px;font:400 24px var(--font-heading);cursor:pointer;display:grid;place-items:center;transition:transform .1s"><sc-if value="{{ k.isDel }}"><i class="ph ph-backspace" style="font-size:22px"></i></sc-if><sc-if value="{{ k.isTxt }}">{{ k.label }}</sc-if></button></sc-for>
+  </div>
+  <div style="flex:none;padding:8px 16px 28px"><button onClick="{{ am.next }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);opacity:{{ am.op }};transition:opacity .2s">Continuar</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.review }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Revisa y confirma</div></div>
+  <div style="flex:1;overflow-y:auto;padding:12px 16px 24px">
+    <div style="padding:4px 4px 22px">
+      <div style="width:52px;height:52px;border-radius:26px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 17px var(--font-heading)"><sc-if value="{{ rv.hasIni }}">{{ rv.ini }}</sc-if><sc-if value="{{ rv.hasIcon }}"><i class="{{ rv.icon }}" style="font-size:24px"></i></sc-if></div>
+      <div style="font:400 14px var(--font-body);color:var(--tx2);margin-top:14px">{{ rv.verb }}</div>
+      <div style="font:500 46px/1.05 var(--font-heading);letter-spacing:-.04em;margin-top:4px;font-variant-numeric:tabular-nums">{{ rv.big }}</div>
+    </div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ rv.rows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px"><span style="font:400 14px var(--font-body);color:var(--tx2)">{{ r.l }}</span><span style="font:{{ r.w }} 14px var(--font-body);text-align:right">{{ r.v }}</span></div></sc-for>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:14px 4px 0;font:400 12.5px/1.5 var(--font-body);color:var(--tx2)"><i class="ph ph-lock-simple" style="font-size:16px;margin-top:1px"></i><span>Las operaciones confirmadas no se pueden revertir. Revisa los datos antes de continuar.</span></div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ confirm }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);display:flex;align-items:center;justify-content:center;gap:8px"><i class="{{ rv.ctaIcon }}" style="font-size:20px"></i>{{ rv.cta }}</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.proc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);animation:qFade .25s ease">
+  <div style="width:68px;height:68px;border-radius:50%;border:2px solid var(--s3);border-top-color:var(--ac);box-shadow:0 0 30px -10px var(--ac);animation:qSpin .8s linear infinite"></div>
+  <div style="font:500 20px var(--font-heading);margin-top:26px">{{ procLabel }}</div>
+  <div style="font:400 13.5px var(--font-body);color:var(--tx2);margin-top:4px">No cierres la aplicación</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.result }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:radial-gradient(70% 45% at 30% 30%,color-mix(in srgb,{{ res.tone }} 20%,transparent),transparent),var(--bg);animation:qFade .3s ease">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px">
+    <div style="width:84px;height:84px;border-radius:42px;border:1.5px solid {{ res.tone }};color:{{ res.tone }};box-shadow:0 0 40px -8px {{ res.tone }};display:grid;place-items:center;animation:qPop .5s cubic-bezier(.2,.9,.3,1.2)"><i class="{{ res.icon }}" style="font-size:40px"></i></div>
+    <div style="font:500 28px var(--font-heading);letter-spacing:-.025em;margin-top:28px;animation:qRise .45s .1s both">{{ res.title }}</div>
+    <sc-if value="{{ res.hasBig }}"><div style="font:500 48px/1.1 var(--font-heading);letter-spacing:-.04em;margin-top:6px;font-variant-numeric:tabular-nums;animation:qRise .45s .16s both">{{ res.big }}</div></sc-if>
+    <div style="font:400 15px/1.5 var(--font-body);color:var(--tx2);margin-top:10px;max-width:300px;animation:qRise .45s .22s both">{{ res.sub }}</div>
+  </div>
+  <div style="flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px 28px">
+    <sc-if value="{{ res.hasSecondary }}"><button onClick="{{ res.onSecondary }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 15px var(--font-body);cursor:pointer">{{ res.secondary }}</button></sc-if>
+    <button onClick="{{ res.onPrimary }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">{{ res.primary }}</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.txDetail }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="flex:1;font:500 18px var(--font-heading)">Detalle</div><button onClick="{{ openReceipt }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-share-network" style="font-size:21px"></i></button></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px">
+    <div style="padding:6px 4px 20px">
+      <div style="display:flex;align-items:center;gap:12px"><div style="width:48px;height:48px;border-radius:12px;background:var(--s1);display:grid;place-items:center"><i class="{{ td.iconCls }}" style="font-size:24px;color:{{ td.iconColor }}"></i></div><div><div style="font:500 16px var(--font-body)">{{ td.name }}</div><div style="font:400 12.5px var(--font-body);color:var(--tx2);margin-top:2px">{{ td.sub }}</div></div></div>
+      <div style="font:500 44px/1.1 var(--font-heading);letter-spacing:-.04em;margin-top:18px;color:{{ td.color }};font-variant-numeric:tabular-nums">{{ td.amtStr }}</div>
+      <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:6px;margin-top:10px;background:var(--s1);font:500 11.5px var(--font-body);color:{{ td.stColor }}"><span style="width:6px;height:6px;border-radius:3px;background:{{ td.stColor }}"></span>{{ td.stLabel }}</span>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:0 4px 8px">Seguimiento</div>
+    <div style="background:var(--s1);border-radius:14px;padding:16px 14px 4px">
+      <sc-for list="{{ td.steps }}" as="s" hint-placeholder-count="3">
+        <div style="display:flex;gap:12px">
+          <div style="display:flex;flex-direction:column;align-items:center;flex:none;width:12px"><span style="width:12px;height:12px;border-radius:6px;border:2px solid {{ s.c }};background:{{ s.fill }};box-shadow:0 0 10px -2px {{ s.glow }}"></span><sc-if value="{{ s.line }}"><span style="flex:1;width:1px;background:{{ s.lc }};min-height:24px;margin:4px 0"></span></sc-if></div>
+          <div style="padding-bottom:14px;margin-top:-3px"><div style="font:500 14px var(--font-body)">{{ s.l }}</div><div style="font:400 12px/1.4 var(--font-body);color:var(--tx2);margin-top:2px">{{ s.s }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:20px 4px 8px">Información</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ td.rows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px"><span style="font:400 14px var(--font-body);color:var(--tx2)">{{ r.l }}</span><span style="font:500 14px var(--font-body);text-align:right">{{ r.v }}</span></div></sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:14px">
+      <button onClick="{{ openReceipt }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="height:48px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="ph ph-receipt" style="font-size:18px"></i>Ver comprobante</button>
+      <button onClick="{{ report }}" style="height:42px;border:0;background:none;font:500 14px var(--font-body);color:var(--neg);cursor:pointer">Reportar un problema</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.receipt }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Comprobante</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 20px 24px">
+    <div style="background:#f3f5fe;color:#161826;border-radius:14px;padding:22px 20px;animation:qRise .4s ease">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 20px var(--font-heading);letter-spacing:-.03em">qullqi<span style="color:#796cbf">.</span></span><span style="font:500 10px var(--font-body);color:#595d6c;letter-spacing:.12em">COMPROBANTE</span></div>
+      <div style="font:400 13px var(--font-body);color:#595d6c;margin-top:24px">{{ td.name }}</div>
+      <div style="font:500 38px/1.1 var(--font-heading);letter-spacing:-.04em;margin-top:2px;font-variant-numeric:tabular-nums">{{ td.amtStr }}</div>
+      <div style="font:500 12px var(--font-body);margin-top:6px;color:#595d6c">{{ td.stLabel }} · {{ td.when }}</div>
+      <div style="height:1px;margin:18px 0 6px;background:linear-gradient(to right,transparent,#cfd3e5 48px,#cfd3e5 calc(100% - 48px),transparent)"></div>
+      <sc-for list="{{ td.rows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:16px;padding:7px 0;font:400 13px var(--font-body)"><span style="color:#595d6c">{{ r.l }}</span><span style="font-weight:500;text-align:right">{{ r.v }}</span></div></sc-for>
+      <div style="height:1px;margin:12px 0 16px;background:linear-gradient(to right,transparent,#cfd3e5 48px,#cfd3e5 calc(100% - 48px),transparent)"></div>
+      <div style="height:40px;background:repeating-linear-gradient(90deg,#161826 0 2px,transparent 2px 4px,#161826 4px 5px,transparent 5px 8px,#161826 8px 11px,transparent 11px 12px)"></div>
+      <div style="font:500 11px var(--font-body);color:#595d6c;text-align:center;margin-top:8px;letter-spacing:.1em">{{ td.ref }}</div>
+    </div>
+  </div>
+  <div style="flex:none;display:flex;gap:8px;padding:10px 16px 28px">
+    <button onClick="{{ downloadPdf }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="flex:1;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ph ph-download-simple" style="font-size:18px"></i>PDF</button>
+    <button onClick="{{ shareReceipt }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:2;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 28px -12px var(--ac)"><i class="ph ph-share-network" style="font-size:18px"></i>Compartir</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.myQR }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Mi QR</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 20px 20px">
+    <div style="background:var(--s1);border-radius:14px;padding:22px 20px;box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 50%,transparent),0 0 50px -20px var(--ac);animation:qRise .45s ease">
+      <div style="font:500 11px var(--font-body);letter-spacing:.1em;color:var(--ac)">PÁGAME CON QULLQI</div>
+      <div style="font:500 22px var(--font-heading);letter-spacing:-.02em;margin-top:6px">{{ user.name }}</div>
+      <div style="font:400 13px var(--font-body);color:var(--tx2)">@ronald.dz · Bolivianos</div>
+      <div style="margin-top:18px;background:#f3f5fe;border-radius:12px;padding:14px;position:relative;width:248px;height:248px"><div role="img" aria-label="QR" style="width:100%;height:100%;background-image:{{ qrMineCss }};background-size:contain;background-repeat:no-repeat;background-position:center"></div><span style="position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:10px;background:#161826;color:var(--ac);display:grid;place-items:center;font:500 22px var(--font-heading);box-shadow:0 0 0 5px #f3f5fe">q</span></div>
+    </div>
+    <div style="font:400 13.5px/1.5 var(--font-body);color:var(--tx2);margin-top:14px;padding:0 4px">Cualquier persona con Qullqi Pay puede pagarte escaneando este código. El dinero llega a tu cuenta en Bolivianos.</div>
+    <button onClick="{{ simQRIn }}" style="margin-top:12px;height:40px;padding:0 12px;border-radius:8px;border:1px dashed var(--s3);background:transparent;font:400 13px var(--font-body);color:var(--tx2);cursor:pointer">Simular pago entrante (demo)</button>
+  </div>
+  <div style="flex:none;display:flex;gap:8px;padding:10px 16px 28px">
+    <button onClick="{{ saveQR }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="flex:1;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ph ph-download-simple" style="font-size:18px"></i>Guardar</button>
+    <button onClick="{{ shareQR }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:1;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 28px -12px var(--ac)"><i class="ph ph-share-network" style="font-size:18px"></i>Compartir</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.reqDesc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Concepto</div></div>
+  <div style="flex:1;overflow-y:auto;padding:12px 20px">
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">Solicitas</div>
+    <div style="font:500 42px var(--font-heading);letter-spacing:-.04em;margin-top:4px">{{ am.disp }}</div>
+    <div style="font:500 22px var(--font-heading);margin-top:26px">¿Para qué es?</div>
+    <input value="{{ reqDesc }}" onChange="{{ onReqDesc }}" placeholder="Ej. Clases de guitarra" maxlength="40" style="width:100%;height:52px;border:0;border-bottom:1px solid var(--ac);outline:none;background:transparent;font:400 19px var(--font-body);color:var(--tx);margin-top:4px;padding:0;caret-color:var(--ac)">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px">
+      <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="4"><button onClick="{{ s.onClick }}" style-hover="background:var(--s2)" style="height:32px;padding:0 12px;border-radius:8px;border:0;background:var(--s1);font:400 13px var(--font-body);cursor:pointer">{{ s.label }}</button></sc-for>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ createRequest }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Crear solicitud</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.reqShare }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ doneShare }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Comparte tu solicitud</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 16px 20px">
+    <div style="background:var(--s1);border-radius:14px;padding:18px;animation:qRise .4s ease">
+      <div style="font:400 13px var(--font-body);color:var(--tx2)">{{ rs.desc }}</div>
+      <div style="font:500 36px var(--font-heading);letter-spacing:-.04em;margin-top:2px">{{ rs.amtStr }}</div>
+      <div style="display:flex;gap:14px;align-items:flex-end;margin-top:14px">
+        <div style="background:#f3f5fe;border-radius:10px;padding:8px;width:150px;height:150px;flex:none"><div role="img" aria-label="QR" style="width:100%;height:100%;background-image:{{ rs.qrCss }};background-size:contain;background-repeat:no-repeat;background-position:center"></div></div>
+        <div style="font:400 12.5px/1.5 var(--font-body);color:var(--tx2)">Escanea o abre el enlace para pagar. Vence en 7 días.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;height:44px;border-radius:8px;border:1px solid var(--ln);padding:0 4px 0 12px"><i class="ph ph-link" style="font-size:17px;color:var(--tx2)"></i><span style="flex:1;font:400 13.5px var(--font-body)">{{ rs.link }}</span><button onClick="{{ copyReqLink }}" style-hover="background:color-mix(in srgb,var(--ac) 14%,transparent)" style="height:34px;padding:0 12px;border-radius:6px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:500 13px var(--font-body);cursor:pointer">Copiar</button></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+      <sc-for list="{{ shareOpts }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.onClick }}" style-hover="background:var(--s2)" style="height:72px;border-radius:14px;border:0;background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:400 12.5px var(--font-body);cursor:pointer"><i class="{{ s.icon }}" style="font-size:22px"></i>{{ s.label }}</button></sc-for>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ doneShare }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Listo</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.reqHistory }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Historial de solicitudes</div></div>
+  <div style="flex:1;overflow-y:auto;padding:0 16px 32px">
+    <sc-for list="{{ reqGroups }}" as="g" hint-placeholder-count="2">
+      <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:18px 4px 8px">{{ g.label }}</div>
+      <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+        <sc-for list="{{ g.items }}" as="q" hint-placeholder-count="2">
+          <div onClick="{{ q.open }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="ph ph-hand-coins" style="font-size:20px;color:{{ q.stColor }}"></i></div>
+            <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body)">{{ q.desc }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ q.meta }}</div></div>
+            <div style="text-align:right;flex:none"><div style="font:500 14.5px var(--font-body)">{{ q.amtStr }}</div><div style="font:500 11px var(--font-body);color:{{ q.stColor }};margin-top:2px">{{ q.stLabel }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.reqDetail }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Solicitud</div></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 24px">
+    <div style="padding:8px 4px 20px">
+      <div style="font:400 14px var(--font-body);color:var(--tx2)">{{ rd.desc }}</div>
+      <div style="font:500 46px/1.1 var(--font-heading);letter-spacing:-.04em;margin-top:4px">{{ rd.amtStr }}</div>
+      <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:6px;margin-top:10px;background:var(--s1);font:500 11.5px var(--font-body);color:{{ rd.stColor }}"><span style="width:6px;height:6px;border-radius:3px;background:{{ rd.stColor }}"></span>{{ rd.stLabel }}</span>
+    </div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ rd.rows }}" as="r" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px"><span style="font:400 14px var(--font-body);color:var(--tx2)">{{ r.l }}</span><span style="font:500 14px var(--font-body);text-align:right">{{ r.v }}</span></div></sc-for>
+    </div>
+    <sc-if value="{{ rd.pending }}">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+        <button onClick="{{ reshare }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="height:48px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer">Compartir de nuevo</button>
+        <button onClick="{{ markPaid }}" style="height:44px;border-radius:8px;border:1px dashed var(--s3);background:transparent;font:400 13px var(--font-body);cursor:pointer;color:var(--tx2)">Simular pago recibido (demo)</button>
+        <button onClick="{{ cancelReq }}" style="height:42px;border:0;background:none;font:500 14px var(--font-body);color:var(--neg);cursor:pointer">Cancelar solicitud</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.cardLimits }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Límites · {{ cv.name }}</div></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px;display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ sliders }}" as="s" hint-placeholder-count="3">
+      <div style="background:var(--s1);border-radius:14px;padding:16px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:500 14px var(--font-body)">{{ s.label }}</span><span style="font:500 19px var(--font-heading);letter-spacing:-.02em;font-variant-numeric:tabular-nums">{{ s.val }}</span></div>
+        <input type="range" min="0" max="{{ s.max }}" step="100" value="{{ s.raw }}" onChange="{{ s.onChange }}" style="width:100%;margin-top:12px;accent-color:var(--ac)">
+        <div style="display:flex;justify-content:space-between;font:400 12px var(--font-body);color:var(--tx2);margin-top:4px"><span>{{ s.used }}</span><span>Máx. {{ s.maxStr }}</span></div>
+      </div>
+    </sc-for>
+    <div style="font:400 12.5px/1.5 var(--font-body);color:var(--tx2);padding:6px 4px 0">Los cambios se aplican al instante. Para subir el máximo, completa la verificación de nivel 3.</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.pinPad }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">{{ pp.header }}</div></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px">
+    <i class="{{ pp.icon }}" style="font-size:34px;color:var(--ac)"></i>
+    <div style="font:500 24px var(--font-heading);letter-spacing:-.02em;margin-top:14px">{{ pp.title }}</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">{{ pp.sub }}</div>
+    <div style="display:flex;gap:10px;margin-top:26px">
+      <sc-for list="{{ pp.dots }}" as="d" hint-placeholder-count="4"><div style="width:54px;height:62px;border-radius:8px;background:var(--s1);border:1px solid {{ d.bd }};box-shadow:{{ d.sh }};display:grid;place-items:center;font:500 24px var(--font-heading);transition:all .15s">{{ d.v }}</div></sc-for>
+    </div>
+  </div>
+  <div style="flex:none;padding:0 12px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    <sc-for list="{{ keysPin }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style-hover="background:var(--s1)" style-active="transform:scale(.93)" style="height:56px;border:0;background:transparent;border-radius:8px;font:400 24px var(--font-heading);cursor:pointer;display:grid;place-items:center"><sc-if value="{{ k.isDel }}"><i class="ph ph-backspace" style="font-size:22px"></i></sc-if><sc-if value="{{ k.isTxt }}">{{ k.label }}</sc-if></button></sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.scan }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:#0b0c14;color:#e9e9ed;animation:qFade .3s ease">
+  <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#15172299 0 14px,#0e0f1899 14px 28px)"></div>
+  <div style="position:absolute;left:0;right:0;top:190px;text-align:center;font:500 10.5px var(--font-body);color:#595d6c;letter-spacing:.14em">VISTA DE CÁMARA</div>
+  <div style="position:absolute;top:40px;left:0;right:0;display:flex;align-items:center;gap:6px;padding:6px 10px">
+    <button onClick="{{ pop }}" style="width:42px;height:42px;border-radius:8px;border:0;background:rgba(233,233,237,.1);color:#e9e9ed;display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:22px"></i></button>
+    <div style="flex:1;font:500 17px var(--font-heading)">Pagar con QR</div>
+    <button onClick="{{ toggleTorch }}" style="width:42px;height:42px;border-radius:8px;border:1px solid {{ sc.torchBd }};background:rgba(233,233,237,.1);color:{{ sc.torchFg }};display:grid;place-items:center;cursor:pointer;transition:all .2s"><i class="ph ph-flashlight" style="font-size:21px"></i></button>
+  </div>
+  <div style="position:absolute;left:70px;top:230px;width:260px;height:260px">
+    <span style="position:absolute;left:0;top:0;width:40px;height:40px;border-left:2px solid {{ sc.c }};border-top:2px solid {{ sc.c }};border-radius:14px 0 0 0;transition:border-color .3s"></span>
+    <span style="position:absolute;right:0;top:0;width:40px;height:40px;border-right:2px solid {{ sc.c }};border-top:2px solid {{ sc.c }};border-radius:0 14px 0 0;transition:border-color .3s"></span>
+    <span style="position:absolute;left:0;bottom:0;width:40px;height:40px;border-left:2px solid {{ sc.c }};border-bottom:2px solid {{ sc.c }};border-radius:0 0 0 14px;transition:border-color .3s"></span>
+    <span style="position:absolute;right:0;bottom:0;width:40px;height:40px;border-right:2px solid {{ sc.c }};border-bottom:2px solid {{ sc.c }};border-radius:0 0 14px 0;transition:border-color .3s"></span>
+    <sc-if value="{{ sc.searching }}"><span style="position:absolute;left:14px;right:14px;height:1px;background:var(--ac);box-shadow:0 0 16px 2px var(--ac);animation:qScan 2.2s ease-in-out infinite"></span></sc-if>
+    <sc-if value="{{ sc.found }}"><div style="position:absolute;inset:30px;border-radius:10px;background:#f3f5fe;padding:8px;animation:qPop .4s ease"><div role="img" aria-label="QR" style="width:100%;height:100%;background-image:{{ qrMerchantCss }};background-size:contain;background-repeat:no-repeat;background-position:center"></div></div></sc-if>
+  </div>
+  <sc-if value="{{ sc.searching }}">
+    <div style="position:absolute;left:0;right:0;top:514px;text-align:center"><div style="font:500 16px var(--font-body)">Apunta al código QR</div><div style="font:400 13px var(--font-body);color:#9397ab;margin-top:4px">Buscando código…</div></div>
+    <div style="position:absolute;left:0;right:0;bottom:40px;display:flex;justify-content:center;gap:8px">
+      <button onClick="{{ uploadImg }}" style="height:44px;padding:0 16px;border-radius:8px;border:1px solid #3f424d;background:rgba(14,15,24,.6);color:#e9e9ed;font:500 13.5px var(--font-body);display:flex;align-items:center;gap:8px;cursor:pointer"><i class="ph ph-image" style="font-size:18px"></i>Subir imagen</button>
+      <button onClick="{{ openMyQRFromScan }}" style="height:44px;padding:0 16px;border-radius:8px;border:1px solid #3f424d;background:rgba(14,15,24,.6);color:#e9e9ed;font:500 13.5px var(--font-body);display:flex;align-items:center;gap:8px;cursor:pointer"><i class="ph ph-qr-code" style="font-size:18px"></i>Mi QR</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ sc.found }}">
+    <div style="position:absolute;left:0;right:0;bottom:0;background:var(--s1);color:var(--tx);border-radius:20px 20px 0 0;padding:10px 18px 28px;box-shadow:0 -1px 0 var(--s3);animation:qUp .4s cubic-bezier(.2,.9,.2,1)">
+      <div style="width:32px;height:4px;border-radius:2px;background:var(--s3);margin:0 auto 16px"></div>
+      <div style="display:flex;align-items:center;gap:6px;font:500 11px var(--font-body);color:var(--ac);letter-spacing:.1em"><i class="ph-fill ph-check-circle" style="font-size:15px"></i>QR RECONOCIDO</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+        <div style="width:50px;height:50px;border-radius:12px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 17px var(--font-heading)">CT</div>
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:4px;font:500 17px var(--font-body)">Café Tostado<i class="ph-fill ph-seal-check" style="font-size:17px;color:var(--ac)"></i></div><div style="font:400 12.5px var(--font-body);color:var(--tx2);margin-top:2px">Cafetería · Sopocachi, La Paz</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button onClick="{{ scanAgain }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer">Escanear otro</button>
+        <button onClick="{{ scanContinue }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:2;height:50px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Continuar</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.notifs }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="flex:1;font:500 18px var(--font-heading)">Notificaciones</div><button onClick="{{ markRead }}" style="background:none;border:0;font:500 13px var(--font-body);color:var(--ac);cursor:pointer;padding:0 8px">Marcar leídas</button></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px">
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="4">
+        <div style="display:flex;gap:12px;padding:12px 14px">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--s2);display:grid;place-items:center;flex:none"><i class="{{ n.icon }}" style="font-size:20px"></i></div>
+          <div style="flex:1"><div style="display:flex;justify-content:space-between;gap:8px"><span style="font:500 14px var(--font-body)">{{ n.title }}</span><span style="font:400 11.5px var(--font-body);color:var(--tx2);flex:none">{{ n.time }}</span></div><div style="font:400 13px/1.4 var(--font-body);color:var(--tx2);margin-top:3px">{{ n.body }}</div></div>
+          <sc-if value="{{ n.unread }}"><span style="width:7px;height:7px;border-radius:4px;background:var(--ac);box-shadow:0 0 8px var(--ac);margin-top:6px;flex:none"></span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.profile }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Perfil</div></div>
+  <div style="flex:1;overflow-y:auto;padding:0 16px 40px">
+    <div style="display:flex;align-items:center;gap:14px;padding:10px 4px 6px">
+      <div style="width:68px;height:68px;border-radius:34px;background:var(--ac-t);color:var(--ac-tx);box-shadow:0 0 0 1px var(--ac),0 0 26px -8px var(--ac);display:grid;place-items:center;font:500 24px var(--font-heading)">{{ user.ini }}</div>
+      <div><div style="font:500 22px var(--font-heading);letter-spacing:-.02em">{{ user.name }}</div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:1px">@ronald.dz</div><button onClick="{{ openKyc }}" style="display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:6px;border:0;background:var(--ac-t);color:var(--ac-tx);font:500 11.5px var(--font-body);margin-top:6px;cursor:pointer"><i class="ph-fill ph-seal-check" style="font-size:14px"></i>{{ kyc.badge }}</button></div>
+    </div>
+    <sc-for list="{{ profileGroups }}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{ g.hasTitle }}"><div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:20px 4px 8px">{{ g.title }}</div></sc-if>
+      <sc-if value="{{ g.noTitle }}"><div style="height:16px"></div></sc-if>
+      <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+            <i class="{{ r.icon }}" style="font-size:21px;color:{{ r.color }};width:24px"></i>
+            <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body);color:{{ r.color }}">{{ r.label }}</div><sc-if value="{{ r.hasSub }}"><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.sub }}</div></sc-if></div>
+            <sc-if value="{{ r.hasValue }}"><span style="font:400 13.5px var(--font-body);color:var(--tx2)">{{ r.value }}</span></sc-if>
+            <sc-if value="{{ r.chev }}"><i class="ph ph-caret-right" style="font-size:17px;color:var(--tx2)"></i></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <div style="font:400 11.5px var(--font-body);color:var(--tx2);margin-top:22px;padding:0 4px">Qullqi Pay 1.0.0 · Entorno de demostración</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.list }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">{{ list.title }}</div></div>
+  <div style="flex:1;overflow-y:auto;padding:0 16px 40px">
+    <sc-for list="{{ list.groups }}" as="g" hint-placeholder-count="2">
+      <sc-if value="{{ g.hasTitle }}"><div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:18px 4px 8px">{{ g.title }}</div></sc-if>
+      <sc-if value="{{ g.noTitle }}"><div style="height:10px"></div></sc-if>
+      <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+          <div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:var(--rp) 14px;cursor:pointer">
+            <sc-if value="{{ r.hasIcon }}"><i class="{{ r.icon }}" style="font-size:21px;color:{{ r.color }};width:24px"></i></sc-if>
+            <div style="flex:1;min-width:0"><div style="font:500 14.5px var(--font-body);color:{{ r.color }}">{{ r.label }}</div><sc-if value="{{ r.hasSub }}"><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ r.sub }}</div></sc-if></div>
+            <sc-if value="{{ r.hasValue }}"><span style="font:400 13.5px var(--font-body);color:var(--tx2);text-align:right">{{ r.value }}</span></sc-if>
+            <sc-if value="{{ r.hasToggle }}"><div style="width:44px;height:26px;border-radius:13px;border:1px solid {{ r.tBd }};background:{{ r.tBg }};position:relative;transition:all .2s;flex:none"><div style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:9px;background:{{ r.kBg }};box-shadow:{{ r.kSh }};transform:{{ r.tX }};transition:transform .25s cubic-bezier(.3,1.4,.5,1)"></div></div></sc-if>
+            <sc-if value="{{ r.hasAction }}"><span style="height:28px;padding:0 10px;border-radius:6px;border:1px solid {{ r.actColor }};font:500 12px var(--font-body);display:grid;place-items:center;color:{{ r.actColor }}">{{ r.action }}</span></sc-if>
+            <sc-if value="{{ r.chev }}"><i class="ph ph-caret-right" style="font-size:17px;color:var(--tx2)"></i></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+    <sc-if value="{{ list.hasNote }}"><div style="font:400 12.5px/1.5 var(--font-body);color:var(--tx2);padding:12px 4px 0">{{ list.note }}</div></sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kyc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Verificación de identidad</div></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px">
+    <div style="background:var(--s1);border-radius:14px;padding:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:500 11px var(--font-body);color:var(--tx2);letter-spacing:.1em">ESTADO KYC</span><i class="ph-fill ph-shield-check" style="font-size:22px;color:var(--ac)"></i></div>
+      <div style="font:500 30px var(--font-heading);letter-spacing:-.03em;margin-top:6px">{{ kyc.level }}</div>
+      <div style="font:400 13.5px var(--font-body);color:var(--tx2);margin-top:2px">{{ kyc.levelSub }}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:16px"><span style="height:4px;border-radius:2px;background:{{ kyc.b1 }}"></span><span style="height:4px;border-radius:2px;background:{{ kyc.b2 }}"></span><span style="height:4px;border-radius:2px;background:{{ kyc.l3Bar }}"></span></div>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:20px 4px 8px">Requisitos</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ kyc.steps }}" as="s" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px">
+          <i class="{{ s.icon }}" style="font-size:22px;color:{{ s.c }}"></i>
+          <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ s.l }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ s.s }}</div></div>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ kyc.needsStart }}"><button onClick="{{ goKyc }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:50px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);margin-top:12px;cursor:pointer;box-shadow:0 0 28px -12px var(--ac);display:flex;align-items:center;justify-content:center;gap:8px"><i class="ph ph-identification-card" style="font-size:20px"></i>Verificar ahora</button></sc-if>
+    <sc-if value="{{ kyc.canUpload }}">
+      <div style="background:var(--s1);border-radius:14px;padding:16px 14px;margin-top:10px">
+        <div style="font:500 17px var(--font-heading)">Sube a nivel 3</div>
+        <div style="font:400 13.5px/1.5 var(--font-body);color:var(--tx2);margin-top:4px">Con una factura de luz o agua reciente a tu nombre, tus límites suben a Bs 250,000 al mes.</div>
+        <button onClick="{{ uploadL3 }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:46px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);font:500 14.5px var(--font-body);margin-top:14px;cursor:pointer">Subir documento</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.appearance }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Apariencia</div></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <sc-for list="{{ appOpts }}" as="o" hint-placeholder-count="2">
+        <button onClick="{{ o.onClick }}" style="border:1px solid {{ o.bd }};box-shadow:{{ o.sh }};border-radius:14px;background:var(--s1);padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:all .2s">
+          <span style="display:block;width:100%;height:170px;border-radius:8px;background:{{ o.bg }};padding:12px;text-align:left">
+            <span style="display:block;width:40%;height:6px;border-radius:3px;background:{{ o.fg }};opacity:.45"></span>
+            <span style="display:block;width:70%;height:18px;border-radius:4px;background:{{ o.fg }};margin-top:10px"></span>
+            <span style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:14px"><span style="height:26px;border-radius:6px;background:{{ o.s }}"></span><span style="height:26px;border-radius:6px;background:{{ o.s }}"></span><span style="height:26px;border-radius:6px;border:1px solid var(--ac)"></span></span>
+            <span style="display:block;height:48px;border-radius:6px;background:{{ o.s }};margin-top:12px"></span>
+          </span>
+          <span style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 4px 4px;font:500 14px var(--font-body)">{{ o.label }}<i class="{{ o.chk }}" style="font-size:20px;color:var(--ac)"></i></span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.help }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:6px;padding:6px 10px 8px"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="font:500 18px var(--font-heading)">Centro de ayuda</div></div>
+  <div style="flex:1;overflow-y:auto;padding:4px 16px 32px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em;padding:4px 4px 16px">¿En qué te ayudamos?</div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:0 4px 8px">Preguntas frecuentes</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4">
+        <div onClick="{{ f.toggle }}" style="padding:13px 14px;cursor:pointer">
+          <div style="display:flex;justify-content:space-between;gap:12px;font:500 14.5px var(--font-body)"><span>{{ f.q }}</span><i class="ph ph-caret-down" style="font-size:17px;color:var(--tx2);transform:{{ f.rot }};transition:transform .25s"></i></div>
+          <sc-if value="{{ f.open }}"><div style="font:400 13.5px/1.55 var(--font-body);color:var(--tx2);margin-top:8px;animation:qFade .25s">{{ f.a }}</div></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:22px 4px 8px">Soporte</div>
+    <button onClick="{{ openSupport }}" style-hover="background:color-mix(in srgb,var(--ac) 14%,transparent)" style="width:100%;display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 6%,transparent);box-shadow:0 0 28px -14px var(--ac);text-align:left;cursor:pointer">
+      <i class="ph ph-headset" style="font-size:24px;color:var(--ac)"></i>
+      <span style="flex:1"><span style="display:block;font:500 15px var(--font-body)">Chatear con soporte</span><span style="display:block;font:400 12.5px var(--font-body);color:var(--tx2);margin-top:2px">24/7 · Respuesta en unos 2 minutos</span></span>
+      <i class="ph ph-arrow-right" style="font-size:18px;color:var(--ac)"></i>
+    </button>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0;margin-top:8px">
+      <sc-for list="{{ contactRows }}" as="r" hint-placeholder-count="2"><div onClick="{{ r.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer"><i class="{{ r.icon }}" style="font-size:20px"></i><div style="flex:1;font:500 14.5px var(--font-body)">{{ r.label }}</div><span style="font:400 13px var(--font-body);color:var(--tx2)">{{ r.value }}</span></div></sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.support }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;gap:8px;padding:6px 10px 8px;border-bottom:1px solid var(--ln)"><button onClick="{{ pop }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-arrow-left" style="font-size:22px"></i></button><div style="width:34px;height:34px;border-radius:17px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 12px var(--font-heading)">DM</div><div><div style="font:500 15px var(--font-body)">Daniela · Soporte</div><div style="display:flex;align-items:center;gap:5px;font:400 12px var(--font-body);color:var(--tx2)"><span style="width:6px;height:6px;border-radius:3px;background:var(--ac)"></span>En línea</div></div></div>
+  <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px">
+    <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="1">
+      <div style="display:flex;justify-content:{{ m.justify }}"><div style="max-width:78%;padding:10px 12px;border-radius:14px;background:{{ m.bg }};border:1px solid {{ m.bd }};font:400 14px/1.45 var(--font-body);animation:qRise .3s ease">{{ m.text }}<div style="font:400 10.5px var(--font-body);color:var(--tx2);margin-top:4px;text-align:right">{{ m.time }}</div></div></div>
+    </sc-for>
+    <sc-if value="{{ typing }}"><div style="display:flex;gap:4px;padding:12px;border-radius:14px;background:var(--s1);align-self:flex-start"><span style="width:6px;height:6px;border-radius:3px;background:var(--tx2);animation:qShim 1s infinite"></span><span style="width:6px;height:6px;border-radius:3px;background:var(--tx2);animation:qShim 1s .2s infinite"></span><span style="width:6px;height:6px;border-radius:3px;background:var(--tx2);animation:qShim 1s .4s infinite"></span></div></sc-if>
+  </div>
+  <div style="flex:none;display:flex;gap:8px;padding:10px 12px 28px;border-top:1px solid var(--ln)">
+    <input value="{{ chatQ }}" onChange="{{ onChatQ }}" onKeyDown="{{ chatKey }}" placeholder="Escribe tu mensaje" style="flex:1;height:46px;border:1px solid var(--ln);outline:none;border-radius:8px;background:var(--s1);padding:0 12px;font:400 14.5px var(--font-body);color:var(--tx);caret-color:var(--ac)">
+    <button onClick="{{ sendChat }}" style="width:46px;height:46px;border-radius:8px;border:1px solid var(--ac);background:transparent;color:var(--ac);display:grid;place-items:center;cursor:pointer"><i class="ph ph-paper-plane-right" style="font-size:20px"></i></button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ veil.show }}"><div style="position:absolute;inset:0;z-index:29;background:var(--bg);animation:{{ veil.anim }};pointer-events:none"></div></sc-if>
+<div style="position:absolute;top:0;left:0;right:0;height:38px;display:flex;align-items:center;justify-content:space-between;padding:4px 24px 0 26px;z-index:30;pointer-events:none;color:{{ sbColor }}">
+  <span style="font:500 14px var(--font-body)">9:41</span>
+  <span style="display:flex;gap:6px;align-items:center"><i class="ph-fill ph-wifi-high" style="font-size:16px"></i><i class="ph-fill ph-cell-signal-full" style="font-size:16px"></i><i class="ph-fill ph-battery-full" style="font-size:19px"></i></span>
+</div>
+<div style="position:absolute;top:12px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:7px;background:#05060a;z-index:31;box-shadow:inset 0 0 0 2px #1a1c26"></div>
+
+<sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:0;right:0;bottom:0;height:86px;background:var(--nav);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:grid;grid-template-columns:1fr 1fr 72px 1fr 1fr;padding:8px 6px 0;z-index:20">
+    <span style="position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(to right,transparent,var(--ln) 48px,var(--ln) calc(100% - 48px),transparent)"></span>
+    <sc-for list="{{ navL }}" as="n" hint-placeholder-count="2">
+      <button onClick="{{ n.onClick }}" style="background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:2px;cursor:pointer;color:{{ n.c }};transition:color .2s"><span style="height:30px;width:56px;border-radius:15px;background:{{ n.pill }};display:grid;place-items:center;transition:background .2s"><i class="{{ n.cls }}" style="font-size:22px"></i></span><span style="font:500 11px var(--font-body)">{{ n.label }}</span></button>
+    </sc-for>
+    <div style="display:flex;justify-content:center"><button onClick="{{ startScan }}" style-active="transform:scale(.92)" style="width:56px;height:56px;border-radius:16px;border:1px solid var(--ac);background:var(--bg);color:var(--ac);display:grid;place-items:center;margin-top:-18px;box-shadow:0 0 30px -6px var(--ac);cursor:pointer;transition:transform .15s"><i class="ph ph-scan" style="font-size:26px"></i></button></div>
+    <sc-for list="{{ navR }}" as="n" hint-placeholder-count="2">
+      <button onClick="{{ n.onClick }}" style="background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding-top:2px;cursor:pointer;color:{{ n.c }};transition:color .2s"><span style="height:30px;width:56px;border-radius:15px;background:{{ n.pill }};display:grid;place-items:center;transition:background .2s"><i class="{{ n.cls }}" style="font-size:22px"></i></span><span style="font:500 11px var(--font-body)">{{ n.label }}</span></button>
+    </sc-for>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasSheet }}">
+  <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:color-mix(in srgb,#0e0f18 60%,transparent);z-index:40;display:flex;align-items:flex-end;animation:qFade .2s ease">
+    <div onClick="{{ stop }}" style="width:100%;max-height:82%;overflow-y:auto;background:var(--s1);border-radius:20px 20px 0 0;padding:10px 18px 30px;box-shadow:0 -1px 0 var(--s3),0 -16px 40px rgba(0,0,0,.4);animation:qUp .32s cubic-bezier(.2,.9,.2,1)">
+      <div style="width:32px;height:4px;border-radius:2px;background:var(--s3);margin:0 auto 16px"></div>
+      <sc-if value="{{ sh.accounts }}">
+        <div style="font:500 20px var(--font-heading);margin-bottom:8px">Elige una cuenta</div>
+        <sc-for list="{{ sheetAccts }}" as="a" hint-placeholder-count="2">
+          <div onClick="{{ a.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:8px;cursor:pointer">
+            <span style="width:40px;height:40px;border-radius:20px;background:var(--s2);display:grid;place-items:center;font:500 12px var(--font-body)">{{ a.sym }}</span>
+            <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ a.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ a.bal }}</div></div>
+            <i class="{{ a.chk }}" style="font-size:22px;color:var(--ac)"></i>
+          </div>
+        </sc-for>
+        <div onClick="{{ newAcct }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:8px;cursor:pointer;margin-top:4px"><span style="width:40px;height:40px;border-radius:20px;border:1px dashed var(--s3);display:grid;place-items:center"><i class="ph ph-plus" style="font-size:18px"></i></span><div style="font:500 14.5px var(--font-body)">Abrir cuenta en otra moneda</div></div>
+      </sc-if>
+      <sc-if value="{{ sh.filters }}">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font:500 20px var(--font-heading)">Filtros</div><button onClick="{{ clearFilters }}" style="background:none;border:0;font:500 13.5px var(--font-body);color:var(--ac);cursor:pointer">Restablecer</button></div>
+        <sc-for list="{{ filterGroups }}" as="g" hint-placeholder-count="4">
+          <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:18px 0 8px">{{ g.title }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="height:34px;padding:0 12px;border-radius:8px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font:500 13px var(--font-body);cursor:pointer;transition:all .15s">{{ o.label }}</button></sc-for></div>
+        </sc-for>
+        <button onClick="{{ closeSheet }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:50px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);margin-top:22px;cursor:pointer">{{ resultsLabel }}</button>
+      </sc-if>
+      <sc-if value="{{ sh.recip }}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:56px;height:56px;border-radius:28px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 19px var(--font-heading)">{{ rcp.ini }}</div>
+          <div><div style="font:500 20px var(--font-heading)">{{ rcp.name }}</div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:2px">{{ rcp.sub }}</div></div>
+        </div>
+        <div style="background:var(--s2);border-radius:14px;padding:4px 0;margin-top:16px">
+          <sc-for list="{{ rcp.rows }}" as="r" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;padding:10px 14px;font:400 13.5px var(--font-body)"><span style="color:var(--tx2)">{{ r.l }}</span><span style="font-weight:500">{{ r.v }}</span></div></sc-for>
+        </div>
+        <button onClick="{{ changeRecip }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="width:100%;height:48px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);margin-top:12px;cursor:pointer">Cambiar destinatario</button>
+      </sc-if>
+      <sc-if value="{{ sh.merchant }}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:56px;height:56px;border-radius:14px;background:var(--ac-t);color:var(--ac-tx);display:grid;place-items:center;font:500 19px var(--font-heading)">CT</div>
+          <div><div style="display:flex;align-items:center;gap:4px;font:500 20px var(--font-heading)">Café Tostado<i class="ph-fill ph-seal-check" style="font-size:18px;color:var(--ac)"></i></div><div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:2px">Comercio verificado por Qullqi Pay</div></div>
+        </div>
+        <div style="background:var(--s2);border-radius:14px;padding:4px 0;margin-top:16px">
+          <sc-for list="{{ merchantRows }}" as="r" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:12px;padding:10px 14px;font:400 13.5px var(--font-body)"><span style="color:var(--tx2)">{{ r.l }}</span><span style="font-weight:500;text-align:right">{{ r.v }}</span></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sh.pickCur }}">
+        <div style="font:500 20px var(--font-heading);margin-bottom:8px">{{ pickTitle }}</div>
+        <sc-for list="{{ curOpts }}" as="a" hint-placeholder-count="2">
+          <div onClick="{{ a.onClick }}" style-hover="background:var(--s2)" style="display:flex;align-items:center;gap:12px;padding:12px 8px;border-radius:8px;cursor:pointer">
+            <span style="width:40px;height:40px;border-radius:20px;background:var(--s2);display:grid;place-items:center;font:500 12px var(--font-body)">{{ a.sym }}</span>
+            <div style="flex:1"><div style="font:500 14.5px var(--font-body)">{{ a.name }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ a.bal }}</div></div>
+            <i class="{{ a.chk }}" style="font-size:22px;color:var(--ac)"></i>
+          </div>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{ sh.cardData }}">
+        <div style="font:500 20px var(--font-heading)">Datos de la tarjeta</div>
+        <div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:4px">Solo tú puedes verlos. Se ocultan al cerrar.</div>
+        <div style="background:var(--s2);border-radius:14px;padding:4px 0;margin-top:14px">
+          <sc-for list="{{ cardData }}" as="r" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:12px;padding:9px 14px"><div style="flex:1"><div style="font:400 12px var(--font-body);color:var(--tx2)">{{ r.l }}</div><div style="font:500 15px var(--font-body);letter-spacing:.04em;margin-top:2px;font-variant-numeric:tabular-nums">{{ r.v }}</div></div><sc-if value="{{ r.copy }}"><button onClick="{{ r.onCopy }}" style="width:36px;height:36px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ac)"><i class="ph ph-copy" style="font-size:18px"></i></button></sc-if></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sh.freeze }}">
+        <i class="ph ph-snowflake" style="font-size:30px;color:var(--ac)"></i>
+        <div style="font:500 20px var(--font-heading);margin-top:10px">¿Congelar tu tarjeta {{ cv.name }}?</div>
+        <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Se rechazarán todas las compras nuevas. Las suscripciones activas también se detendrán. Puedes descongelarla cuando quieras.</div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button onClick="{{ closeSheet }}" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer">Cancelar</button>
+          <button onClick="{{ freezeConfirm }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer">Congelar</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sh.kycGate }}">
+        <i class="ph ph-shield-check" style="font-size:30px;color:var(--ac)"></i>
+        <div style="font:500 20px var(--font-heading);margin-top:10px">{{ gate.title }}</div>
+        <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">{{ gate.body }}</div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button onClick="{{ closeSheet }}" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer">{{ gate.close }}</button>
+          <sc-if value="{{ gate.canStart }}"><button onClick="{{ goKyc }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer">Verificar ahora</button></sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ sh.logout }}">
+        <i class="ph ph-sign-out" style="font-size:30px;color:var(--neg)"></i>
+        <div style="font:500 20px var(--font-heading);margin-top:10px">¿Cerrar sesión?</div>
+        <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Necesitarás tu huella o tu PIN para volver a entrar.</div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button onClick="{{ closeSheet }}" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 14.5px var(--font-body);cursor:pointer">Cancelar</button>
+          <button onClick="{{ logout }}" style="flex:1;height:50px;border-radius:8px;border:1px solid var(--neg);background:color-mix(in srgb,var(--neg) 10%,transparent);color:var(--neg);font:500 14.5px var(--font-body);cursor:pointer">Cerrar sesión</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ loggedOut }}">
+  <div style="position:absolute;inset:0;z-index:50;background:radial-gradient(80% 50% at 20% 30%,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg);display:flex;flex-direction:column;justify-content:center;padding:0 28px 80px;animation:qFade .35s ease">
+    <div style="font:500 60px var(--font-heading);letter-spacing:-.05em">qullqi<span style="color:var(--ac)">.</span></div>
+    <div style="width:24px;height:2px;background:var(--ac);margin-top:10px"></div>
+    <div style="font:400 15px var(--font-body);color:var(--tx2);margin-top:14px">Hola de nuevo, Ronald</div>
+    <button onClick="{{ login }}" style="position:absolute;left:16px;right:16px;bottom:36px;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 28px -12px var(--ac)"><i class="ph ph-fingerprint" style="font-size:22px"></i>Ingresar con huella</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ faceid }}">
+  <div style="position:absolute;inset:0;z-index:60;background:color-mix(in srgb,#0e0f18 55%,transparent);display:flex;align-items:flex-end;animation:qFade .2s ease">
+    <div style="width:100%;background:var(--s1);border-radius:20px 20px 0 0;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center;animation:qUp .3s ease">
+      <div style="font:500 17px var(--font-heading)">Confirma con tu huella</div>
+      <div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:4px">Toca el sensor para autorizar</div>
+      <div style="width:72px;height:72px;border-radius:36px;border:1px solid var(--ac);box-shadow:0 0 30px -6px var(--ac);display:grid;place-items:center;margin-top:22px"><i class="ph ph-fingerprint" style="font-size:40px;color:var(--ac);animation:qPulse 1s ease-in-out infinite"></i></div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}">
+  <div style="position:absolute;left:16px;right:16px;bottom:100px;z-index:70;display:flex;justify-content:center;animation:qRise .3s ease;pointer-events:none"><div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:8px;background:var(--s2);box-shadow:var(--shadow-md);color:var(--tx);font:500 13.5px var(--font-body)"><i class="ph-fill ph-check-circle" style="font-size:18px;color:var(--ac)"></i>{{ toast }}</div></div>
+</sc-if>
+
+<div style="position:absolute;bottom:7px;left:50%;margin-left:-54px;width:108px;height:4px;border-radius:2px;background:{{ sbColor }};opacity:.7;z-index:80;pointer-events:none"></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;,&quot;section&quot;:&quot;Apariencia&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;nocturne&quot;,&quot;lime&quot;],&quot;default&quot;:&quot;nocturne&quot;,&quot;tsType&quot;:&quot;'nocturne'|'lime'&quot;,&quot;section&quot;:&quot;Apariencia&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;regular&quot;,&quot;comfortable&quot;],&quot;default&quot;:&quot;regular&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Apariencia&quot;},&quot;startTab&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;todo&quot;,&quot;activity&quot;,&quot;receive&quot;,&quot;cards&quot;],&quot;default&quot;:&quot;todo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;simulateError&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const RATE={BOB:1,USD:6.96},SYM={BOB:'Bs',USD:'$'},CNAME={BOB:'Bolivianos',USD:'Dólares'},CURS=['BOB','USD'];
+const ROOT={todo:'home',activity:'activity',receive:'receive',cards:'cards'};
+const DOW=['dom','lun','mar','mié','jue','vie','sáb'],MON=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fmtN=n=>Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money=(n,c)=>SYM[c]+' '+fmtN(n);
+const smoney=(n,c)=>(n<0?'− ':'+ ')+money(n,c);
+const dt=d=>new Date(2026,10,12-d);
+const dayShort=d=>d===0?'Hoy':d===1?'Ayer':DOW[dt(d).getDay()]+' '+dt(d).getDate()+' '+MON[dt(d).getMonth()];
+const dayLong=d=>d===0?'Hoy':d===1?'Ayer':['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][dt(d).getDay()]+' '+dt(d).getDate()+' de '+MON[dt(d).getMonth()];
+const dateFull=d=>dt(d).getDate()+' '+MON[dt(d).getMonth()]+' 2026';
+const STL={done:'Completado',pending:'Pendiente',failed:'Fallido'};
+const STC={done:'var(--ac-tx)',pending:'var(--warn)',failed:'var(--neg)'};
+const RQL={paid:'Pagada',pending:'Pendiente',expired:'Vencida',cancelled:'Cancelada'};
+const RQC={paid:'var(--ac-tx)',pending:'var(--warn)',expired:'var(--tx2)',cancelled:'var(--tx2)'};
+const TX0=[
+{id:'t1',name:'Café Tostado',sub:'Pago QR',type:'payment',amt:-24.5,cur:'BOB',day:0,time:'09:14',status:'done',icon:'ph-coffee',method:'QR',ref:'QP-88214'},
+{id:'t2',name:'Andrés Mamani',sub:'Transferencia recibida',type:'income',amt:350,cur:'BOB',day:0,time:'08:02',status:'done',icon:'ph-arrow-down-left',method:'Transferencia',ref:'QT-55102'},
+{id:'t3',name:'SonarFM',sub:'Tarjeta virtual',type:'expense',amt:-35,cur:'BOB',day:1,time:'22:40',status:'done',icon:'ph-music-notes',method:'Tarjeta •• 4417',card:'v',ref:'CV-11920'},
+{id:'t4',name:'Depósito bancario',sub:'Agregar dinero',type:'income',amt:3000,cur:'BOB',day:1,time:'10:15',status:'done',icon:'ph-bank',method:'Transferencia ACH',ref:'QD-30018'},
+{id:'t5',name:'Lucía Torres',sub:'Transferencia enviada',type:'transfer',amt:-150,cur:'BOB',day:2,time:'19:22',status:'pending',icon:'ph-arrow-up-right',method:'Transferencia ACH',ref:'QT-55011'},
+{id:'t6',name:'Cambio USD → BOB',sub:'Cambio de divisas',type:'transfer',amt:-100,cur:'USD',day:2,time:'12:05',status:'done',icon:'ph-arrows-left-right',method:'Cambio',ref:'QX-20931'},
+{id:'t7',name:'Supermercado El Prado',sub:'Tarjeta virtual',type:'expense',amt:-286.4,cur:'BOB',day:3,time:'18:47',status:'done',icon:'ph-shopping-bag',method:'Tarjeta •• 4417',card:'v',ref:'CV-11877'},
+{id:'t8',name:'Studio Norte',sub:'Pago freelance',type:'income',amt:620,cur:'USD',day:3,time:'09:30',status:'done',icon:'ph-arrow-down-left',method:'Transferencia internacional',ref:'QT-54980'},
+{id:'t9',name:'Taxi Express',sub:'Tarjeta virtual',type:'expense',amt:-22,cur:'BOB',day:4,time:'23:12',status:'failed',icon:'ph-taxi',method:'Tarjeta •• 4417',card:'v',ref:'CV-11841'},
+{id:'t10',name:'Tienda Doña Elena',sub:'Pago QR',type:'payment',amt:-12.5,cur:'BOB',day:4,time:'13:05',status:'done',icon:'ph-storefront',method:'QR',ref:'QP-88102'},
+{id:'t11',name:'StreamBox',sub:'Suscripción',type:'expense',amt:-9.99,cur:'USD',day:5,time:'07:00',status:'done',icon:'ph-film-strip',method:'Tarjeta •• 4417',card:'v',ref:'CV-11790'},
+{id:'t12',name:'Rosa Quispe',sub:'Solicitud pagada',type:'income',amt:80,cur:'BOB',day:6,time:'21:18',status:'done',icon:'ph-arrow-down-left',method:'Solicitud de pago',ref:'QR-40021'},
+{id:'t13',name:'Farmacia Sopocachi',sub:'Pago QR',type:'payment',amt:-64.2,cur:'BOB',day:12,time:'16:20',status:'done',icon:'ph-pill',method:'QR',ref:'QP-87655'},
+{id:'t14',name:'Alquiler noviembre',sub:'Transferencia enviada',type:'transfer',amt:-2800,cur:'BOB',day:20,time:'08:00',status:'done',icon:'ph-house-line',method:'Transferencia ACH',ref:'QT-54012'}];
+const RECIPS=[
+{id:'r1',name:'Andrés Mamani',ini:'AM',bank:'Qullqi Pay',acct:'@andres.mm'},
+{id:'r2',name:'Lucía Torres',ini:'LT',bank:'Banco Andino',acct:'•••• 2231'},
+{id:'r3',name:'Rosa Quispe',ini:'RQ',bank:'Qullqi Pay',acct:'@rosaq'},
+{id:'r4',name:'Diego Salazar',ini:'DS',bank:'Banco del Altiplano',acct:'•••• 9014'},
+{id:'r5',name:'Camila Rojas',ini:'CR',bank:'Qullqi Pay',acct:'@cami.r'},
+{id:'r6',name:'Martín Choque',ini:'MC',bank:'Cooperativa Illimani',acct:'•••• 5530'}];
+const M={name:'Café Tostado',nit:'4021558019',addr:'Av. 20 de Octubre 2310, Sopocachi'};
+const REQS0=[
+{id:'q2',who:'Enlace abierto',desc:'Clases de guitarra · nov',amt:360,cur:'BOB',status:'pending',day:1,link:'qullqi.bo/r/8KX2Q'},
+{id:'q3',who:'Diego Salazar',desc:'Entradas concierto',amt:65,cur:'USD',status:'pending',day:3,link:'qullqi.bo/r/3MZ9P'},
+{id:'q1',who:'Rosa Quispe',desc:'Cena del viernes',amt:80,cur:'BOB',status:'paid',day:6,link:'qullqi.bo/r/7HD2K'},
+{id:'q4',who:'Camila Rojas',desc:'Regalo de Ana',amt:60,cur:'BOB',status:'expired',day:14,link:'qullqi.bo/r/1QA7T'}];
+const getS=()=>{try{return JSON.parse(localStorage.getItem('qullqi.session')||'null');}catch(e){return null;}};
+const SEED=()=>{const s=getS()||{},fresh=!!s.isNew;return{kyc:s.kyc||'verified',uname:s.name||'Ronald Diaz',bal:fresh?{BOB:0,USD:0}:{BOB:12480.5,USD:1245.8},txs:fresh?[]:TX0,reqs:fresh?[]:REQS0,notifRead:fresh};};
+const AUTH='Qullqi Pay Auth.dc.html';
+const QRC={};
+const qrSrc=seed=>{if(QRC[seed])return QRC[seed];const N=29;let s=seed*7919;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};let p='';
+for(let y=0;y<N;y++)for(let x=0;x<N;x++){let on;const inF=(x<8&&y<8)||(x>N-9&&y<8)||(x<8&&y>N-9);
+if(inF){const fx=x>N-9?x-(N-7):x,fy=y>N-9?y-(N-7):y;on=fx>=0&&fy>=0&&fx<7&&fy<7&&(fx===0||fx===6||fy===0||fy===6||(fx>=2&&fx<=4&&fy>=2&&fy<=4));}
+else if(x>=11&&x<=17&&y>=11&&y<=17)on=false;else on=r()>.5;if(on)p+='M'+x+' '+y+'h1v1h-1z';}
+return QRC[seed]='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" shape-rendering="crispEdges"><path d="'+p+'" fill="#161826"/></svg>');};
+const keyList=(pin,fn)=>['1','2','3','4','5','6','7','8','9',pin?'':'.','0','del'].map(k=>({label:k,isDel:k==='del',isTxt:k!=='del',onClick:()=>{if(k)fn(k);}}));
+const sel=(on)=>({bd:on?'var(--ac)':'var(--ln)',bg:on?'color-mix(in srgb,var(--ac) 12%,transparent)':'transparent',fg:on?'var(--ac)':'var(--tx)'});
+
+class Component extends DCLogic {
+  state={tab:this.props.startTab||'todo',stack:[],sheet:null,theme:this.props.theme||'dark',dir:'tab',scale:1,
+    acct:'BOB',bal:{BOB:12480.5,USD:1245.8},txs:TX0,reqs:REQS0,amt:'0',flow:'send',recip:'r1',exFrom:'USD',exTo:'BOB',reqCur:'BOB',reqDesc:'',
+    txFilter:'all',search:'',f:{range:'30',cur:'all',status:'all',amt:'all'},loading:false,txId:'t1',reqId:'q2',acctView:'BOB',recipQ:'',hideBal:false,
+    card:'v',frozen:{v:false,p:false},physActive:false,lim:{daily:3000,online:2000,monthly:10000,atm:1500},
+    cs:{online:true,intl:false,contactless:true,atm:true,geo:false},bio:true,bioPay:true,loginAlerts:true,np:{pay:true,recv:true,cards:true,promo:false,weekly:true},
+    mac:true,scan:'search',torch:false,faceid:false,toast:null,depMethod:'bank',result:{kind:'send'},pin:'',pinStep:0,pinFirst:'',pinFor:'app',
+    openFaq:null,kyc3:'todo',notifRead:false,lastTx:null,pickSide:'from',procLabel:'Procesando…',listKey:'personal',loggedOut:false,
+    msgs:[{me:false,text:'Hola Ronald, soy Daniela de Qullqi Pay. ¿En qué te puedo ayudar?',time:'09:41'}],chatQ:'',typing:false,...SEED()};
+  componentDidMount(){let v=false;try{v=sessionStorage.getItem('qullqi.veil')==='1';sessionStorage.removeItem('qullqi.veil');}catch(e){}if(v){this.setState({veilIn:true,entering:true});this._vt=setTimeout(()=>this.setState({veilIn:false}),650);this._et=setTimeout(()=>this.setState({entering:false}),900);}this._rs=()=>{const H=window.innerHeight||document.documentElement.clientHeight,W=window.innerWidth||document.documentElement.clientWidth;if(!H||!W)return;this.setState({scale:Math.max(0.3,Math.min(1,(H-24)/880,(W-24)/420))});};this._rs();requestAnimationFrame(this._rs);setTimeout(this._rs,300);window.addEventListener('resize',this._rs);if(window.ResizeObserver){this._ro=new ResizeObserver(this._rs);this._ro.observe(document.documentElement);}}
+  componentDidUpdate(pp){if(pp.theme!==this.props.theme&&this.props.theme)this.setState({theme:this.props.theme});if(pp.startTab!==this.props.startTab&&this.props.startTab)this.goTab(this.props.startTab);}
+  componentWillUnmount(){window.removeEventListener('resize',this._rs);if(this._ro)this._ro.disconnect();[this._lt,this._tt,this._st,this._ct].forEach(clearTimeout);}
+  leaveTo=url=>{try{sessionStorage.setItem('qullqi.veil','1');}catch(e){}this.setState({leaving:true});setTimeout(()=>{location.href=url;},480);};
+  cur(){const s=this.state.stack;return s.length?s[s.length-1]:ROOT[this.state.tab];}
+  push=(s,x)=>this.setState(st=>({stack:[...st.stack,s],sheet:null,dir:'f',...(x||{})}));
+  pop=()=>this.setState(st=>({stack:st.stack.slice(0,-1),sheet:null,dir:'b'}));
+  replace=(s,x)=>this.setState(st=>({stack:[...st.stack.slice(0,-1),s],dir:'f',...(x||{})}));
+  reset=x=>this.setState({stack:[],sheet:null,dir:'b',...(x||{})});
+  flash=()=>{this.setState({loading:true});clearTimeout(this._lt);this._lt=setTimeout(()=>this.setState({loading:false}),600);};
+  goTab=t=>{this.setState({tab:t,stack:[],sheet:null,dir:'tab'});if(t==='activity')this.flash();};
+  toast=m=>{this.setState({toast:m});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:null}),1900);};
+  startScan=()=>{this.push('scan',{scan:'search',torch:false});clearTimeout(this._st);this._st=setTimeout(()=>this.setState({scan:'found'}),1900);};
+  startExchange=()=>this.push('amount',{flow:'exchange',amt:'0'});
+  startRequest=()=>this.push('amount',{flow:'request',amt:'0',reqCur:'BOB'});
+  press=k=>{const c=this.cur();
+    if(c==='amount'){let a=this.state.amt;
+      if(k==='del')a=a.length>1?a.slice(0,-1):'0';
+      else if(k==='.'){if(!a.includes('.'))a+='.';}
+      else{if(a.includes('.')&&a.split('.')[1].length>=2)return;if(a.replace('.','').length>=8)return;a=a==='0'?k:a+k;}
+      this.setState({amt:a});}
+    else{let p=this.state.pin;if(k==='del')p=p.slice(0,-1);else if(k!=='.'&&p.length<4)p+=k;this.setState({pin:p});if(p.length===4)setTimeout(()=>this.pinDone(p),260);}};
+  pinDone(p){const st=this.state;
+    if(st.pinFor==='activate'){this.replace('proc',{procLabel:'Activando tarjeta…',pin:''});setTimeout(()=>this.setState(s=>({physActive:true,stack:[...s.stack.slice(0,-1),'result'],result:{kind:'activated'}})),1400);return;}
+    if(st.pinStep===0){this.setState({pinStep:1,pinFirst:p,pin:''});return;}
+    if(p===st.pinFirst){this.pop();this.setState({pin:'',pinStep:0});this.toast(st.pinFor==='card'?'PIN de tarjeta actualizado':'PIN actualizado');}
+    else{this.setState({pin:'',pinStep:0});this.toast('Los PIN no coinciden. Inténtalo de nuevo');}}
+  amountNext=()=>{if(this.state.flow==='request')this.push('reqDesc',{reqDesc:''});else this.push('review');};
+  confirm=()=>{const flow=this.state.flow;const label={send:'Enviando dinero…',pay:'Procesando pago…',exchange:'Cambiando divisas…'}[flow];
+    const go=()=>{this.replace('proc',{procLabel:label});setTimeout(()=>this.finish(flow),1500);};
+    if(this.state.bio&&this.state.bioPay){this.setState({faceid:true});setTimeout(()=>{this.setState({faceid:false});go();},1200);}else go();};
+  finish(flow){const st=this.state,a=parseFloat(st.amt)||0,bal={...st.bal},id='n'+Date.now();let tx;
+    if(flow==='pay'&&this.props.simulateError){this.replace('result',{result:{kind:'payError'}});return;}
+    const base={id,day:0,time:'Ahora',status:'done',ref:'Q'+flow[0].toUpperCase()+'-'+id.slice(-5)};
+    if(flow==='send'){const r=RECIPS.find(x=>x.id===st.recip);bal[st.acct]-=a;tx={...base,name:r.name,sub:'Transferencia enviada',type:'transfer',amt:-a,cur:st.acct,icon:'ph-arrow-up-right',method:'Transferencia'};}
+    if(flow==='pay'){bal[st.acct]-=a;tx={...base,name:M.name,sub:'Pago QR',type:'payment',amt:-a,cur:st.acct,icon:'ph-coffee',method:'QR'};}
+    if(flow==='exchange'){bal[st.exFrom]-=a;bal[st.exTo]+=a*RATE[st.exFrom]/RATE[st.exTo];tx={...base,name:'Cambio '+st.exFrom+' → '+st.exTo,sub:'Cambio de divisas',type:'transfer',amt:-a,cur:st.exFrom,icon:'ph-arrows-left-right',method:'Cambio'};}
+    this.setState(s=>({bal,txs:[tx,...s.txs],lastTx:id,stack:[...s.stack.slice(0,-1),'result'],result:{kind:flow}}));}
+  createRequest=()=>{const st=this.state,id='q'+Date.now();const r={id,who:'Enlace abierto',desc:st.reqDesc.trim()||'Solicitud de pago',amt:parseFloat(st.amt)||0,cur:st.reqCur,status:'pending',day:0,link:'qullqi.bo/r/'+id.slice(-5)};
+    this.setState(s=>({reqs:[r,...s.reqs],reqId:id,stack:[...s.stack,'reqShare'],dir:'f'}));};
+  addIncome(name,amt,cur,method,kind,extra){const id='n'+Date.now();
+    this.setState(s=>({bal:{...s.bal,[cur]:s.bal[cur]+amt},txs:[{id,name,sub:method,type:'income',amt,cur,day:0,time:'Ahora',status:'done',icon:'ph-arrow-down-left',method,ref:'QR-'+id.slice(-5)},...s.txs],lastTx:id,result:{kind,amt,cur,who:name,...(extra||{})},stack:[...s.stack,'result'],dir:'f',...(extra&&extra.patch?extra.patch(s):{})}));}
+  markPaid=()=>{const st=this.state,r=st.reqs.find(x=>x.id===st.reqId);const who=r.who==='Enlace abierto'?'Camila Rojas':r.who;
+    this.addIncome(who,r.amt,r.cur,'Solicitud pagada','received',{desc:r.desc,patch:s=>({reqs:s.reqs.map(x=>x.id===r.id?{...x,status:'paid',who}:x)})});};
+  simQRIn=()=>this.addIncome('Jimena Vargas',45,'BOB','Pago con tu QR','qrIn');
+  sendChat=()=>{const q=this.state.chatQ.trim();if(!q)return;
+    this.setState(s=>({msgs:[...s.msgs,{me:true,text:q,time:'Ahora'}],chatQ:'',typing:true}));
+    clearTimeout(this._ct);this._ct=setTimeout(()=>this.setState(s=>({typing:false,msgs:[...s.msgs,{me:false,text:'Gracias, ya estoy revisando tu cuenta. Te respondo en un momento.',time:'Ahora'}]})),1500);};
+  setLim=(k,v)=>this.setState(s=>({lim:{...s.lim,[k]:v}}));
+  tog=(k,sub)=>()=>this.setState(s=>sub?{[sub]:{...s[sub],[k]:!s[sub][k]}}:{[k]:!s[k]});
+
+  mkRow(r){const on=!!r.on;return{...r,hasIcon:!!r.icon,hasSub:!!r.sub,hasValue:!!r.value,hasToggle:!!r.toggle,hasAction:!!r.action,
+    chev:!!r.nav,color:r.danger?'var(--neg)':'var(--tx)',actColor:r.actColor||'var(--tx2)',
+    tBd:on?'var(--ac)':'var(--s3)',tBg:on?'color-mix(in srgb,var(--ac) 22%,transparent)':'transparent',kBg:on?'var(--ac)':'var(--tx2)',kSh:on?'0 0 10px var(--ac)':'none',tX:on?'translateX(18px)':'none',
+    onClick:r.onClick||(()=>{})};}
+  grp(title,rows){return{title,hasTitle:!!title,noTitle:!title,rows:rows.map(r=>this.mkRow(r))};}
+
+  renderVals(){
+    const st=this.state,P=this.props,cur=this.cur(),is={[cur]:true},T=m=>()=>this.toast(m),push=this.push;
+    const ver=st.kyc==='verified',G=fn=>ver?fn:()=>this.setState({sheet:'kycGate'}),goKyc=()=>{this.setState({sheet:null});this.leaveTo(AUTH+'#kyc');};
+    const kycBadge=ver?'Verificado · Nivel 2':st.kyc==='review'?'Verificación en revisión':'Sin verificar';
+    const user={name:st.uname,first:st.uname.split(' ')[0],ini:st.uname.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase()};
+    const deco=t=>{const inc=t.amt>0;return{...t,amtStr:smoney(t.amt,t.cur),color:t.status==='failed'?'var(--tx2)':inc?'var(--ac-tx)':'var(--tx)',iconColor:inc?'var(--ac)':'var(--tx)',iconCls:'ph '+t.icon,
+      meta:t.sub+' · '+(t.day===0?t.time:t.day===1?'Ayer '+t.time:dayShort(t.day)),hasStatus:t.status!=='done',stLabel:STL[t.status],stColor:STC[t.status],open:()=>push('txDetail',{txId:t.id})};};
+    const decoReq=r=>({...r,amtStr:money(r.amt,r.cur),stLabel:RQL[r.status],stColor:RQC[r.status],meta:r.who+' · '+dayShort(r.day),open:()=>push('reqDetail',{reqId:r.id})});
+    const anim=st.entering?'qEnter .75s cubic-bezier(.2,.8,.2,1)':st.dir==='f'?'qIn .3s cubic-bezier(.2,.8,.2,1)':st.dir==='b'?'qBack .3s cubic-bezier(.2,.8,.2,1)':'qFade .25s ease';
+
+    const a=st.acct,parts=fmtN(st.bal[a]).split('.'),totalB=CURS.reduce((s,k)=>s+st.bal[k]*RATE[k],0);
+    const home={sym:SYM[a],int:st.hideBal?'••••':parts[0],dec:st.hideBal?'':'.'+parts[1],label:'Saldo · '+CNAME[a],cname:CNAME[a],eyeCls:st.hideBal?'ph ph-eye-slash':'ph ph-eye',
+      total:'Total en 2 cuentas ≈ '+(st.hideBal?'Bs ••••':money(totalB,'BOB'))};
+    const quick=[{icon:'ph ph-plus',label:'Agregar',onClick:()=>push('add')},{icon:'ph ph-arrow-up-right',label:'Enviar',onClick:()=>push('sendRecip',{recipQ:''})},
+      {icon:'ph ph-arrows-left-right',label:'Cambiar',onClick:this.startExchange},{icon:'ph ph-scan',label:'Pagar QR',onClick:this.startScan,hl:true}]
+      .map(q=>({...q,bd:q.hl?'var(--ac)':'transparent',fg:q.hl?'var(--ac)':'var(--tx)',bg:q.hl?'color-mix(in srgb,var(--ac) 10%,transparent)':'var(--s1)',sh:q.hl?'0 0 26px -8px var(--ac)':'none',onClick:G(q.onClick)}));
+    const accts=CURS.map(c=>({code:c,name:CNAME[c],bal:st.hideBal?SYM[c]+' ••••':money(st.bal[c],c),mark:c===a?'var(--ac)':'var(--s3)',onClick:()=>push('acct',{acctView:c})}));
+
+    const nov=st.txs.filter(t=>t.day<=11&&t.status==='done');
+    const sumIn=money(nov.filter(t=>t.amt>0).reduce((s,t)=>s+t.amt*RATE[t.cur],0),'BOB'),sumOut=money(nov.filter(t=>t.amt<0&&!t.name.startsWith('Cambio')).reduce((s,t)=>s+Math.abs(t.amt)*RATE[t.cur],0),'BOB');
+    const boRows=CURS.map(c=>{const v=st.bal[c]*RATE[c];return{sym:SYM[c],name:CNAME[c],bal:money(st.bal[c],c),equiv:c==='BOB'?'Cuenta principal':'≈ '+money(v,'BOB'),pct:(totalB?Math.round(v/totalB*100):(c==='BOB'?100:0))+'%',onClick:()=>push('acct',{acctView:c})};});
+    const bo={total:money(totalB,'BOB'),rows:boRows,bars:[{w:boRows[0].pct,bg:'var(--ac)'},{w:boRows[1].pct,bg:'var(--s3)'}]};
+
+    const F=st.f,q=st.search.trim().toLowerCase(),maxDay={'7':6,'30':29,'90':89,all:9999}[F.range];
+    const amtOk=t=>{const v=Math.abs(t.amt)*RATE[t.cur];return F.amt==='all'||(F.amt==='lt'&&v<100)||(F.amt==='mid'&&v>=100&&v<=1000)||(F.amt==='gt'&&v>1000);};
+    const list=st.txs.filter(t=>(st.txFilter==='all'||t.type===st.txFilter)&&t.day<=maxDay&&(F.cur==='all'||t.cur===F.cur)&&(F.status==='all'||t.status===F.status)&&amtOk(t)&&(!q||(t.name+' '+t.sub).toLowerCase().includes(q)));
+    const groups=[];list.forEach(t=>{const l=dayLong(t.day);let g=groups[groups.length-1];if(!g||g.label!==l){g={label:l,items:[]};groups.push(g);}g.items.push(deco(t));});
+    const filterCount=(F.range!=='30')+(F.cur!=='all')+(F.status!=='all')+(F.amt!=='all');
+    const setTF=k=>()=>{this.setState({txFilter:k});this.flash();};
+    const chips=[['all','Todo'],['income','Ingresos'],['expense','Gastos'],['transfer','Transferencias'],['payment','Pagos']].map(([k,l])=>({label:l,onClick:setTF(k),...sel(k===st.txFilter)}));
+    const FG=[['Fecha','range',[['7','7 días'],['30','30 días'],['90','90 días'],['all','Todo']]],['Importe','amt',[['all','Cualquiera'],['lt','Menos de Bs 100'],['mid','Bs 100 – 1,000'],['gt','Más de Bs 1,000']]],
+      ['Moneda','cur',[['all','Todas'],['BOB','Bolivianos'],['USD','Dólares']]],['Estado','status',[['all','Todos'],['done','Completado'],['pending','Pendiente'],['failed','Fallido']]]];
+    const filterGroups=FG.map(([title,key,opts])=>({title,opts:opts.map(([v,l])=>({label:l,onClick:()=>this.setState(s=>({f:{...s.f,[key]:v}})),...sel(F[key]===v)}))}));
+    const clearFilters=()=>this.setState({f:{range:'all',cur:'all',status:'all',amt:'all'},txFilter:'all',search:'',sheet:null});
+
+    const recvActions=[{icon:'ph ph-hand-coins',label:'Solicitar un monto',sub:'Crea un cobro con QR o enlace',onClick:this.startRequest},
+      {icon:'ph ph-link',label:'Compartir mi enlace',sub:'qullqi.bo/@ronald.dz',onClick:T('Enlace copiado')},
+      {icon:'ph ph-bank',label:'Recibir por transferencia',sub:'Datos de tu cuenta en Bolivianos',onClick:()=>push('depInstr',{depMethod:'bank',acct:'BOB'})}].map(r=>({...r,onClick:G(r.onClick)}));
+
+    const isV=st.card==='v',fr=st.frozen[st.card],inactive=!isV&&!st.physActive;
+    const spent=isV?st.txs.filter(t=>t.card==='v'&&t.amt<0&&t.status==='done'&&t.day<=11).reduce((s,t)=>s+Math.abs(t.amt)*RATE[t.cur],0):0;
+    const cv={isV,isP:!isV,frozen:fr,inactive,active:!inactive,name:isV?'virtual':'física',num:isV?'•••• •••• •••• 4417':'•••• •••• •••• 0932',monthly:money(st.lim.monthly,'BOB'),spent:money(spent,'BOB'),pct:Math.min(100,spent/st.lim.monthly*100).toFixed(1)+'%'};
+    const cardTabs=[['v','Virtual'],['p','Física']].map(([k,l])=>({label:l,onClick:()=>this.setState({card:k}),bg:k===st.card?'var(--s1)':'transparent',fg:k===st.card?'var(--tx)':'var(--tx2)',bd:k===st.card?'var(--ln)':'transparent'}));
+    const cardActions=[{icon:'ph ph-eye',label:'Datos',onClick:()=>this.setState({sheet:'cardData'})},
+      {icon:'ph ph-snowflake',label:fr?'Descongelar':'Congelar',hl:fr,onClick:()=>fr?(this.setState(s=>({frozen:{...s.frozen,[s.card]:false}})),this.toast('Tarjeta activa de nuevo')):this.setState({sheet:'freeze'})},
+      {icon:'ph ph-gauge',label:'Límites',onClick:()=>push('cardLimits')},{icon:'ph ph-gear-six',label:'Ajustes',onClick:()=>push('list',{listKey:'cardSettings'})}]
+      .map(q=>({...q,bd:q.hl?'var(--ac)':'transparent',fg:q.hl?'var(--ac)':'var(--tx)',bg:q.hl?'color-mix(in srgb,var(--ac) 10%,transparent)':'var(--s1)',onClick:G(q.onClick)}));
+    const cardTx=st.txs.filter(t=>t.card===st.card).map(deco);
+    const cardData=[{l:'Titular',v:'RONALD DIAZ'},{l:'Número',v:isV?'4417 2280 9931 4417':'5241 0098 1176 0932',copy:true},{l:'Vencimiento',v:isV?'08/29':'11/30'},{l:'CVV',v:isV?'381':'752',copy:true}].map(r=>({...r,onCopy:T('Copiado')}));
+
+    const c=st.acctView;
+    const av={title:'Cuenta en '+CNAME[c],code:c,bal:money(st.bal[c],c),equiv:c==='USD'?'≈ '+money(st.bal[c]*RATE.USD,'BOB'):'≈ '+money(st.bal[c]/RATE.USD,'USD'),
+      actions:[{icon:'ph ph-plus',label:'Agregar',onClick:()=>push('add',{acct:c})},{icon:'ph ph-arrow-up-right',label:'Enviar',onClick:()=>push('sendRecip',{acct:c,recipQ:''})},
+        {icon:'ph ph-arrows-left-right',label:'Cambiar',onClick:()=>push('amount',{flow:'exchange',amt:'0',exFrom:c,exTo:c==='BOB'?'USD':'BOB'})}].map(q=>({...q,onClick:G(q.onClick)})),
+      rows:[{l:'Titular',v:'Ronald Diaz Mamani'},{l:'Número de cuenta',v:c==='BOB'?'1029-4821-0042':'1029-4821-0871',copy:true},{l:'Entidad',v:'Qullqi Pay S.A.'}].map(r=>({...r,onCopy:T('Número de cuenta copiado')})),
+      rates:[{l:'Tipo de cambio oficial',v:'1 USD = Bs 6.96'},{l:'Compra',v:'Bs 6.86'},{l:'Venta',v:'Bs 6.96'}],
+      txs:st.txs.filter(t=>t.cur===c).slice(0,5).map(deco)};
+
+    const methods=[['bank','ph ph-bank','Transferencia bancaria','Desde cualquier banco · Sin comisión','Inmediato'],['qr','ph ph-qr-code','QR interbancario','Paga desde la app de tu banco','Inmediato'],['cash','ph ph-money','Efectivo en agentes','Más de 1,200 puntos en el país','15 min']]
+      .map(([k,icon,title,sub,time])=>({icon,title,sub,time,onClick:()=>push('depInstr',{depMethod:k})}));
+    const cp=T('Copiado al portapapeles');
+    const DEP={bank:{title:'Transferencia bancaria',intro:'Transfiere desde cualquier banco boliviano por ACH con estos datos. El dinero llega a tu cuenta en '+CNAME[st.acct]+'.',
+        rows:[{l:'Titular',v:'Ronald Diaz Mamani'},{l:'Entidad',v:'Qullqi Pay S.A.'},{l:'Número de cuenta',v:st.acct==='BOB'?'1029-4821-0042':'1029-4821-0871',copy:true},{l:'CI',v:'7845123 LP',copy:true}],
+        steps:['Abre la app de tu banco y elige transferir a otra entidad.','Ingresa el número de cuenta y verifica que el titular sea Ronald Diaz.','Te avisaremos apenas llegue el dinero.']},
+      qr:{title:'QR interbancario',intro:'Escanea este código desde la app de tu banco. Puedes elegir el monto al pagar.',hasQr:true,qr:qrSrc(31),
+        rows:[{l:'Válido hasta',v:'Hoy, 23:59'},{l:'Monto',v:'Libre'},{l:'Destino',v:'Cuenta en '+CNAME[st.acct]}],steps:['Abre la app de tu banco y elige pagar con QR.','Escanea el código y escribe el monto.','El saldo aparece aquí al instante.']},
+      cash:{title:'Efectivo en agentes',intro:'Deposita en cualquier agente autorizado mostrando este código.',
+        rows:[{l:'Código de depósito',v:'8821 0042 7710',copy:true},{l:'Monto mínimo',v:'Bs 20.00'},{l:'Vence en',v:'48 horas'}],steps:['Acércate a un agente autorizado.','Indica que depositarás a Qullqi Pay y dicta el código.','El saldo se acredita en unos 15 minutos.']}};
+    const d0=DEP[st.depMethod];const dep={...d0,qrCss:d0.qr?'url("'+d0.qr+'")':'none',hasQr:!!d0.hasQr,rows:d0.rows.map(r=>({...r,copy:!!r.copy,onCopy:cp})),steps:d0.steps.map((t,i)=>({n:i+1,t}))};
+
+    const rq=st.recipQ.trim().toLowerCase();
+    const pick=r=>()=>push('amount',{flow:'send',recip:r.id,amt:'0'});
+    const recents=RECIPS.slice(0,4).map(r=>({...r,first:r.name.split(' ')[0],onClick:pick(r)}));
+    const contacts=RECIPS.filter(r=>!rq||(r.name+' '+r.acct).toLowerCase().includes(rq)).map(r=>({...r,sub:r.bank+' · '+r.acct,onClick:pick(r)}));
+
+    const flow=st.flow,src=flow==='exchange'?st.exFrom:flow==='request'?st.reqCur:st.acct,n=parseFloat(st.amt)||0,avail=st.bal[src],over=flow!=='request'&&n>avail;
+    const [ai,ad]=st.amt.split('.'),disp=SYM[src]+' '+Number(ai).toLocaleString('en-US')+(st.amt.includes('.')?'.'+(ad||''):'');
+    const rcp0=RECIPS.find(r=>r.id===st.recip)||RECIPS[0],recvAmt=n*RATE[st.exFrom]/RATE[st.exTo],ok=n>0&&!over;
+    const am={title:{send:'Enviar dinero',exchange:'Cambiar divisas',request:'Solicitar dinero',pay:'Pagar'}[flow],kicker:{send:'Monto a enviar',request:'Monto a solicitar',pay:'Monto a pagar'}[flow]||'',
+      disp,size:(disp.length>11?40:disp.length>8?50:60)+'px',dispColor:over?'var(--neg)':'var(--tx)',recv:money(recvAmt,st.exTo),
+      hasParty:flow==='send'||flow==='pay',party:flow==='pay'?{ini:'CT',name:M.name,sub:'NIT '+M.nit+' · Sopocachi',verified:true}:{ini:rcp0.ini,name:rcp0.name,sub:rcp0.bank+' · '+rcp0.acct,verified:false},
+      partyClick:()=>this.setState({sheet:flow==='pay'?'merchant':'recip'}),isExchange:flow==='exchange',notExchange:flow!=='exchange',
+      fromCode:st.exFrom,toCode:st.exTo,rate:'1 '+(st.exFrom==='USD'?'USD = Bs 6.96':'Bs = $ '+(1/6.96).toFixed(4)),
+      availLabel:over?'Saldo insuficiente · Disponible '+money(avail,src):'Desde '+CNAME[src]+' · '+money(avail,src),availColor:over?'var(--neg)':'var(--tx2)',
+      showCurToggle:flow==='request',showSrc:flow==='send'||flow==='pay',curOpts:CURS.map(k=>({label:CNAME[k],onClick:()=>this.setState({reqCur:k}),...sel(st.reqCur===k)})),
+      op:ok?1:.4,next:ok?this.amountNext:()=>{}};
+    const keys=keyList(false,this.press),keysPin=keyList(true,this.press);
+
+    const via=CNAME[src];
+    const RV={send:{verb:'Vas a enviar',big:money(n,src),ini:rcp0.ini,rows:[['Para',rcp0.name],['Destino',rcp0.bank+' · '+rcp0.acct],['Desde','Cuenta en '+via],['Llegada','Inmediata'],['Comisión',money(0,src)],['Total',money(n,src)]]},
+      pay:{verb:'Vas a pagar a Café Tostado',big:money(n,src),ini:'CT',rows:[['Comercio',M.name],['NIT',M.nit],['Dirección',M.addr],['Desde','Cuenta en '+via],['Comisión',money(0,src)],['Total',money(n,src)]]},
+      exchange:{verb:'Vas a cambiar',big:money(n,st.exFrom),icon:'ph ph-arrows-left-right',rows:[['Cambias',money(n,st.exFrom)],['Recibes',money(recvAmt,st.exTo)],['Tipo de cambio','1 USD = Bs 6.96'],['Comisión',money(0,st.exFrom)],['Llega a','Cuenta en '+CNAME[st.exTo]]]}}[flow]||{rows:[]};
+    const bioOn=st.bio&&st.bioPay;
+    const rv={...RV,hasIni:!!RV.ini,hasIcon:!!RV.icon,rows:RV.rows.map((r,i,arr)=>({l:r[0],v:r[1],w:i===arr.length-1?'500':'400'})),cta:bioOn?'Confirmar con huella':'Confirmar',ctaIcon:bioOn?'ph ph-fingerprint':'ph ph-check'};
+
+    const R=st.result||{kind:'send'},done=()=>this.reset(),rcpt=()=>push('receipt',{txId:st.lastTx});
+    const RES={send:{title:'Dinero enviado',big:money(n,src),sub:'A '+rcp0.name+'. Llegó al instante.',secondary:'Ver comprobante',onSecondary:rcpt},
+      pay:{title:'Pago realizado',big:money(n,src),sub:'Café Tostado · Sopocachi, La Paz',secondary:'Ver comprobante',onSecondary:rcpt},
+      exchange:{title:'Cambio realizado',big:money(recvAmt,st.exTo),sub:'Cambiaste '+money(n,st.exFrom)+' a '+CNAME[st.exTo]+'.',secondary:'Ver comprobante',onSecondary:rcpt},
+      payError:{err:true,title:'Pago rechazado',sub:'El comercio no pudo procesar el pago. No se hizo ningún cargo a tu cuenta.',primary:'Reintentar',onPrimary:()=>this.replace('review',{dir:'b'}),secondary:'Volver al inicio',onSecondary:done},
+      received:{title:'Recibiste un pago',big:R.amt?money(R.amt,R.cur):'',sub:(R.who||'')+' pagó «'+(R.desc||'')+'».',secondary:'Ver comprobante',onSecondary:rcpt},
+      qrIn:{title:'Pago recibido por QR',big:R.amt?money(R.amt,R.cur):'',sub:'Jimena Vargas te pagó con tu QR personal.',secondary:'Ver comprobante',onSecondary:rcpt},
+      activated:{title:'Tarjeta activada',sub:'Ya puedes usar tu tarjeta física en tiendas y cajeros de todo el país.',primary:'Ver mi tarjeta',onPrimary:()=>this.reset({card:'p'})}}[R.kind];
+    const res={...RES,tone:RES.err?'var(--neg)':'var(--ac)',icon:RES.err?'ph ph-x':'ph ph-check',hasBig:!!RES.big,hasSecondary:!!RES.secondary,primary:RES.primary||'Listo',onPrimary:RES.onPrimary||done};
+
+    const t=st.txs.find(x=>x.id===st.txId)||st.txs[0]||TX0[0],dtd=deco(t),when=dateFull(t.day)+' · '+t.time;
+    const S=(l,s,k)=>({l,s,c:k==='done'?'var(--ac)':k==='pend'?'var(--warn)':k==='fail'?'var(--neg)':'var(--s3)',fill:k==='done'?'var(--ac)':'transparent',glow:k==='todo'?'transparent':k==='done'?'var(--ac)':k==='pend'?'var(--warn)':'var(--neg)'});
+    let steps=t.status==='done'?[S('Operación iniciada',when,'done'),S('Verificación de seguridad','Aprobada','done'),S('Completada',when,'done')]
+      :t.status==='pending'?[S('Operación iniciada',when,'done'),S('En proceso','La entidad destino está confirmando','pend'),S('Completada','Estimado: hoy antes de las 18:00','todo')]
+      :[S('Operación iniciada',when,'done'),S('Rechazada','El emisor rechazó la operación. No se hizo ningún cargo.','fail')];
+    steps=steps.map((s,i)=>({...s,line:i<steps.length-1,lc:steps[i+1]&&steps[i+1].c!=='var(--s3)'?s.c:'var(--s3)'}));
+    const td={...dtd,when,steps,rows:[['Estado',STL[t.status]],['Método',t.method],['Cuenta',CNAME[t.cur]],['Fecha',when],['Comisión',money(0,t.cur)],['Referencia',t.ref]].map(([l,v])=>({l,v}))};
+
+    const rs0=st.reqs.find(x=>x.id===st.reqId)||st.reqs[0]||REQS0[0];
+    const rsQr=qrSrc(rs0.id.length*13+rs0.amt);const rs={desc:rs0.desc,amtStr:money(rs0.amt,rs0.cur),link:rs0.link,qr:rsQr,qrCss:'url("'+rsQr+'")'};
+    const rd={...decoReq(rs0),pending:rs0.status==='pending',rows:[['De',rs0.who],['Creada',dateFull(rs0.day)],['Enlace',rs0.link],['Vence',rs0.status==='pending'?'En '+(7-rs0.day)+' días':'—']].map(([l,v])=>({l,v}))};
+    const pend=st.reqs.filter(r=>r.status==='pending'),past=st.reqs.filter(r=>r.status!=='pending');
+    const reqGroups=[{label:'Pendientes',items:pend.map(decoReq)},{label:'Anteriores',items:past.map(decoReq)}].filter(g=>g.items.length);
+
+    const LIM=[['daily','Compras por día',10000],['online','Compras en línea',6000],['monthly','Límite mensual',30000],['atm','Retiros en cajero',5000]].filter(x=>x[0]!=='atm'||!isV);
+    const sliders=LIM.map(([k,label,max])=>({label,max,raw:st.lim[k],val:money(st.lim[k],'BOB'),maxStr:money(max,'BOB'),used:k==='monthly'?'Usado '+money(spent,'BOB'):k==='daily'?'Usado hoy Bs 0.00':' ',onChange:e=>this.setLim(k,+e.target.value)}));
+
+    const PPC={activate:{header:'Activar tarjeta',icon:'ph ph-credit-card',title:'Últimos 4 dígitos',sub:'Escribe los 4 dígitos finales impresos en tu tarjeta física.'},
+      app:{header:'PIN de la app',icon:'ph ph-lock-key',title:st.pinStep?'Confirma tu nuevo PIN':'Crea un nuevo PIN',sub:'Lo usarás para entrar y confirmar operaciones si la huella no está disponible.'},
+      card:{header:'PIN de tarjeta',icon:'ph ph-password',title:st.pinStep?'Confirma el PIN':'Nuevo PIN de tarjeta',sub:'Se usa en cajeros y en compras con chip.'}}[st.pinFor];
+    const pp={...PPC,dots:[0,1,2,3].map(i=>{const f=i<st.pin.length,curr=i===st.pin.length;return{v:f?(st.pinFor==='activate'?st.pin[i]:'•'):'',bd:curr||f?'var(--ac)':'var(--ln)',sh:curr?'0 0 16px -4px var(--ac)':'none'};})};
+
+    const sc={searching:st.scan==='search',found:st.scan==='found',c:st.scan==='found'?'var(--ac)':'#e9e9ed',torchBd:st.torch?'var(--ac)':'transparent',torchFg:st.torch?'var(--ac)':'#e9e9ed'};
+
+    const notifs=[['ph ph-arrow-down-left','Recibiste Bs 350.00','Andrés Mamani te envió dinero.','08:02'],['ph ph-truck','Tu tarjeta física va en camino','Llegará a tu domicilio entre el 14 y 16 de noviembre.','Ayer'],
+      ['ph ph-device-mobile','Nuevo inicio de sesión','MacBook Air · Santa Cruz','mar'],['ph ph-currency-dollar','Tipo de cambio','1 USD = Bs 6.96 hoy.','lun']].map((x,i)=>({icon:x[0],title:x[1],body:x[2],time:x[3],unread:!st.notifRead&&i<2}));
+
+    const L=(k,x)=>()=>push('list',{listKey:k,...(x||{})});
+    const themeLabel=st.theme==='dark'?'Oscuro':'Claro';
+    const profileGroups=[
+      this.grp('Cuenta',[{icon:'ph ph-user',label:'Información personal',nav:true,onClick:L('personal')},{icon:'ph ph-identification-card',label:'Verificación de identidad',sub:kycBadge,nav:true,onClick:()=>push('kyc')}]),
+      this.grp('Seguridad',[{icon:'ph ph-shield-check',label:'Centro de seguridad',sub:'Huella, PIN y dispositivos',nav:true,onClick:L('security')}]),
+      this.grp('Preferencias',[{icon:'ph ph-bell',label:'Notificaciones',nav:true,onClick:L('notifPrefs')},{icon:'ph ph-sliders-horizontal',label:'Preferencias',sub:'Idioma, moneda y privacidad',nav:true,onClick:L('prefs')},{icon:'ph ph-palette',label:'Apariencia',value:themeLabel,nav:true,onClick:()=>push('appearance')}]),
+      this.grp('Ayuda',[{icon:'ph ph-question',label:'Centro de ayuda',nav:true,onClick:()=>push('help')},{icon:'ph ph-headset',label:'Soporte',sub:'Chat 24/7',nav:true,onClick:()=>push('support')},{icon:'ph ph-scales',label:'Legal',nav:true,onClick:L('legal')}]),
+      this.grp('',[{icon:'ph ph-sign-out',label:'Cerrar sesión',danger:true,onClick:()=>this.setState({sheet:'logout'})}])];
+
+    const LISTS={
+      personal:{title:'Información personal',groups:[this.grp('',[{label:'Nombre completo',value:'Ronald Diaz Mamani'},{label:'Cédula de identidad',value:'7845123 LP'},{label:'Fecha de nacimiento',value:'14 mar 1994'},{label:'Celular',value:'+591 712 •• 418'},{label:'Correo',value:'ronald.dz@correo.bo'},{label:'Dirección',value:'Calle Belisario Salinas 520, Sopocachi'}])],note:'Para cambiar tu nombre o CI contacta a soporte. Los demás datos se actualizan con una verificación por SMS.'},
+      security:{title:'Centro de seguridad',groups:[this.grp('Acceso',[{icon:'ph ph-fingerprint',label:'Biometría',sub:st.bio?'Huella activada':'Desactivada',nav:true,onClick:L('bio')},{icon:'ph ph-lock-key',label:'PIN de la app',sub:'Actualizado hace 3 meses',nav:true,onClick:()=>push('pinPad',{pinFor:'app',pin:'',pinStep:0})},{icon:'ph ph-devices',label:'Dispositivos activos',value:st.mac?'2':'1',nav:true,onClick:L('devices')}]),
+        this.grp('Alertas',[{icon:'ph ph-bell-ringing',label:'Avisar inicios de sesión',toggle:true,on:st.loginAlerts,onClick:this.tog('loginAlerts')}])]},
+      bio:{title:'Biometría',groups:[this.grp('',[{label:'Desbloquear con huella',toggle:true,on:st.bio,onClick:this.tog('bio')},{label:'Confirmar pagos con huella',sub:'Transferencias, pagos QR y cambios',toggle:true,on:st.bioPay,onClick:this.tog('bioPay')}])],note:'Si desactivas la huella, usarás tu PIN de 4 dígitos.'},
+      devices:{title:'Dispositivos activos',groups:[this.grp('',[{icon:'ph ph-device-mobile',label:'Pixel 8',sub:'La Paz · Este dispositivo',action:'Actual',actColor:'var(--ac)'},...(st.mac?[{icon:'ph ph-laptop',label:'MacBook Air · Web',sub:'Santa Cruz · hace 2 días',action:'Cerrar',actColor:'var(--neg)',onClick:()=>{this.setState({mac:false});this.toast('Sesión cerrada en MacBook Air');}}]:[])])],note:'Si no reconoces un dispositivo, cierra su sesión y cambia tu PIN.'},
+      notifPrefs:{title:'Notificaciones',groups:[this.grp('',[['pay','Pagos y transferencias'],['recv','Dinero recibido'],['cards','Tarjetas'],['weekly','Resumen semanal'],['promo','Novedades y promociones']].map(([k,l])=>({label:l,toggle:true,on:st.np[k],onClick:this.tog(k,'np')})))]},
+      prefs:{title:'Preferencias',groups:[this.grp('',[{icon:'ph ph-globe',label:'Idioma',value:'Español'},{icon:'ph ph-currency-circle-dollar',label:'Moneda principal',value:'Bolivianos'},{icon:'ph ph-palette',label:'Apariencia',value:themeLabel,nav:true,onClick:()=>push('appearance')}]),
+        this.grp('Privacidad',[{icon:'ph ph-eye-slash',label:'Ocultar saldo al abrir',toggle:true,on:st.hideBal,onClick:this.tog('hideBal')}])]},
+      legal:{title:'Legal',groups:[this.grp('',['Términos y condiciones','Política de privacidad','Contrato de tarjeta de débito','Tarifario y comisiones'].map(l=>({icon:'ph ph-file-text',label:l,nav:true,onClick:T('Abriendo documento…')})))],note:'Qullqi Pay S.A. — entorno de demostración. Ningún dato es real.'},
+      cardSettings:{title:'Ajustes · tarjeta '+cv.name,groups:[this.grp('Uso',[['online','Compras en línea'],['intl','Compras internacionales'],['contactless','Pago sin contacto'],...(isV?[]:[['atm','Retiros en cajero']])].map(([k,l])=>({label:l,toggle:true,on:st.cs[k],onClick:this.tog(k,'cs')}))),
+        this.grp('',[{icon:'ph ph-shield-check',label:'Seguridad de la tarjeta',nav:true,onClick:L('cardSecurity')},{icon:'ph ph-gauge',label:'Límites',nav:true,onClick:()=>push('cardLimits')}])]},
+      cardSecurity:{title:'Seguridad de la tarjeta',groups:[this.grp('',[{icon:'ph ph-password',label:'Cambiar PIN de tarjeta',nav:true,onClick:()=>push('pinPad',{pinFor:'card',pin:'',pinStep:0})},{icon:'ph ph-map-pin',label:'Bloqueo por ubicación',sub:'Rechaza compras lejos de tu celular',toggle:true,on:st.cs.geo,onClick:this.tog('geo','cs')}]),
+        this.grp('',[{icon:'ph ph-warning',label:'Reportar pérdida o robo',nav:true,onClick:T('Te contactaremos en minutos')},{icon:'ph ph-prohibit',label:'Cancelar tarjeta',danger:true,onClick:T('Para cancelar, confirma con soporte')}])]}};
+    const L0=LISTS[st.listKey]||LISTS.personal;const listV={...L0,hasNote:!!L0.note};
+
+    const kyc={levelSub:'Envía y recibe hasta Bs 70,000 al mes',l3Bar:st.kyc3==='review'?'var(--warn)':'var(--s3)',canUpload:st.kyc3==='todo',
+      steps:[['Datos personales','Confirmados el 2 oct','done'],['Cédula de identidad','Anverso y reverso validados','done'],['Selfie con prueba de vida','Coincidencia 98%','done'],
+        ['Comprobante de domicilio',st.kyc3==='review'?'En revisión · hasta 24 h':'Necesario para el nivel 3',st.kyc3==='review'?'pend':'todo']].map(([l,s,k])=>({l,s,icon:k==='done'?'ph-fill ph-check-circle':k==='pend'?'ph-fill ph-clock':'ph ph-circle-dashed',c:k==='done'?'var(--ac)':k==='pend'?'var(--warn)':'var(--tx2)'}))};
+
+    const kycV=ver?{...kyc,level:'Nivel 2',badge:kycBadge,needsStart:false,b1:'var(--ac)',b2:'var(--ac)'}:{level:st.kyc==='review'?'En revisión':'Nivel 0',badge:kycBadge,b1:st.kyc==='review'?'var(--warn)':'var(--s3)',b2:'var(--s3)',l3Bar:'var(--s3)',canUpload:false,needsStart:st.kyc==='none',
+      levelSub:st.kyc==='review'?'Revisaremos tus documentos en menos de 24 horas':'Verifica tu identidad para depositar, retirar y operar',
+      steps:[['Celular y correo','Confirmados al registrarte','done'],['Cédula de identidad',st.kyc==='review'?'En revisión':'Pendiente',st.kyc==='review'?'pend':'todo'],['Selfie con prueba de vida',st.kyc==='review'?'En revisión':'Pendiente',st.kyc==='review'?'pend':'todo'],['Comprobante de domicilio','Necesario para el nivel 3','todo']].map(([l,s,k])=>({l,s,icon:k==='done'?'ph-fill ph-check-circle':k==='pend'?'ph-fill ph-clock':'ph ph-circle-dashed',c:k==='done'?'var(--ac)':k==='pend'?'var(--warn)':'var(--tx2)'}))};
+    const appOpts=[['dark','Oscuro','#161826','#e9e9ed','#232532'],['light','Claro','#e4e7f5','#161826','#f3f5fe']].map(([k,label,bg,fg,s])=>({label,bg,fg,s,bd:st.theme===k?'var(--ac)':'var(--ln)',sh:st.theme===k?'0 0 24px -10px var(--ac)':'none',chk:st.theme===k?'ph-fill ph-check-circle':'ph ph-circle',onClick:()=>this.setState({theme:k})}));
+    const FAQ=[['¿Cuánto tarda una transferencia?','Entre cuentas Qullqi Pay es inmediata. A otros bancos por ACH llega en minutos en horario hábil.'],['¿Tiene costo cambiar dólares?','No cobramos comisión. Usamos el tipo de cambio oficial del día.'],['¿Cómo congelo mi tarjeta?','En Tarjetas, toca Congelar. Puedes descongelarla cuando quieras.'],['¿Qué hago si no reconozco un movimiento?','Abre el movimiento y toca Reportar un problema. Te respondemos en menos de 24 horas.']];
+    const faqs=FAQ.map(([q,a],i)=>({q,a,open:st.openFaq===i,rot:st.openFaq===i?'rotate(180deg)':'none',toggle:()=>this.setState({openFaq:st.openFaq===i?null:i})}));
+    const msgs=st.msgs.map(m=>({...m,justify:m.me?'flex-end':'flex-start',bg:m.me?'color-mix(in srgb,var(--ac) 12%,transparent)':'var(--s1)',bd:m.me?'color-mix(in srgb,var(--ac) 40%,transparent)':'transparent'}));
+
+    const NAV=[['todo','Todo','ph-house'],['activity','Actividad','ph-list-bullets'],['receive','Cobrar','ph-hand-coins'],['cards','Tarjetas','ph-credit-card']]
+      .map(([k,label,ic])=>{const on=st.tab===k;return{label,cls:(on?'ph-fill ':'ph ')+ic,c:on?'var(--tx)':'var(--tx2)',pill:on?'var(--ac-t)':'transparent',onClick:()=>this.goTab(k)};});
+    const sheetAccts=CURS.map(k=>({sym:SYM[k],name:CNAME[k],bal:money(st.bal[k],k),chk:st.acct===k?'ph-fill ph-check-circle':'ph ph-circle',onClick:()=>this.setState({acct:k,sheet:null})}));
+    const side=st.pickSide;
+    const curOpts=CURS.map(k=>({sym:SYM[k],name:CNAME[k],bal:'Disponible '+money(st.bal[k],k),chk:(side==='from'?st.exFrom:st.exTo)===k?'ph-fill ph-check-circle':'ph ph-circle',
+      onClick:()=>{const o=k==='BOB'?'USD':'BOB';this.setState(side==='from'?{exFrom:k,exTo:o,sheet:null}:{exTo:k,exFrom:o,sheet:null});}}));
+    const lastTo=st.txs.filter(x=>x.name===rcp0.name).length;
+    const rcp={ini:rcp0.ini,name:rcp0.name,sub:rcp0.bank+' · '+rcp0.acct,rows:[['Entidad',rcp0.bank],['Cuenta',rcp0.acct],['Movimientos juntos',String(lastTo)]].map(([l,v])=>({l,v}))};
+
+    return {theme:st.theme,accent:P.accent||'nocturne',density:P.density||'regular',scale:st.scale,anim,is,sbColor:cur==='scan'?'#e9e9ed':'var(--tx)',
+      showNav:!st.stack.length,navL:NAV.slice(0,2),navR:NAV.slice(2),veil:{show:!!(st.leaving||st.veilIn),anim:st.leaving?'qVeilIn .45s cubic-bezier(.4,0,.2,1) forwards':'qVeilOut .6s cubic-bezier(.4,0,.2,1) forwards'},startScan:G(this.startScan),pop:this.pop,user,goKyc,noTx:!st.txs.length,noTxSub:ver?'Tus movimientos aparecerán aquí.':'Verifica tu identidad para empezar a operar.',noReqs:!st.reqs.length,
+      kb:{show:!ver,title:st.kyc==='review'?'Verificación en revisión':'Verifica tu identidad',sub:st.kyc==='review'?'Te avisaremos en menos de 24 horas':'Necesario para depositar, retirar y operar',icon:st.kyc==='review'?'ph ph-clock':'ph ph-shield-warning',c:'var(--warn)',bd:'color-mix(in srgb,var(--warn) 40%,transparent)',cta:st.kyc==='none',onClick:st.kyc==='none'?goKyc:()=>push('kyc')},
+      gate:{title:st.kyc==='review'?'Tu verificación está en revisión':'Verifica tu identidad',body:st.kyc==='review'?'Podrás depositar, retirar y operar en cuanto aprobemos tus documentos. Suele tomar menos de 24 horas.':'Para depositar, retirar, enviar, cobrar o pagar necesitamos confirmar que eres tú. Toma unos 3 minutos.',close:st.kyc==='review'?'Entendido':'Ahora no',canStart:st.kyc==='none'},
+      emptyTitle:st.txs.length?'Sin movimientos':'Aún no tienes movimientos',emptyBody:st.txs.length?'No hay resultados con estos filtros. Prueba con otro rango de fechas o importe.':(ver?'Agrega dinero para empezar. Tus movimientos aparecerán aquí.':'Verifica tu identidad para depositar y empezar a operar.'),hasFilt:st.txs.length>0,
+      openProfile:()=>push('profile'),openNotifs:()=>push('notifs'),hasUnread:!st.notifRead,openAccounts:()=>this.setState({sheet:'accounts'}),home,toggleHide:this.tog('hideBal'),
+      openBalance:()=>push('balance'),quick,accts,recent:st.txs.slice(0,4).map(deco),goActivity:()=>this.goTab('activity'),bo,sumIn,sumOut,
+      search:st.search,onSearch:e=>this.setState({search:e.target.value}),openFilters:()=>this.setState({sheet:'filters'}),hasFilterCount:filterCount>0,filterCount,chips,
+      loading:st.loading,skel:[1,2,3,4,5,6],hasResults:!st.loading&&groups.length>0,isEmpty:!st.loading&&!groups.length,groups,clearFilters,filterGroups,resultsLabel:'Ver '+list.length+' resultado'+(list.length===1?'':'s'),
+      qrMine:qrSrc(7),qrMerchant:qrSrc(19),qrMineCss:'url("'+qrSrc(7)+'")',qrMerchantCss:'url("'+qrSrc(19)+'")',openMyQR:G(()=>push('myQR')),recvActions,openReqHistory:()=>push('reqHistory'),reqsTop:st.reqs.slice(0,3).map(decoReq),
+      newCard:T('Puedes tener hasta 3 tarjetas virtuales'),cardTabs,cv,startActivate:G(()=>push('pinPad',{pinFor:'activate',pin:''})),cardActions,cardTx,hasCardTx:cardTx.length>0,noCardTx:!cardTx.length,cardData,
+      freezeConfirm:()=>{this.setState(s=>({frozen:{...s.frozen,[s.card]:true},sheet:null}));this.toast('Tarjeta congelada');},
+      av,methods,dep,resetHome:()=>this.reset(),
+      recipQ:st.recipQ,onRecipQ:e=>this.setState({recipQ:e.target.value}),recents,contacts,noContacts:!contacts.length,newRecip:T('Escanea su QR o escribe su número de cuenta'),
+      am,keys,keysPin,pickFrom:()=>this.setState({sheet:'pickCur',pickSide:'from'}),pickTo:()=>this.setState({sheet:'pickCur',pickSide:'to'}),swapEx:()=>this.setState(s=>({exFrom:s.exTo,exTo:s.exFrom})),
+      rv,confirm:this.confirm,procLabel:st.procLabel,res,td,openReceipt:()=>push('receipt'),report:T('Reporte enviado. Te escribiremos pronto'),downloadPdf:T('PDF guardado en Descargas'),shareReceipt:T('Comprobante listo para compartir'),
+      simQRIn:this.simQRIn,saveQR:T('QR guardado en tu galería'),shareQR:T('Abriendo opciones para compartir…'),
+      reqDesc:st.reqDesc,onReqDesc:e=>this.setState({reqDesc:e.target.value}),suggestions:['Almuerzo','Alquiler','Clases','Regalo','Pasajes'].map(l=>({label:l,onClick:()=>this.setState({reqDesc:l})})),createRequest:this.createRequest,
+      rs,copyReqLink:T('Enlace copiado'),shareOpts:[['ph ph-chat-circle-text','Mensaje'],['ph ph-envelope-simple','Correo'],['ph ph-dots-three','Más']].map(([icon,label])=>({icon,label,onClick:T('Abriendo '+label.toLowerCase()+'…')})),
+      doneShare:()=>{this.reset();this.toast('Solicitud creada');},reqGroups,rd,reshare:()=>push('reqShare'),markPaid:this.markPaid,
+      cancelReq:()=>{this.setState(s=>({reqs:s.reqs.map(x=>x.id===s.reqId?{...x,status:'cancelled'}:x)}));this.pop();this.toast('Solicitud cancelada');},
+      sliders,pp,sc,toggleTorch:this.tog('torch'),uploadImg:T('Selecciona una imagen con un código QR'),openMyQRFromScan:()=>this.replace('myQR'),
+      scanAgain:()=>{this.setState({scan:'search'});clearTimeout(this._st);this._st=setTimeout(()=>this.setState({scan:'found'}),1900);},scanContinue:()=>push('amount',{flow:'pay',amt:'0'}),
+      notifs,markRead:()=>{this.setState({notifRead:true});this.toast('Todo al día');},openKyc:()=>push('kyc'),profileGroups,list:listV,kyc:kycV,uploadL3:()=>{this.setState({kyc3:'review'});this.toast('Documento enviado a revisión');},
+      appOpts,faqs,openSupport:()=>push('support'),contactRows:[{icon:'ph ph-phone',label:'Llamar',value:'800 10 7788',onClick:T('Llamando…')},{icon:'ph ph-envelope-simple',label:'Correo',value:'ayuda@qullqi.bo',onClick:T('Abriendo correo…')}],
+      msgs,typing:st.typing,chatQ:st.chatQ,onChatQ:e=>this.setState({chatQ:e.target.value}),chatKey:e=>{if(e.key==='Enter')this.sendChat();},sendChat:this.sendChat,
+      hasSheet:!!st.sheet,sh:{[st.sheet]:true},closeSheet:()=>this.setState({sheet:null}),stop:e=>e.stopPropagation(),sheetAccts,newAcct:T('Pronto: cuentas en euros y reales'),
+      rcp,changeRecip:()=>this.setState(s=>({sheet:null,stack:s.stack.slice(0,-1),dir:'b'})),merchantRows:[['Razón social','Tostado SRL'],['NIT',M.nit],['Dirección',M.addr],['Pagos con Qullqi','Desde 2025']].map(([l,v])=>({l,v})),
+      pickTitle:side==='from'?'Moneda que cambias':'Moneda que recibes',curOpts,logout:()=>{this.setState({sheet:null});this.leaveTo(AUTH+'#login');},
+      loggedOut:st.loggedOut,login:()=>{this.setState({faceid:true});setTimeout(()=>this.setState({faceid:false,loggedOut:false,dir:'tab'}),1100);},
+      faceid:st.faceid,hasToast:!!st.toast,toast:st.toast};
+  }
+}
+</script>
+</body>
+</html>

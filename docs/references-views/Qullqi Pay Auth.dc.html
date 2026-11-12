@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/nocturne-9e593f0b-2d24-4540-a647-e08ac052dbeb/styles.css">
+<script src="_ds/nocturne-9e593f0b-2d24-4540-a647-e08ac052dbeb/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+html,body{margin:0;height:100%;background:#0e0f18;-webkit-font-smoothing:antialiased}
+*::-webkit-scrollbar{display:none}
+button,input{font-family:inherit;color:inherit}
+a{color:var(--ac);text-decoration:underline}a:hover{opacity:.75}
+:root,[data-theme="dark"]{--page:#0e0f18;--bg:var(--color-bg);--s1:var(--color-surface);--s2:#2c2e3c;--s3:var(--color-neutral-800);--ln:var(--color-divider);--tx:var(--color-text);--tx2:var(--color-neutral-500);--ac:var(--color-accent);--ac-t:var(--color-accent-900);--ac-tx:var(--color-accent-300);--neg:oklch(0.72 0.13 25);--warn:oklch(0.82 0.11 80)}
+[data-theme="light"]{--page:#c4c8db;--bg:var(--color-neutral-200);--s1:var(--color-neutral-100);--s2:#d9ddee;--s3:var(--color-neutral-300);--ln:color-mix(in srgb,#161826 13%,transparent);--tx:#161826;--tx2:var(--color-neutral-700);--ac:var(--color-accent-600);--ac-t:var(--color-accent-200);--ac-tx:var(--color-accent-700);--neg:oklch(0.55 0.16 25);--warn:oklch(0.56 0.12 70)}
+[data-accent="lime"]{--ac:oklch(0.9 0.2 125);--ac-t:oklch(0.3 0.06 125);--ac-tx:oklch(0.9 0.17 125)}
+[data-theme="light"][data-accent="lime"]{--ac:oklch(0.52 0.15 130);--ac-t:oklch(0.92 0.1 125);--ac-tx:oklch(0.4 0.12 130)}
+@keyframes qIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes qBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes qFade{from{opacity:0}to{opacity:1}}
+@keyframes qUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes qRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes qSpin{to{transform:rotate(360deg)}}
+@keyframes qPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.88);opacity:.55}}
+@keyframes qPop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes qShake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes qLoad{from{width:0}to{width:100%}}
+@keyframes qGlow{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes qFlash{from{opacity:.9}to{opacity:0}}
+@keyframes qVeilIn{from{opacity:0}to{opacity:1}}
+@keyframes qVeilOut{from{opacity:1}to{opacity:0}}
+@keyframes qEnter{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" data-accent="{{ accent }}" style="height:100vh;display:grid;place-items:center;overflow:hidden;background:var(--page);font-family:var(--font-body)">
+<div style="width:420px;height:880px;padding:10px;border-radius:50px;background:#08090e;box-shadow:0 40px 90px -20px rgba(0,0,0,.6),inset 0 0 0 1.5px #3f424d;zoom:{{ scale }};flex:none">
+<div style="position:relative;width:400px;height:860px;border-radius:40px;overflow:hidden;background:var(--bg);color:var(--tx)">
+
+<sc-if value="{{ is.splash }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 32px 60px;background:radial-gradient(70% 45% at 25% 42%,color-mix(in srgb,var(--ac) 18%,transparent),transparent),var(--bg)">
+  <div style="font:500 64px var(--font-heading);letter-spacing:-.05em;animation:qRise .7s cubic-bezier(.2,.8,.2,1)">qullqi<span style="color:var(--ac)">.</span></div>
+  <div style="width:24px;height:2px;background:var(--ac);margin-top:10px;box-shadow:0 0 12px var(--ac);animation:qGlow 1.6s infinite"></div>
+  <div style="font:400 15px var(--font-body);color:var(--tx2);margin-top:14px;animation:qRise .7s .15s both">Tu billetera en Bolivianos y dólares</div>
+  <div style="position:absolute;left:32px;right:32px;bottom:64px;height:2px;border-radius:1px;background:var(--s3);overflow:hidden"><div style="height:100%;background:var(--ac);animation:qLoad 1.7s ease-in-out forwards"></div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.welcome }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:56px 24px 28px;background:radial-gradient(80% 40% at 90% 18%,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg);animation:{{ anim }}">
+  <div style="font:500 22px var(--font-heading);letter-spacing:-.03em">qullqi<span style="color:var(--ac)">.</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="font:500 40px/1.08 var(--font-heading);letter-spacing:-.035em">Envía, cobra y paga con QR en segundos.</div>
+    <div style="font:400 15px/1.5 var(--font-body);color:var(--tx2);margin-top:14px;max-width:300px">Abre tu cuenta con tu celular y tu correo. Verificas tu identidad cuando quieras.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+      <sc-for list="{{ perks }}" as="p" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;font:400 14.5px var(--font-body)"><i class="{{ p.icon }}" style="font-size:20px;color:var(--ac)"></i>{{ p.t }}</div></sc-for>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button onClick="{{ startRegister }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Crear cuenta</button>
+    <button onClick="{{ goLogin }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 15px var(--font-body);cursor:pointer">Ya tengo cuenta</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.login }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px;transform:{{ leaveT }};opacity:{{ leaveO }};transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .45s ease">
+    <div style="width:56px;height:56px;border-radius:28px;background:var(--ac-t);color:var(--ac-tx);box-shadow:0 0 0 1px var(--ac),0 0 26px -8px var(--ac);display:grid;place-items:center;font:500 19px var(--font-heading)">{{ user.ini }}</div>
+    <div style="font:500 26px var(--font-heading);letter-spacing:-.025em;margin-top:18px">Hola de nuevo, {{ user.first }}</div>
+    <div style="font:400 14px var(--font-body);color:var(--tx2);margin-top:4px">Ingresa tu PIN de 4 dígitos</div>
+    <div style="display:flex;gap:10px;margin-top:26px;animation:{{ shakeAnim }}">
+      <sc-for list="{{ loginDots }}" as="d" hint-placeholder-count="4"><div style="width:54px;height:62px;border-radius:8px;background:var(--s1);border:1px solid {{ d.bd }};box-shadow:{{ d.sh }};display:grid;place-items:center;transition:all .15s"><span style="width:12px;height:12px;border-radius:6px;background:{{ d.dot }};transition:background .15s"></span></div></sc-for>
+    </div>
+    <div style="font:400 13px var(--font-body);color:{{ loginMsgColor }};margin-top:14px;min-height:18px">{{ loginMsg }}</div>
+  </div>
+  <div style="flex:none;padding:0 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    <sc-for list="{{ loginKeys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style-hover="background:var(--s1)" style-active="transform:scale(.93)" style="height:58px;border:0;background:transparent;border-radius:8px;font:400 24px var(--font-heading);cursor:pointer;display:grid;place-items:center;color:var(--tx)"><sc-if value="{{ k.isIcon }}"><i class="{{ k.icon }}" style="font-size:24px;color:{{ k.c }}"></i></sc-if><sc-if value="{{ k.isTxt }}">{{ k.label }}</sc-if></button></sc-for>
+  </div>
+  <div style="flex:none;display:flex;justify-content:space-between;padding:10px 24px 30px">
+    <button onClick="{{ forgotPin }}" style="background:none;border:0;font:500 13.5px var(--font-body);color:var(--ac);cursor:pointer;padding:6px 0">¿Olvidaste tu PIN?</button>
+    <button onClick="{{ switchAccount }}" style="background:none;border:0;font:500 13.5px var(--font-body);color:var(--tx2);cursor:pointer;padding:6px 0">Cambiar de cuenta</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ inFlow }}">
+  <div style="position:absolute;top:40px;left:0;right:0;z-index:5;display:flex;align-items:center;gap:10px;padding:6px 16px 8px 10px;background:{{ flowHeadBg }}">
+    <button onClick="{{ back }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:{{ flowHeadFg }}"><i class="ph ph-arrow-left" style="font-size:22px"></i></button>
+    <div style="flex:1;display:flex;gap:4px"><sc-for list="{{ prog }}" as="p" hint-placeholder-count="4"><span style="flex:1;height:3px;border-radius:2px;background:{{ p.bg }};box-shadow:{{ p.sh }};transition:background .3s"></span></sc-for></div>
+    <span style="font:500 11px var(--font-body);letter-spacing:.08em;color:{{ flowHeadFg }};opacity:.7">{{ progLabel }}</span>
+  </div>
+</sc-if>
+
+<sc-if value="{{ is.regPhone }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;padding:12px 24px">
+    <div style="font:500 11px var(--font-body);letter-spacing:.1em;color:var(--ac)">CREAR CUENTA</div>
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em;margin-top:8px">¿Cuál es tu número de celular?</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Te enviaremos un código por SMS para confirmarlo.</div>
+    <div style="display:flex;gap:8px;margin-top:24px">
+      <div style="height:52px;padding:0 12px;border-radius:8px;border:1px solid var(--ln);background:var(--s1);display:flex;align-items:center;gap:6px;font:500 15px var(--font-body);flex:none">BO +591</div>
+      <input value="{{ phone }}" onChange="{{ onPhone }}" inputmode="numeric" maxlength="8" placeholder="7123 4567" style="flex:1;min-width:0;height:52px;border:1px solid {{ phoneBd }};outline:none;border-radius:8px;background:var(--s1);padding:0 14px;font:500 17px var(--font-body);letter-spacing:.04em;color:var(--tx);caret-color:var(--ac)">
+    </div>
+    <div style="font:400 12.5px var(--font-body);color:{{ phoneHintColor }};margin-top:8px">{{ phoneHint }}</div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ phoneNext }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);opacity:{{ phoneOp }};transition:opacity .2s">Enviar código</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.regOtp }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;padding:12px 24px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em">Escribe el código</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Lo enviamos por SMS al {{ phoneFmt }}.</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:24px">
+      <sc-for list="{{ otpBoxes }}" as="d" hint-placeholder-count="6"><div style="height:58px;border-radius:8px;background:var(--s1);border:1px solid {{ d.bd }};box-shadow:{{ d.sh }};display:grid;place-items:center;font:500 22px var(--font-heading);transition:all .15s">{{ d.v }}</div></sc-for>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+      <span style="font:400 12.5px var(--font-body);color:var(--tx2)">Demo: cualquier código de 6 dígitos</span>
+      <button onClick="{{ resendOtp }}" style="background:none;border:0;font:500 13px var(--font-body);color:{{ resendColor }};cursor:pointer;padding:4px 0">{{ resendLabel }}</button>
+    </div>
+  </div>
+  <div style="flex:none;padding:0 12px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    <sc-for list="{{ numKeys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style-hover="background:var(--s1)" style-active="transform:scale(.93)" style="height:56px;border:0;background:transparent;border-radius:8px;font:400 24px var(--font-heading);cursor:pointer;display:grid;place-items:center;color:var(--tx)"><sc-if value="{{ k.isIcon }}"><i class="{{ k.icon }}" style="font-size:22px"></i></sc-if><sc-if value="{{ k.isTxt }}">{{ k.label }}</sc-if></button></sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.regInfo }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;overflow-y:auto;padding:12px 24px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em">Cuéntanos sobre ti</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Usaremos tu correo para comprobantes y avisos de seguridad.</div>
+    <div style="font:400 12px var(--font-body);color:var(--tx2);margin:24px 0 6px">Nombre y apellido</div>
+    <input value="{{ name }}" onChange="{{ onName }}" placeholder="Como figura en tu CI" style="width:100%;height:50px;border:1px solid var(--ln);outline:none;border-radius:8px;background:var(--s1);padding:0 14px;font:400 15.5px var(--font-body);color:var(--tx);caret-color:var(--ac)">
+    <div style="font:400 12px var(--font-body);color:var(--tx2);margin:16px 0 6px">Correo electrónico</div>
+    <input value="{{ email }}" onChange="{{ onEmail }}" type="email" placeholder="tu@correo.com" style="width:100%;height:50px;border:1px solid {{ emailBd }};outline:none;border-radius:8px;background:var(--s1);padding:0 14px;font:400 15.5px var(--font-body);color:var(--tx);caret-color:var(--ac)">
+    <sc-if value="{{ emailBad }}"><div style="font:400 12.5px var(--font-body);color:var(--neg);margin-top:6px">Revisa el formato del correo.</div></sc-if>
+    <div onClick="{{ toggleTerms }}" style="display:flex;gap:12px;align-items:flex-start;margin-top:22px;cursor:pointer">
+      <span style="width:22px;height:22px;border-radius:6px;border:1px solid {{ termsBd }};background:{{ termsBg }};display:grid;place-items:center;flex:none;transition:all .15s"><sc-if value="{{ terms }}"><i class="ph ph-check" style="font-size:14px;color:var(--ac)"></i></sc-if></span>
+      <span style="font:400 13.5px/1.5 var(--font-body);color:var(--tx2)">Acepto los <a href="#" onClick="{{ noop }}">Términos y condiciones</a> y la <a href="#" onClick="{{ noop }}">Política de privacidad</a> de Qullqi Pay.</span>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ infoNext }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);opacity:{{ infoOp }};transition:opacity .2s">Continuar</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.regPin }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;padding:12px 24px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em">{{ pinTitle }}</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Lo usarás para entrar a la app y confirmar operaciones.</div>
+    <div style="display:flex;gap:10px;margin-top:26px;animation:{{ shakeAnim }}">
+      <sc-for list="{{ pinDots }}" as="d" hint-placeholder-count="4"><div style="width:54px;height:62px;border-radius:8px;background:var(--s1);border:1px solid {{ d.bd }};box-shadow:{{ d.sh }};display:grid;place-items:center;transition:all .15s"><span style="width:12px;height:12px;border-radius:6px;background:{{ d.dot }}"></span></div></sc-for>
+    </div>
+    <div style="font:400 13px var(--font-body);color:var(--neg);margin-top:14px;min-height:18px">{{ pinErr }}</div>
+  </div>
+  <div style="flex:none;padding:0 12px 30px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    <sc-for list="{{ numKeys }}" as="k" hint-placeholder-count="12"><button onClick="{{ k.onClick }}" style-hover="background:var(--s1)" style-active="transform:scale(.93)" style="height:56px;border:0;background:transparent;border-radius:8px;font:400 24px var(--font-heading);cursor:pointer;display:grid;place-items:center;color:var(--tx)"><sc-if value="{{ k.isIcon }}"><i class="{{ k.icon }}" style="font-size:22px"></i></sc-if><sc-if value="{{ k.isTxt }}">{{ k.label }}</sc-if></button></sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.regDone }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:radial-gradient(70% 40% at 25% 25%,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg);animation:qFade .35s ease">
+  <div style="flex:1;overflow-y:auto;padding:48px 24px 16px">
+    <div style="width:72px;height:72px;border-radius:36px;border:1.5px solid var(--ac);color:var(--ac);box-shadow:0 0 40px -8px var(--ac);display:grid;place-items:center;animation:qPop .5s cubic-bezier(.2,.9,.3,1.2)"><i class="ph ph-check" style="font-size:34px"></i></div>
+    <div style="font:500 30px/1.12 var(--font-heading);letter-spacing:-.03em;margin-top:24px">Tu cuenta está lista, {{ user.first }}</div>
+    <div style="font:400 14.5px/1.5 var(--font-body);color:var(--tx2);margin-top:8px">Ya puedes explorar Qullqi. Para mover dinero necesitas verificar tu identidad.</div>
+    <div style="background:var(--s1);border-radius:14px;padding:16px;margin-top:22px">
+      <div style="display:flex;align-items:center;justify-content:space-between"><span style="font:500 11px var(--font-body);letter-spacing:.1em;color:var(--tx2)">ESTADO DE LA CUENTA</span><span style="height:22px;padding:0 8px;border-radius:6px;background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);font:500 11.5px var(--font-body);display:grid;place-items:center">Sin verificar</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+        <sc-for list="{{ limits }}" as="l" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:10px;font:400 14px var(--font-body)"><i class="{{ l.icon }}" style="font-size:18px;color:{{ l.c }}"></i><span style="flex:1">{{ l.t }}</span><span style="font:500 12px var(--font-body);color:{{ l.c }}">{{ l.s }}</span></div></sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px 28px">
+    <button onClick="{{ startKyc }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);display:flex;align-items:center;justify-content:center;gap:8px"><i class="ph ph-identification-card" style="font-size:20px"></i>Verificar mi identidad</button>
+    <button onClick="{{ later }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 15px var(--font-body);cursor:pointer">Hacerlo más tarde</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycIntro }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg);animation:{{ anim }}">
+  <div style="display:flex;align-items:center;padding:6px 10px 8px"><button onClick="{{ back }}" style-hover="background:var(--s1)" style="width:42px;height:42px;border-radius:8px;border:0;background:transparent;display:grid;place-items:center;cursor:pointer"><i class="ph ph-x" style="font-size:22px"></i></button></div>
+  <div style="flex:1;overflow-y:auto;padding:8px 24px 16px">
+    <i class="ph ph-shield-check" style="font-size:40px;color:var(--ac)"></i>
+    <div style="font:500 30px/1.12 var(--font-heading);letter-spacing:-.03em;margin-top:16px">Verifica tu identidad</div>
+    <div style="font:400 14.5px/1.5 var(--font-body);color:var(--tx2);margin-top:8px">Es un requisito para depositar, retirar, enviar y pagar. Toma unos 3 minutos.</div>
+    <div style="font:500 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);margin:26px 0 10px">Ten a mano</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0">
+      <sc-for list="{{ kycNeeds }}" as="n" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;padding:12px 14px"><i class="{{ n.icon }}" style="font-size:21px;color:var(--ac)"></i><div><div style="font:500 14.5px var(--font-body)">{{ n.t }}</div><div style="font:400 12px var(--font-body);color:var(--tx2);margin-top:2px">{{ n.s }}</div></div></div></sc-for>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start;margin-top:16px;font:400 12.5px/1.5 var(--font-body);color:var(--tx2)"><i class="ph ph-lock-simple" style="font-size:16px;margin-top:1px"></i><span>Tus datos viajan cifrados y solo se usan para cumplir la normativa financiera boliviana.</span></div>
+  </div>
+  <div style="flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px 28px">
+    <button onClick="{{ kycStart }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Empezar</button>
+    <button onClick="{{ later }}" style="height:44px;border:0;background:none;font:500 14px var(--font-body);color:var(--tx2);cursor:pointer">Ahora no</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycDoc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;padding:12px 24px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em">¿Qué documento usarás?</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Debe estar vigente y a tu nombre.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:22px">
+      <sc-for list="{{ docOpts }}" as="o" hint-placeholder-count="2">
+        <div onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:12px;padding:16px 14px;border-radius:14px;background:var(--s1);border:1px solid {{ o.bd }};box-shadow:{{ o.sh }};cursor:pointer;transition:all .15s">
+          <i class="{{ o.icon }}" style="font-size:24px;color:var(--ac)"></i>
+          <div style="flex:1"><div style="font:500 15px var(--font-body)">{{ o.t }}</div><div style="font:400 12.5px var(--font-body);color:var(--tx2);margin-top:2px">{{ o.s }}</div></div>
+          <span style="width:20px;height:20px;border-radius:10px;border:1.5px solid {{ o.bd }};box-shadow:{{ o.dot }}"></span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ docNext }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Continuar</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.cam }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:#0b0c14;color:#e9e9ed;animation:{{ anim }}">
+  <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#15172299 0 14px,#0e0f1899 14px 28px)"></div>
+  <div style="position:relative;padding:12px 24px 0">
+    <div style="font:500 22px var(--font-heading);letter-spacing:-.02em">{{ cam.title }}</div>
+    <div style="font:400 13.5px/1.5 var(--font-body);color:#9397ab;margin-top:4px">{{ cam.sub }}</div>
+  </div>
+  <div style="position:relative;flex:1;display:grid;place-items:center">
+    <div style="position:relative;width:330px;height:{{ cam.h }}">
+      <sc-if value="{{ cam.notShot }}">
+        <span style="position:absolute;left:0;top:0;width:34px;height:34px;border-left:2px solid var(--ac);border-top:2px solid var(--ac);border-radius:12px 0 0 0"></span>
+        <span style="position:absolute;right:0;top:0;width:34px;height:34px;border-right:2px solid var(--ac);border-top:2px solid var(--ac);border-radius:0 12px 0 0"></span>
+        <span style="position:absolute;left:0;bottom:0;width:34px;height:34px;border-left:2px solid var(--ac);border-bottom:2px solid var(--ac);border-radius:0 0 0 12px"></span>
+        <span style="position:absolute;right:0;bottom:0;width:34px;height:34px;border-right:2px solid var(--ac);border-bottom:2px solid var(--ac);border-radius:0 0 12px 0"></span>
+        <div style="position:absolute;inset:0;display:grid;place-items:center;font:500 10.5px var(--font-body);letter-spacing:.14em;color:#595d6c">VISTA DE CÁMARA</div>
+      </sc-if>
+      <sc-if value="{{ cam.shot }}">
+        <div style="position:absolute;inset:0;border-radius:12px;background:repeating-linear-gradient(135deg,#3f424d 0 10px,#292b31 10px 20px);box-shadow:0 0 0 1px var(--ac),0 0 30px -8px var(--ac);display:grid;place-items:center;animation:qPop .35s ease"><span style="font:500 11px var(--font-body);letter-spacing:.12em;color:#cfd3e5;background:#161826;padding:6px 10px;border-radius:6px">{{ cam.label }}</span></div>
+        <div style="position:absolute;inset:0;background:#f3f5fe;border-radius:12px;animation:qFlash .5s ease forwards;pointer-events:none"></div>
+      </sc-if>
+    </div>
+  </div>
+  <div style="position:relative;flex:none;padding:10px 16px 30px">
+    <sc-if value="{{ cam.notShot }}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <button onClick="{{ capture }}" style-active="transform:scale(.92)" style="width:72px;height:72px;border-radius:36px;border:2px solid var(--ac);background:transparent;display:grid;place-items:center;cursor:pointer;box-shadow:0 0 30px -6px var(--ac);transition:transform .12s"><span style="width:56px;height:56px;border-radius:28px;background:#e9e9ed"></span></button>
+        <span style="font:400 12.5px var(--font-body);color:#9397ab">Toca para capturar</span>
+      </div>
+    </sc-if>
+    <sc-if value="{{ cam.shot }}">
+      <div style="display:flex;align-items:center;gap:8px;font:500 13px var(--font-body);color:var(--ac);margin-bottom:12px"><i class="ph-fill ph-check-circle" style="font-size:17px"></i>Imagen nítida y legible</div>
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ retake }}" style="flex:1;height:52px;border-radius:8px;border:1px solid #3f424d;background:transparent;color:#e9e9ed;font:500 14.5px var(--font-body);cursor:pointer">Repetir</button>
+        <button onClick="{{ camNext }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="flex:2;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 14.5px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Se ve bien</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycSelfie }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:#0b0c14;color:#e9e9ed;animation:{{ anim }}">
+  <div style="padding:12px 24px 0">
+    <div style="font:500 22px var(--font-heading);letter-spacing:-.02em">Prueba de vida</div>
+    <div style="font:400 13.5px/1.5 var(--font-body);color:#9397ab;margin-top:4px">Comprobamos que eres tú y que estás presente.</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px">
+    <div style="position:relative;width:236px;height:296px;border-radius:50%;padding:4px;background:conic-gradient(var(--ac) {{ selfieDeg }},#292b31 0);box-shadow:0 0 40px -12px var(--ac);transition:background .1s">
+      <div style="width:100%;height:100%;border-radius:50%;background:repeating-linear-gradient(135deg,#1d1f29 0 12px,#15172a 12px 24px);display:grid;place-items:center"><span style="font:500 10.5px var(--font-body);letter-spacing:.14em;color:#595d6c">CÁMARA FRONTAL</span></div>
+    </div>
+    <div style="font:500 16px var(--font-body);min-height:22px;text-align:center">{{ selfieMsg }}</div>
+  </div>
+  <div style="flex:none;padding:10px 16px 30px"><sc-if value="{{ selfieIdle }}"><button onClick="{{ startSelfie }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">Comenzar</button></sc-if><sc-if value="{{ selfieBusy }}"><div style="height:52px;display:grid;place-items:center;font:400 13px var(--font-body);color:#9397ab">Mantén tu rostro dentro del óvalo</div></sc-if></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycData }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:96px;background:var(--bg);animation:{{ anim }}">
+  <div style="flex:1;overflow-y:auto;padding:12px 24px">
+    <div style="font:500 28px/1.15 var(--font-heading);letter-spacing:-.025em">Confirma tus datos</div>
+    <div style="font:400 14px/1.5 var(--font-body);color:var(--tx2);margin-top:6px">Los leímos de tu documento. Si algo no coincide, repite la foto.</div>
+    <div style="background:var(--s1);border-radius:14px;padding:4px 0;margin-top:20px">
+      <sc-for list="{{ docData }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px"><span style="font:400 14px var(--font-body);color:var(--tx2)">{{ r.l }}</span><span style="font:500 14px var(--font-body);text-align:right">{{ r.v }}</span></div></sc-for>
+    </div>
+    <div onClick="{{ toggleDecl }}" style="display:flex;gap:12px;align-items:flex-start;margin-top:18px;cursor:pointer">
+      <span style="width:22px;height:22px;border-radius:6px;border:1px solid {{ declBd }};background:{{ declBg }};display:grid;place-items:center;flex:none;transition:all .15s"><sc-if value="{{ decl }}"><i class="ph ph-check" style="font-size:14px;color:var(--ac)"></i></sc-if></span>
+      <span style="font:400 13.5px/1.5 var(--font-body);color:var(--tx2)">Declaro que la información es correcta y que actúo en nombre propio.</span>
+    </div>
+  </div>
+  <div style="flex:none;padding:10px 16px 28px"><button onClick="{{ submitKyc }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac);opacity:{{ declOp }};transition:opacity .2s">Enviar verificación</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycProc }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 28px;background:var(--bg);animation:qFade .3s ease">
+  <div style="width:56px;height:56px;border-radius:50%;border:2px solid var(--s3);border-top-color:var(--ac);box-shadow:0 0 30px -10px var(--ac);animation:qSpin .8s linear infinite"></div>
+  <div style="font:500 24px var(--font-heading);letter-spacing:-.02em;margin-top:24px">Verificando tu identidad</div>
+  <div style="font:400 14px var(--font-body);color:var(--tx2);margin-top:4px">Esto toma unos segundos.</div>
+  <div style="display:flex;flex-direction:column;gap:14px;margin-top:28px">
+    <sc-for list="{{ procSteps }}" as="s" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:12px;font:400 14.5px var(--font-body);color:{{ s.fg }};transition:color .3s"><i class="{{ s.icon }}" style="font-size:20px;color:{{ s.ic }}"></i>{{ s.t }}</div></sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.kycResult }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:radial-gradient(70% 40% at 25% 30%,color-mix(in srgb,{{ kr.tone }} 18%,transparent),transparent),var(--bg);animation:qFade .35s ease">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px">
+    <div style="width:80px;height:80px;border-radius:40px;border:1.5px solid {{ kr.tone }};color:{{ kr.tone }};box-shadow:0 0 40px -8px {{ kr.tone }};display:grid;place-items:center;animation:qPop .5s cubic-bezier(.2,.9,.3,1.2)"><i class="{{ kr.icon }}" style="font-size:38px"></i></div>
+    <div style="font:500 30px/1.12 var(--font-heading);letter-spacing:-.03em;margin-top:26px">{{ kr.title }}</div>
+    <div style="font:400 15px/1.5 var(--font-body);color:var(--tx2);margin-top:10px;max-width:310px">{{ kr.sub }}</div>
+    <sc-if value="{{ kr.hasTag }}"><span style="align-self:flex-start;margin-top:16px;height:26px;padding:0 10px;border-radius:6px;background:var(--ac-t);color:var(--ac-tx);font:500 12px var(--font-body);display:flex;align-items:center;gap:6px"><i class="ph-fill ph-seal-check" style="font-size:15px"></i>{{ kr.tag }}</span></sc-if>
+  </div>
+  <div style="flex:none;display:flex;flex-direction:column;gap:8px;padding:10px 16px 28px">
+    <button onClick="{{ kr.onPrimary }}" style-hover="background:color-mix(in srgb,var(--ac) 16%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px var(--font-body);cursor:pointer;box-shadow:0 0 28px -12px var(--ac)">{{ kr.primary }}</button>
+    <sc-if value="{{ kr.hasSecondary }}"><button onClick="{{ kr.onSecondary }}" style-hover="background:color-mix(in srgb,var(--tx) 7%,transparent)" style="width:100%;height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 15px var(--font-body);cursor:pointer">{{ kr.secondary }}</button></sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ veil.show }}"><div style="position:absolute;inset:0;z-index:29;background:var(--bg);animation:{{ veil.anim }};pointer-events:none"></div></sc-if>
+<div style="position:absolute;top:0;left:0;right:0;height:38px;display:flex;align-items:center;justify-content:space-between;padding:4px 24px 0 26px;z-index:30;pointer-events:none;color:{{ sbColor }}">
+  <span style="font:500 14px var(--font-body)">9:41</span>
+  <span style="display:flex;gap:6px;align-items:center"><i class="ph-fill ph-wifi-high" style="font-size:16px"></i><i class="ph-fill ph-cell-signal-full" style="font-size:16px"></i><i class="ph-fill ph-battery-full" style="font-size:19px"></i></span>
+</div>
+<div style="position:absolute;top:12px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:7px;background:#05060a;z-index:31;box-shadow:inset 0 0 0 2px #1a1c26"></div>
+
+<sc-if value="{{ bioOn }}">
+  <div style="position:absolute;inset:0;z-index:60;background:color-mix(in srgb,#0e0f18 55%,transparent);display:flex;align-items:flex-end;animation:qFade .2s ease">
+    <div style="width:100%;background:var(--s1);border-radius:20px 20px 0 0;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center;animation:qUp .3s ease">
+      <div style="font:500 17px var(--font-heading)">Ingresa con tu huella</div>
+      <div style="font:400 13px var(--font-body);color:var(--tx2);margin-top:4px">Toca el sensor</div>
+      <div style="width:72px;height:72px;border-radius:36px;border:1px solid var(--ac);box-shadow:0 0 30px -6px var(--ac);display:grid;place-items:center;margin-top:22px"><i class="ph ph-fingerprint" style="font-size:40px;color:var(--ac);animation:qPulse 1s ease-in-out infinite"></i></div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}">
+  <div style="position:absolute;left:16px;right:16px;bottom:110px;z-index:70;display:flex;justify-content:center;animation:qRise .3s ease;pointer-events:none"><div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:8px;background:var(--s2);box-shadow:var(--shadow-md);color:var(--tx);font:500 13.5px var(--font-body)"><i class="ph-fill ph-check-circle" style="font-size:18px;color:var(--ac)"></i>{{ toast }}</div></div>
+</sc-if>
+
+<div style="position:absolute;bottom:7px;left:50%;margin-left:-54px;width:108px;height:4px;border-radius:2px;background:{{ sbColor }};opacity:.7;z-index:80;pointer-events:none"></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;'dark'|'light'&quot;,&quot;section&quot;:&quot;Apariencia&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;nocturne&quot;,&quot;lime&quot;],&quot;default&quot;:&quot;nocturne&quot;,&quot;tsType&quot;:&quot;'nocturne'|'lime'&quot;,&quot;section&quot;:&quot;Apariencia&quot;},&quot;kycOutcome&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;approved&quot;,&quot;review&quot;,&quot;rejected&quot;],&quot;default&quot;:&quot;approved&quot;,&quot;tsType&quot;:&quot;'approved'|'review'|'rejected'&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const getS=()=>{try{return JSON.parse(localStorage.getItem('qullqi.session')||'null');}catch(e){return null;}};
+const REG=['regPhone','regOtp','regInfo','regPin'];
+const ini=n=>(n||'').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'Q';
+
+class Component extends DCLogic {
+  state={stack:['splash'],dir:'tab',scale:1,sess:null,phone:'',otp:'',name:'',email:'',terms:false,pin:'',pinFirst:'',pinStep:0,pinErr:'',
+    lpin:'',lerr:'',attempts:3,shake:false,doc:'ci',shot:false,selfie:0,selfieRun:false,kp:0,decl:false,toast:null,fromApp:false,bio:false,resend:30,leaving:false,flow:'reg'};
+  componentDidMount(){
+    this._rs=()=>{const H=window.innerHeight||document.documentElement.clientHeight,W=window.innerWidth||document.documentElement.clientWidth;if(!H||!W)return;this.setState({scale:Math.max(0.3,Math.min(1,(H-24)/880,(W-24)/420))});};
+    this._rs();requestAnimationFrame(this._rs);setTimeout(this._rs,300);window.addEventListener('resize',this._rs);
+    if(window.ResizeObserver){this._ro=new ResizeObserver(this._rs);this._ro.observe(document.documentElement);}
+    const s=getS(),h=(location.hash||'').replace('#','');this.setState({sess:s});
+    let v=false;try{v=sessionStorage.getItem('qullqi.veil')==='1';sessionStorage.removeItem('qullqi.veil');}catch(e){}
+    if(v){this.setState({veilIn:true});this._vt=setTimeout(()=>this.setState({veilIn:false}),650);}
+    if(h==='kyc')this.setState({stack:['kycIntro'],fromApp:true,flow:'kyc'});
+    else if(h==='login')this.setState({stack:['login']});
+    else this._sp=setTimeout(()=>this.setState({stack:[s?'login':'welcome'],dir:'tab'}),1900);
+  }
+  componentWillUnmount(){window.removeEventListener('resize',this._rs);if(this._ro)this._ro.disconnect();[this._sp,this._tt,this._ot,this._si,this._pi,this._sh].forEach(x=>{clearTimeout(x);clearInterval(x);});}
+  cur(){const s=this.state.stack;return s[s.length-1];}
+  push=(s,x)=>this.setState(st=>({stack:[...st.stack,s],dir:'f',...(x||{})}));
+  replace=(s,x)=>this.setState(st=>({stack:[...st.stack.slice(0,-1),s],dir:'f',...(x||{})}));
+  back=()=>{const st=this.state;if(st.stack.length<=1){if(st.fromApp)this.go('Qullqi Pay.dc.html');else this.setState({stack:['welcome'],dir:'b'});return;}
+    clearInterval(this._si);this.setState(s=>({stack:s.stack.slice(0,-1),dir:'b',shot:false,selfie:0,selfieRun:false,pin:'',pinStep:0,pinErr:''}));};
+  toast=m=>{this.setState({toast:m});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:null}),1900);};
+  doShake=()=>{this.setState({shake:true});clearTimeout(this._sh);this._sh=setTimeout(()=>this.setState({shake:false}),450);};
+  go=url=>{try{sessionStorage.setItem('qullqi.veil','1');}catch(e){}this.setState({leaving:true});setTimeout(()=>{location.href=url;},520);};
+  enterApp=(kyc,isNew)=>{const st=this.state,s=st.sess||{};
+    const sess={name:st.name.trim()||s.name||'Ronald Diaz',email:st.email||s.email||'ronald.dz@correo.bo',phone:st.phone||s.phone||'71234418',pin:st.pinFirst||s.pin||'1234',kyc,isNew:isNew===undefined?!!s.isNew:isNew};
+    try{localStorage.setItem('qullqi.session',JSON.stringify(sess));}catch(e){}
+    this.go('Qullqi Pay.dc.html');};
+  press=k=>{const c=this.cur(),st=this.state;
+    if(c==='login'){if(st.attempts<=0)return;let p=st.lpin;if(k==='del')p=p.slice(0,-1);else if(p.length<4)p+=k;this.setState({lpin:p,lerr:''});if(p.length===4)setTimeout(()=>this.checkLogin(p),220);}
+    else if(c==='regOtp'){let p=st.otp;if(k==='del')p=p.slice(0,-1);else if(p.length<6)p+=k;this.setState({otp:p});if(p.length===6){clearInterval(this._ot);setTimeout(()=>this.push('regInfo'),350);}}
+    else if(c==='regPin'){let p=st.pin;if(k==='del')p=p.slice(0,-1);else if(p.length<4)p+=k;this.setState({pin:p,pinErr:''});if(p.length===4)setTimeout(()=>this.pinDone(p),240);}};
+  checkLogin(p){const st=this.state,want=(st.sess&&st.sess.pin)||'1234';
+    if(p===want){this.setState({lerr:'ok'});setTimeout(()=>this.enterApp((st.sess&&st.sess.kyc)||'verified'),380);}
+    else{const a=st.attempts-1;this.setState({lpin:'',attempts:a,lerr:a>0?'PIN incorrecto. Te quedan '+a+' intento'+(a===1?'':'s')+'.':'Bloqueamos el acceso por seguridad. Recupera tu PIN.'});this.doShake();}}
+  pinDone(p){const st=this.state;if(st.pinStep===0){this.setState({pinStep:1,pinFirst:p,pin:''});return;}
+    if(p===st.pinFirst){this.setState({pin:''});this.replace('regDone',{flow:'done'});}else{this.setState({pin:'',pinStep:0,pinFirst:'',pinErr:'Los PIN no coinciden. Vuelve a crearlo.'});this.doShake();}}
+  startOtpTimer(){clearInterval(this._ot);this.setState({resend:30});this._ot=setInterval(()=>this.setState(s=>{if(s.resend<=1){clearInterval(this._ot);return{resend:0};}return{resend:s.resend-1};}),1000);}
+  startSelfie=()=>{this.setState({selfieRun:true,selfie:0});clearInterval(this._si);this._si=setInterval(()=>{const v=this.state.selfie+2;if(v>=100){clearInterval(this._si);this.setState({selfie:100});setTimeout(()=>this.push('kycData'),700);}else this.setState({selfie:v});},70);};
+  submitKyc=()=>{if(!this.state.decl)return;this.push('kycProc',{kp:0});clearInterval(this._pi);this._pi=setInterval(()=>{const k=this.state.kp+1;if(k>4){clearInterval(this._pi);this.replace('kycResult');}else this.setState({kp:k});},700);};
+
+  renderVals(){
+    const st=this.state,P=this.props,cur=this.cur(),is={[cur]:true},K=['kycFront','kycBack'].includes(cur);if(K)is.cam=true;
+    const anim=st.dir==='f'?'qIn .3s cubic-bezier(.2,.8,.2,1)':st.dir==='b'?'qBack .3s cubic-bezier(.2,.8,.2,1)':'qFade .3s ease';
+    const name=st.name.trim()||(st.sess&&st.sess.name)||'Ronald Diaz',user={first:name.split(' ')[0],ini:ini(name)};
+    const KF=st.doc==='ci'?['kycDoc','kycFront','kycBack','kycSelfie','kycData']:['kycDoc','kycFront','kycSelfie','kycData'];
+    const regI=REG.indexOf(cur),kycI=KF.indexOf(cur),inFlow=regI>=0||kycI>=0;
+    const steps=regI>=0?REG.length:KF.length,idx=regI>=0?regI:kycI;
+    const prog=Array.from({length:steps},(_,i)=>({bg:i<=idx?'var(--ac)':'var(--s3)',sh:i===idx?'0 0 8px var(--ac)':'none'}));
+    const dark=K||cur==='kycSelfie';
+    const dots=(v,len)=>Array.from({length:len},(_,i)=>{const f=i<v.length,c=i===v.length;return{v:f?v[i]:'',dot:f?'var(--ac)':'transparent',bd:c||f?'var(--ac)':'var(--ln)',sh:c?'0 0 16px -4px var(--ac)':'none'};});
+    const mk=(extra)=>['1','2','3','4','5','6','7','8','9',extra,'0','del'].map(k=>k==='del'?{isIcon:true,icon:'ph ph-backspace',c:'var(--tx)',onClick:()=>this.press('del')}:k==='bio'?{isIcon:true,icon:'ph ph-fingerprint',c:'var(--ac)',onClick:()=>{this.setState({bio:true});setTimeout(()=>{this.setState({bio:false});this.enterApp((st.sess&&st.sess.kyc)||'verified');},1100);}}:{isTxt:true,label:k,onClick:()=>{if(k)this.press(k);}});
+    const ph=st.phone,phoneOk=/^[67]\d{7}$/.test(ph),emailOk=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(st.email),infoOk=emailOk&&st.name.trim().length>=3&&st.terms;
+    const phoneFmt='+591 '+ph.slice(0,4)+' '+ph.slice(4);
+    const outcome=P.kycOutcome||'approved';
+    const KR={approved:{tone:'var(--ac)',icon:'ph ph-check',title:'Identidad verificada',sub:'Ya puedes depositar, retirar, enviar y pagar. Tus límites: hasta Bs 70,000 al mes.',hasTag:true,tag:'Nivel 2 · Verificado',primary:'Entrar a Qullqi',onPrimary:()=>this.enterApp('verified')},
+      review:{tone:'var(--warn)',icon:'ph ph-clock',title:'Verificación en revisión',sub:'Un analista revisará tus documentos. Te avisaremos en menos de 24 horas. Mientras tanto puedes explorar la app.',primary:'Ir a la app',onPrimary:()=>this.enterApp('review')},
+      rejected:{tone:'var(--neg)',icon:'ph ph-x',title:'No pudimos verificarte',sub:'La foto de tu documento salió borrosa o con reflejos. Busca buena luz y vuelve a intentarlo.',primary:'Intentar de nuevo',onPrimary:()=>this.setState({stack:['kycIntro','kycDoc','kycFront'],dir:'b',shot:false,selfie:0,selfieRun:false,decl:false}),hasSecondary:true,secondary:'Más tarde',onSecondary:()=>this.enterApp('none')}}[outcome];
+    const procT=['Documento legible','Autenticidad del documento','Prueba de vida','Listas de control'];
+    const camCfg=cur==='kycBack'?{title:'Reverso de tu CI',sub:'Ahora gira tu cédula y encuadra el reverso.',label:'CI · REVERSO'}:st.doc==='ci'?{title:'Anverso de tu CI',sub:'Encuadra tu cédula dentro del marco, sin reflejos.',label:'CI · ANVERSO'}:{title:'Página de datos del pasaporte',sub:'Encuadra la página con tu foto dentro del marco.',label:'PASAPORTE'};
+    const selfieMsgs=['Centra tu rostro en el óvalo','Gira lentamente a la izquierda','Ahora hacia la derecha','Parpadea una vez','¡Listo!'];
+    const isLoginOk=st.lerr==='ok';
+    return {theme:P.theme||'dark',accent:P.accent||'nocturne',scale:st.scale,anim,is,
+      veil:{show:st.leaving||st.veilIn,anim:st.leaving?'qVeilIn .48s cubic-bezier(.4,0,.2,1) forwards':'qVeilOut .6s cubic-bezier(.4,0,.2,1) forwards'},leaveT:st.leaving?'translateY(-28px) scale(.97)':'none',leaveO:st.leaving?0:1,sbColor:dark?'#e9e9ed':'var(--tx)',user,
+      perks:[{icon:'ph ph-qr-code',t:'Paga y cobra con QR'},{icon:'ph ph-arrows-left-right',t:'Cambia Bs ⇄ USD sin comisión'},{icon:'ph ph-credit-card',t:'Tarjeta virtual al instante'}],
+      startRegister:()=>this.push('regPhone',{flow:'reg',phone:'',otp:'',pin:'',pinStep:0}),goLogin:()=>this.push('login',{lpin:'',lerr:'',attempts:3}),
+      loginDots:dots(st.lpin,4).map(d=>isLoginOk?{...d,bd:'var(--ac)',dot:'var(--ac)'}:st.lerr&&!st.lpin?{...d,bd:'var(--neg)'}:d),
+      loginMsg:isLoginOk?'Ingresando…':st.lerr||'PIN de demostración: '+((st.sess&&st.sess.pin)||'1234'),loginMsgColor:isLoginOk?'var(--ac)':st.lerr?'var(--neg)':'var(--tx2)',
+      loginKeys:mk('bio'),numKeys:mk(''),shakeAnim:st.shake?'qShake .42s ease':'none',
+      forgotPin:()=>this.toast('Te enviamos un código por SMS'),switchAccount:()=>this.setState({stack:['welcome'],dir:'b'}),
+      inFlow,prog,progLabel:(idx+1)+'/'+steps,back:this.back,flowHeadBg:dark?'transparent':'var(--bg)',flowHeadFg:dark?'#e9e9ed':'var(--tx)',
+      phone:ph,onPhone:e=>this.setState({phone:e.target.value.replace(/\D/g,'').slice(0,8)}),phoneBd:ph.length===8&&!phoneOk?'var(--neg)':phoneOk?'var(--ac)':'var(--ln)',
+      phoneHint:ph.length===8&&!phoneOk?'Los celulares en Bolivia empiezan con 6 o 7.':'8 dígitos, sin el código de país.',phoneHintColor:ph.length===8&&!phoneOk?'var(--neg)':'var(--tx2)',phoneOp:phoneOk?1:.4,
+      phoneNext:()=>{if(!phoneOk)return;this.push('regOtp',{otp:''});this.startOtpTimer();this.toast('Código enviado al +591 '+ph.slice(0,4)+' '+ph.slice(4));},
+      phoneFmt,otpBoxes:dots(st.otp,6),resendLabel:st.resend>0?'Reenviar en 0:'+String(st.resend).padStart(2,'0'):'Reenviar código',resendColor:st.resend>0?'var(--tx2)':'var(--ac)',
+      resendOtp:()=>{if(st.resend>0)return;this.startOtpTimer();this.toast('Te enviamos un nuevo código');},
+      name:st.name,onName:e=>this.setState({name:e.target.value}),email:st.email,onEmail:e=>this.setState({email:e.target.value.trim()}),
+      emailBad:st.email.length>4&&!emailOk,emailBd:st.email.length>4&&!emailOk?'var(--neg)':emailOk?'var(--ac)':'var(--ln)',
+      terms:st.terms,toggleTerms:()=>this.setState({terms:!st.terms}),termsBd:st.terms?'var(--ac)':'var(--s3)',termsBg:st.terms?'color-mix(in srgb,var(--ac) 14%,transparent)':'transparent',noop:e=>{e.preventDefault();this.toast('Abriendo documento…');},
+      infoOp:infoOk?1:.4,infoNext:()=>{if(infoOk)this.push('regPin',{pin:'',pinStep:0,pinErr:''});},
+      pinTitle:st.pinStep?'Confirma tu PIN':'Crea un PIN de 4 dígitos',pinDots:dots(st.pin,4).map(d=>({...d,v:''})),pinErr:st.pinErr,
+      limits:[{icon:'ph ph-compass',t:'Explorar la app',s:'Disponible',c:'var(--ac)'},{icon:'ph ph-arrow-down',t:'Depositar dinero',s:'Requiere KYC',c:'var(--tx2)'},{icon:'ph ph-arrow-up',t:'Retirar dinero',s:'Requiere KYC',c:'var(--tx2)'},{icon:'ph ph-paper-plane-tilt',t:'Enviar, cobrar y pagar',s:'Requiere KYC',c:'var(--tx2)'}],
+      startKyc:()=>this.push('kycIntro',{flow:'kyc'}),later:()=>st.fromApp?this.go('Qullqi Pay.dc.html'):this.enterApp('none',true),
+      kycNeeds:[{icon:'ph ph-identification-card',t:'Tu CI o pasaporte vigente',s:'Original, sin fotocopias'},{icon:'ph ph-sun',t:'Un lugar con buena luz',s:'Evita reflejos sobre el documento'},{icon:'ph ph-user-focus',t:'Tu rostro descubierto',s:'Sin lentes oscuros ni gorra'}],
+      kycStart:()=>this.push('kycDoc'),
+      docOpts:[['ci','ph ph-identification-card','Cédula de identidad','Bolivia · anverso y reverso'],['pass','ph ph-book-open','Pasaporte','Página con tu foto']].map(([k,icon,t,s])=>({icon,t,s,bd:st.doc===k?'var(--ac)':'var(--ln)',sh:st.doc===k?'0 0 22px -10px var(--ac)':'none',dot:st.doc===k?'inset 0 0 0 4px var(--s1),inset 0 0 0 10px var(--ac)':'none',onClick:()=>this.setState({doc:k})})),
+      docNext:()=>this.push('kycFront',{shot:false}),
+      cam:{...camCfg,h:st.doc==='pass'&&cur==='kycFront'?'230px':'208px',shot:st.shot,notShot:!st.shot},
+      capture:()=>this.setState({shot:true}),retake:()=>this.setState({shot:false}),camNext:()=>{if(cur==='kycFront'&&st.doc==='ci')this.push('kycBack',{shot:false});else this.push('kycSelfie',{selfie:0,selfieRun:false});},
+      selfieDeg:(st.selfie*3.6)+'deg',selfieMsg:st.selfieRun?selfieMsgs[Math.min(4,Math.floor(st.selfie/25))]:'Ubícate frente a la cámara',selfieIdle:!st.selfieRun,selfieBusy:st.selfieRun,startSelfie:this.startSelfie,
+      docData:[['Nombre',name],['Documento',st.doc==='ci'?'CI 7845123 LP':'Pasaporte BO 4418202'],['Fecha de nacimiento','14/03/1994'],['Nacionalidad','Boliviana'],['Vence','22/08/2031']].map(([l,v])=>({l,v})),
+      decl:st.decl,toggleDecl:()=>this.setState({decl:!st.decl}),declBd:st.decl?'var(--ac)':'var(--s3)',declBg:st.decl?'color-mix(in srgb,var(--ac) 14%,transparent)':'transparent',declOp:st.decl?1:.4,submitKyc:this.submitKyc,
+      procSteps:procT.map((t,i)=>{const d=i<st.kp,a=i===st.kp;return{t,icon:d?'ph-fill ph-check-circle':a?'ph ph-circle-notch':'ph ph-circle',ic:d?'var(--ac)':a?'var(--tx)':'var(--s3)',fg:d||a?'var(--tx)':'var(--tx2)'};}),
+      kr:{...KR,hasTag:!!KR.hasTag,hasSecondary:!!KR.hasSecondary},
+      bioOn:st.bio,hasToast:!!st.toast,toast:st.toast};
+  }
+}
+</script>
+</body>
+</html>
