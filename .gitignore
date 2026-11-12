@@ -23,3 +23,4 @@ main.py
 pyproject.toml
 .env*
 *.log
+.jks/

@@ -135,7 +135,7 @@ classify() {
       shared/src/jvmMain/* | shared/src/jvmTest/* | build/* | */build/*)
       echo protected ;;
     *.gradle.kts | gradle/* | gradle.properties | CLAUDE.md | .specify/* | .claude/* | \
-      scripts/* | .githooks/* | */sqldelight/* | */designsystem/* | */navigation/* | \
+      scripts/* | .githooks/* | .github/* | */sqldelight/* | */designsystem/* | */navigation/* | \
       */domain/model/* | */domain/repository/*)
       echo shared ;;
     *) echo authorized ;;
