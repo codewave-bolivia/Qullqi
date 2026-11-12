@@ -193,8 +193,12 @@ cmd_check() {
     if [[ -z ${OWNER[$id]} || ${OWNER[$id]} == TODO* ]]; then
       echo "FAIL: spec $id has no Owner (FR-009)"; fails=1
     fi
-    if [[ ${STATUS[$id]} != Ready ]]; then
-      echo "FAIL: spec $id Status is '${STATUS[$id]}'; it must be Ready to integrate"; fails=1
+    # docs/fix/chore/hotfix branches may amend an already Integrated spec
+    local allowed=Ready
+    [[ $b == feature/* ]] || allowed="Ready|Integrated"
+    if [[ ! ${STATUS[$id]} =~ ^($allowed)$ ]]; then
+      echo "FAIL: spec $id Status is '${STATUS[$id]}'; it must be ${allowed//|/ or } to integrate"
+      fails=1
     fi
     while read -r p mode integ; do
       local rp
