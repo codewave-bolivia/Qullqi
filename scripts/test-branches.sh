@@ -85,6 +85,11 @@ expect_output "not Ready is rejected (message)" "must be Ready" "$BR" check feat
 expect_exit "not Ready is rejected (exit)" 1 "$BR" check feature/010-indep
 write_spec 010-indep alice Ready none none
 expect_exit "feature branch without spec rejected" 1 "$BR" check feature/015-nospec
+write_spec 016-done alice Integrated none none
+make_branch docs/016-amend CLAUDE.md
+expect_exit "docs amendment to Integrated spec passes" 0 "$BR" check docs/016-amend
+make_branch feature/016-again shared/src/commonMain/kotlin/D.kt
+expect_exit "feature branch on Integrated spec rejected" 1 "$BR" check feature/016-again
 
 # --- US2: dependent branches --------------------------------------------------
 write_spec 011-parent bob "In Progress" none Draft

@@ -25,7 +25,8 @@ SPEC                          BRANCH                                OWNER       
 Pre-integration check into `develop`. Fails (exit `1`) if any of:
 
 - branch name does not match the naming regex;
-- branch has a spec whose `Owner` or `Status` is missing, or `Status` is not `Ready`;
+- branch has a spec whose `Owner` or `Status` is missing, or `Status` is not `Ready`
+  (non-`feature/` branches also accept `Integrated`, for amendments to an integrated spec);
 - any parent in `Depends on` is not `Integrated` *and* not merged into `develop` (FR-016);
 - a dependency cycle involves the branch (exit `2`).
 
