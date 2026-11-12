@@ -83,6 +83,11 @@ Qullqi/
 │   ├── Qullqi Pay.dc.html
 │   ├── Qullqi Pay Auth.dc.html
 │   └── _ds/                          # Design system bundle
+├── specs/                            # Spec Kit feature specs: NNN-short-name/{spec,plan,tasks}.md
+├── scripts/
+│   ├── branches.sh                   # Branch/spec view and integration checks (§15)
+│   └── test-branches.sh              # Self-check for branches.sh and the pre-commit hook
+├── .githooks/pre-commit              # Refuses commits on develop/master (§15)
 ├── .specify/                         # Spec Kit: constitution, templates, scripts, workflows
 └── .claude/skills/                   # Spec Kit agent skills
 ```
@@ -91,6 +96,20 @@ Notes:
 - No feature modules, navigation, DI or test directories beyond the template defaults exist yet.
 - No Builder-managed directories exist in the repository yet. Build outputs (`**/build/`, `.gradle`, `.kotlin`) are gitignored.
 - Tests: `commonTest` (portable), `androidHostTest` (Android JVM host), `jvmTest` and `iosTest` (platform-specific).
+
+### Repository Areas
+
+Every path belongs to exactly one class. Precedence: **protected > shared > authorized** (e.g.
+`desktopApp/build.gradle.kts` is protected). `scripts/branches.sh check` applies the same table.
+
+| Class | Paths | Required action |
+|-------|-------|-----------------|
+| **protected** | `iosApp/**`, `desktopApp/**`, `shared/src/iosMain/**`, `shared/src/iosTest/**`, `shared/src/jvmMain/**`, `shared/src/jvmTest/**`, `**/build/**` | Builder involvement or written approval recorded in the feature plan |
+| **shared** (high-risk) | `*.gradle.kts`, `gradle/**`, `gradle.properties`, `CLAUDE.md`, `.specify/**`, `.claude/**`, `scripts/**`, `.githooks/**`, `**/sqldelight/**`, `**/designsystem/**`, `**/navigation/**`, `**/domain/model/**` (shared models), `**/domain/repository/**` (repository interfaces) | Check recent history and coordinate before editing; the other developer approves the integration (§15.4) |
+| **authorized** | everything else, notably `shared/src/commonMain/**`, `shared/src/commonTest/**`, `shared/src/androidMain/**`, `shared/src/androidHostTest/**`, `androidApp/src/**`, `specs/**`, `docs/**` | None beyond the normal workflow |
+
+Layers inside `shared/src/commonMain/kotlin/com/codewave/qullqi/` follow the constitution:
+`ui → presentation → domain ← data` (dependencies point inward; `domain` depends on nothing).
 
 ### File Ownership Rules
 
@@ -517,6 +536,17 @@ Developers must coordinate changes to specifications that affect shared modules,
 
 Claude must not modify another developer's active specification without coordination.
 
+Every `specs/NNN-short-name/spec.md` header (before the first `##`) MUST contain these lines, which
+`scripts/branches.sh` parses (format: `specs/001-repo-governance-branching/contracts/spec-metadata.md`):
+
+```markdown
+**Feature Branch**: `feature/NNN-short-name`
+**Owner**: <person>
+**Status**: Draft | In Progress | Ready | Integrated | Abandoned
+**Depends on**: none | NNN-short-name stacked|waiting [(integrated)], ...
+**Contract**: none | Draft | Approved (YYYY-MM-DD, <approver>)
+```
+
 ### 13.5 Specification and Implementation Boundaries
 
 The specification defines WHAT the application must do.
@@ -640,3 +670,78 @@ defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardc
 - After a release (or once real user data exists), every schema change MUST include a `.sqm`
   migration, and the migration MUST be verified (`verifySqlDelightMigration`).
 - Schema files are high-risk shared resources (§9): check history and coordinate before editing.
+
+---
+
+## 15. Branching and Dependent Branches
+
+Defined by `specs/001-repo-governance-branching/`. Tooling: `scripts/branches.sh` (read-only) and
+`.githooks/pre-commit`.
+
+### 15.1 Branches and naming
+
+- `develop` is the **integration branch**; `master` is the **stable branch** and only receives
+  promotions from `develop` (§15.5).
+- No direct commits on `develop` or `master`. All work happens on short-lived work branches.
+- Work branch name: `<type>/<NNN>-<short-name>`, `type` ∈ `feature | fix | docs | chore | hotfix`,
+  `NNN` = the spec number. Regex: `^(feature|fix|docs|chore|hotfix)/[0-9]{3}-[a-z0-9-]+$`.
+- Each significant branch has exactly one spec with a named owner (§13.4 header).
+- `scripts/branches.sh list` is the single view of specs, branches, owners, status and
+  dependencies. There is no hand-maintained registry file.
+
+### 15.2 Start a branch
+
+One-time per clone: `git config core.hooksPath .githooks`.
+
+1. `git status`. Uncommitted changes → stop and ask whose they are; never discard, reset or stash
+   them automatically.
+2. If a remote exists: `git fetch`. If none is configured, report "no remote: fetch not applicable".
+3. `git switch develop && git merge --ff-only <remote>/develop` (when a remote exists).
+4. Independent feature: `git switch -c feature/NNN-short-name develop`.
+   Dependent feature: follow §15.3 first.
+5. Set the spec header `**Status**: In Progress`.
+6. Any conflict → STOP and report with the §3 "GIT CONFLICT DETECTED" format.
+
+### 15.3 Dependent branches
+
+A feature that needs another unfinished feature declares it in its spec header:
+`**Depends on**: 002-local-data-layer stacked` (or `waiting`).
+
+- **Stack or wait (hybrid rule)**: create the branch from the parent's branch (`stacked`) only if
+  `scripts/branches.sh stack-ok <spec>` passes, i.e. every unintegrated parent has
+  `**Contract**: Approved (YYYY-MM-DD, <approver>)` and a `## Contract` section listing the
+  interfaces, models and data shapes dependents may rely on. Otherwise mark it `waiting` and do not
+  start the branch until the parent is integrated.
+- While stacked, rely only on the approved contract. Editing the parent's `## Contract` resets it
+  to `Draft`; it must be re-approved and the dependent's owner informed before the dependent is
+  updated.
+- Update a stacked branch with `git merge <parent-branch>`. **Never rebase or force push.**
+- When the parent is integrated: `git merge develop` into the dependent and mark the entry
+  `(integrated)`, e.g. `002-local-data-layer stacked (integrated)`.
+- Parent abandoned or redesigned: notify dependents' owners and update their specs before
+  continuing.
+- Cycles are rejected (`branches.sh` exits 2): extract the shared part into its own feature.
+- Chains deeper than 2 levels require agreement of both developers (`branches.sh` warns).
+
+### 15.4 Integrate into develop
+
+1. Set the spec header `**Status**: Ready`.
+2. `scripts/branches.sh check <branch>` must print `OK`. It fails if the name is invalid, the spec
+   is not `Ready`, has no owner, or any parent is not yet integrated (parents always go first).
+3. Constitution quality gates pass (tests, compilation for authorized targets, responsive check).
+4. If `check` printed `APPROVAL REQUIRED`, the other developer approves before merging. Otherwise
+   the developer may integrate their own work. `PROTECTED PATH` requires the approval recorded in
+   the plan.
+5. As the last commit on the work branch, set `**Status**: Integrated` (never commit on `develop`
+   directly).
+6. `git switch develop && git merge --no-ff <branch>`. On conflict: STOP (§3).
+7. Delete the branch (`git branch -d <branch>`) and tell the owners of any dependents.
+8. Never force push or rewrite `develop`.
+
+### 15.5 Promote and hotfix
+
+- Promotion is a team decision:
+  `git switch master && git merge --ff-only develop && git tag -a vMAJOR.MINOR.PATCH -m "<summary>"`.
+- Feature branches are never merged into `master`.
+- Hotfix: `git switch -c hotfix/NNN-short-name master`, fix, then `git merge --no-ff` into `master`
+  (tag a PATCH version) and into `develop`.
