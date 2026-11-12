@@ -732,10 +732,11 @@ A feature that needs another unfinished feature declares it in its spec header:
 4. If `check` printed `APPROVAL REQUIRED`, the other developer approves before merging. Otherwise
    the developer may integrate their own work. `PROTECTED PATH` requires the approval recorded in
    the plan.
-5. `git switch develop && git merge --no-ff <branch>`. On conflict: STOP (§3).
-6. Set `**Status**: Integrated`, delete the branch (`git branch -d <branch>`), and tell the owners
-   of any dependents.
-7. Never force push or rewrite `develop`.
+5. As the last commit on the work branch, set `**Status**: Integrated` (never commit on `develop`
+   directly).
+6. `git switch develop && git merge --no-ff <branch>`. On conflict: STOP (§3).
+7. Delete the branch (`git branch -d <branch>`) and tell the owners of any dependents.
+8. Never force push or rewrite `develop`.
 
 ### 15.5 Promote and hotfix
 
