@@ -36,7 +36,7 @@ push — contracts/branches-cli.md).
 
 **Purpose**: Put the work on its own branch and make spec 001 conform to the metadata contract.
 
-- [ ] T001 Follow CLAUDE.md §3 before starting: confirm the working tree state on `feature/000-constitution-config` (uncommitted `CLAUDE.md`, `.specify/memory/constitution.md`, `specs/` belong to the user — never discard/stash them), ask the user to commit or confirm, then create `feature/001-repo-governance-branching` from `develop` (or from `feature/000-constitution-config` if it is not yet merged into `develop`, recording that as a dependency) in the repository root
+- [X] T001 Follow CLAUDE.md §3 before starting: confirm the working tree state on `feature/000-constitution-config` (uncommitted `CLAUDE.md`, `.specify/memory/constitution.md`, `specs/` belong to the user — never discard/stash them), ask the user to commit or confirm, then create `feature/001-repo-governance-branching` from `develop` (or from `feature/000-constitution-config` if it is not yet merged into `develop`, recording that as a dependency) in the repository root
 - [ ] T002 Add the metadata header to specs/001-repo-governance-branching/spec.md per contracts/spec-metadata.md: keep `**Feature Branch**: \`feature/001-repo-governance-branching\``, keep `**Owner**: krypton612`, set `**Status**: In Progress`, add `**Depends on**: none` and `**Contract**: none`, all before the first `##` heading
 
 ---
