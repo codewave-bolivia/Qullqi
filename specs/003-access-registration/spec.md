@@ -58,11 +58,14 @@ is shown.
 
 **Acceptance Scenarios**:
 
-1. **Given** at least one stored account, **When** the app starts, **Then** after the splash
-   (about 1.9 s) the login screen appears for the most recently used account.
+1. **Given** at least one stored account, **When** the app starts, **Then** the system launch screen
+   (Nocturne background, Qullqi icon) flows into the animated splash, and after about 1.9 s the login
+   screen appears for the most recently used account.
 2. **Given** no stored account, **When** the app starts, **Then** the welcome screen appears.
 3. **Given** the welcome screen, **When** "Ya tengo cuenta" is chosen with no stored accounts,
    **Then** the person is told no account exists on this device and offered "Crear cuenta".
+4. **Given** a cold start on Android 12 or later, **When** the app opens, **Then** no white or
+   default-colored frame is visible before the splash.
 
 ---
 
@@ -176,10 +179,10 @@ implementation.
 
 ### User Story 6 - Hand-off to the rest of the app (Priority: P2)
 
-After login or registration the person reaches the main area. The main area belongs to the other
-developer (M4) and is not built here; until it exists, a temporary placeholder shows the person's
-name, their verification status, "Verificar" (when not verified) and "Cerrar sesión". Logging out
-returns to login.
+After login or registration the app leaves AuthActivity and opens MainActivity with the veil
+transition. MainActivity's content belongs to the other developer (M4) and is not built here; until
+it exists, a temporary placeholder shows the person's name, their verification status,
+"Verificar" (when not verified) and "Cerrar sesión". Logging out returns to AuthActivity at login.
 
 **Why this priority**: makes M2 demonstrable end to end without waiting for M4.
 
@@ -192,8 +195,11 @@ login.
    person's name and verification status.
 2. **Given** the placeholder, **When** "Cerrar sesión" is confirmed, **Then** login opens for the same
    account.
-3. **Given** a not-verified person, **When** "Verificar" is chosen, **Then** the identity
-   verification entry (M3) opens; until M3 exists it is a placeholder that says so.
+3. **Given** a not-verified person in MainActivity, **When** "Verificar" is chosen, **Then**
+   AuthActivity opens directly at the identity verification entry (M3) and, when it ends, MainActivity
+   is shown again; until M3 exists the entry is a placeholder that says so.
+4. **Given** the person is in MainActivity, **When** back is pressed at its root, **Then** the app
+   closes and does not return to login.
 
 ### Edge Cases
 
@@ -204,6 +210,11 @@ login.
 - Countdown keeps running correctly if the app is backgrounded during step 2.
 - Back from step 1 returns to welcome; back from login with several accounts returns to the account
   list.
+- App backgrounded for more than 5 minutes while in MainActivity: on return, MainActivity's content
+  is hidden behind the unlock (no balance or personal data visible in the app switcher snapshot
+  after the timeout); after unlocking, the previous screen is restored.
+- App backgrounded during registration for more than 5 minutes: the registration draft is kept; no
+  unlock is required because there is no session yet.
 - Platforms where the local data is not yet available (iOS/Desktop until the Builder provides it):
   the app shows a clear "no disponible en esta plataforma todavía" screen instead of crashing.
 
@@ -215,8 +226,17 @@ login.
 
 - **FR-001**: The app MUST show the splash for about 1.9 s with the wordmark and a loading bar, then
   route to login (≥ 1 stored account) or welcome (none).
+- **FR-001a**: On Android, the system launch screen MUST use the Nocturne background (`#161826`) and
+  the Qullqi icon, and hand off to the in-app splash with no white flash, generic icon or visible
+  jump between them.
 - **FR-002**: Login MUST target the most recently used account; others are reachable via
   "Cambiar de cuenta".
+- **FR-002a**: Every cold start MUST go through AuthActivity and require PIN or fingerprint, even if a
+  session was open when the app was closed.
+- **FR-002b**: When the app returns to the foreground after more than 5 minutes in the background,
+  it MUST require PIN or fingerprint for the current account before showing MainActivity's content
+  again; after unlocking, the person returns to where they were. Returning within 5 minutes MUST NOT
+  ask again. Failed unlock attempts count toward the same 3-attempt lock.
 
 **Login**
 
@@ -258,13 +278,29 @@ login.
 
 **Hand-off**
 
-- **FR-019**: After login/registration the app MUST open the main-area entry point. Until M4
-  provides it, a placeholder MUST show name, verification status, "Verificar" (if not verified) and
-  "Cerrar sesión".
-- **FR-020**: "Verificar" and "Verificar mi identidad" MUST open the M3 entry point; until M3 exists,
-  a placeholder.
-- **FR-021**: Logout MUST ask for confirmation in a bottom sheet and return to login for the same
-  account.
+- **FR-019**: After login/registration the app MUST finish AuthActivity and open **MainActivity**
+  (the main area). Until M4 provides its content, MainActivity MUST show a placeholder with name,
+  verification status, "Verificar" (if not verified) and "Cerrar sesión".
+- **FR-020**: "Verificar mi identidad" (in AuthActivity) MUST open the M3 entry (`kycIntro`) inside
+  AuthActivity; "Verificar" in MainActivity MUST open AuthActivity directly at `kycIntro` and return
+  to MainActivity when it ends. Until M3 exists, `kycIntro` is a placeholder.
+- **FR-021**: Logout MUST ask for confirmation in a bottom sheet, finish MainActivity and open
+  AuthActivity at login for the same account.
+
+**Activities**
+
+- **FR-031**: The app MUST have two activities (ARCHITECTURE.md §2): **AuthActivity**, the launcher,
+  hosting splash, welcome, login, registration, PIN recovery and the M3 verification flow; and
+  **MainActivity**, hosting the M4 main area. Each activity has its own short screen navigation;
+  screens of one activity never appear in the other's back stack.
+- **FR-032**: Switching activities MUST use the veil transition (ARCHITECTURE.md §6: the origin is
+  covered by a background-colored veil 0→1 in 450–480 ms, the destination uncovers it 1→0 in 600 ms).
+- **FR-033**: Back from the root screen of AuthActivity (welcome or login) MUST leave the app; it MUST
+  NOT return to MainActivity after logout. Back from MainActivity's root MUST leave the app, never
+  return to login.
+- **FR-034**: On iOS and Desktop the same two flows MUST be exposed as two independent roots
+  (auth and main) switched by the session, for the Builder to host; they show the "no disponible"
+  screen until the Builder provides local data.
 
 **Quality**
 
@@ -298,8 +334,10 @@ login.
 - **Biometric preference (new)**: per account, enabled/disabled, prompted-once flag.
 - **Registration draft**: phone, code state, name, email, terms acceptance — kept only during the
   flow, never stored after cancellation.
-- **Main-area and verification entry points**: navigation destinations owned by M4 and M3; M2
-  only navigates to them.
+- **Activities**: AuthActivity (launcher; access, registration, PIN recovery, M3 verification) and
+  MainActivity (M4 main area).
+- **Main-area and verification entry points**: MainActivity content (M4) and `kycIntro` inside
+  AuthActivity (M3); M2 only opens them.
 
 ## Success Criteria *(mandatory)*
 
@@ -315,6 +353,8 @@ login.
   wide window.
 - **SC-005**: 0 cases where the PIN or SMS code appears on screen in clear text or in logs.
 - **SC-006**: A locked sample account can be recovered and used again in under 1 minute.
+- **SC-007**: 100% of cold starts and of returns after more than 5 minutes in the background
+  require PIN or fingerprint; 0% of returns within 5 minutes do.
 
 ## Clarifications
 
@@ -325,6 +365,14 @@ login.
 - Q: Real or simulated biometrics? → A: Real device biometrics on Android, tested on a physical
   device; hidden on iOS/Desktop.
 - Visual source: only `Qullqi Pay Auth.dc.html` and its guidelines; same Nocturne style everywhere.
+- Q: How are screens split across activities? → A: Two activities per ARCHITECTURE.md §2:
+  AuthActivity (launcher: splash, welcome, login, registration, PIN recovery, M3 KYC) and
+  MainActivity (M4 main area); veil transition between them; short in-activity navigation.
+- Q: Does the splash also use Android's system launch screen? → A: Yes: system launch screen with
+  background `#161826` and the Qullqi icon, handing off without a visible jump to the in-app animated
+  splash (wordmark + 1.9 s loading bar) in AuthActivity.
+- Q: What is required when the app returns with an open session? → A: PIN or fingerprint on every
+  cold start, and when returning from background after more than 5 minutes.
 
 ## Assumptions
 
