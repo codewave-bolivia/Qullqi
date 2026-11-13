@@ -264,3 +264,93 @@ Keyframes: `qRise` = opacity 0→1 + translateY 14px→0; `qGlow` = opacity .55�
 
 **Dependencies**: T072 → T073, T074 (parallel) → T075 → T076 → T077 → T078 → T079.
 **Parallel**: T074 ∥ T073 (different files) once T072 is done.
+
+---
+
+## Phase 11: Refinement — Login and Welcome fidelity (US1, US2)
+
+**Goal**: Login and Welcome match `docs/references-views/Qullqi Pay Auth.dc.html` (owner review
+2026-11-13: keypad not to standard; "¿Olvidaste tu PIN?" / "Cambiar de cuenta" wrong font and color;
+avatar and content wrongly positioned; no way back from the accounts list to the welcome screen;
+Welcome content and its elliptical glow missing). Only Login, the accounts sheet, Welcome and the
+shared keypad are in scope.
+
+**Source of truth — Login** (`<sc-if value="{{ is.login }}">`):
+
+```html
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding-top:40px;background:var(--bg)">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px">          <!-- LEFT aligned -->
+    <div style="width:56px;height:56px;border-radius:28px;background:var(--ac-t);color:var(--ac-tx);
+         box-shadow:0 0 0 1px var(--ac),0 0 26px -8px var(--ac);display:grid;place-items:center;font:500 19px">{{ user.ini }}</div>
+    <div style="font:500 26px;letter-spacing:-.025em;margin-top:18px">Hola de nuevo, {{ user.first }}</div>
+    <div style="font:400 14px;color:var(--tx2);margin-top:4px">Ingresa tu PIN de 4 dígitos</div>
+    <div style="display:flex;gap:10px;margin-top:26px;animation:{{ shakeAnim }}">
+      4 × <div style="width:54px;height:62px;border-radius:8px;background:var(--s1);border:1px solid {{ d.bd }};box-shadow:{{ d.sh }}">
+              <span style="width:12px;height:12px;border-radius:6px;background:{{ d.dot }}"></span></div></div>
+    <div style="font:400 13px;color:{{ loginMsgColor }};margin-top:14px;min-height:18px">{{ loginMsg }}</div>
+  </div>
+  <div style="flex:none;padding:0 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px">
+    12 × <button style-hover="background:var(--s1)" style-active="transform:scale(.93)"
+          style="height:58px;border:0;background:transparent;border-radius:8px;font:400 24px;color:var(--tx)">
+          digit | <i class="ph ph-fingerprint" style="font-size:24px;color:var(--ac)"> | <i class="ph ph-backspace" style="font-size:24px;color:var(--tx)"></button>
+  </div>
+  <div style="flex:none;display:flex;justify-content:space-between;padding:10px 24px 30px">
+    <button style="font:500 13.5px;color:var(--ac);padding:6px 0">¿Olvidaste tu PIN?</button>
+    <button style="font:500 13.5px;color:var(--tx2);padding:6px 0">Cambiar de cuenta</button>
+  </div>
+</div>
+```
+
+Box state (`dots()`): filled → border `ac`, dot `ac`; current (index = length) → border `ac` + glow `0 0 16px -4px ac`;
+others → border `ln`, dot transparent; success → all `ac`; error with empty entry → border `neg`.
+Message colors: `ac` while "Ingresando…", `neg` on error/lock, `tx2` otherwise (the reference's demo-PIN
+hint stays omitted — approved deviation; keep the 18 dp min height so nothing jumps).
+
+**Source of truth — Welcome** (`<sc-if value="{{ is.welcome }}">`):
+
+```html
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:56px 24px 28px;
+     background:radial-gradient(80% 40% at 90% 18%,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg)">
+  <div style="font:500 22px;letter-spacing:-.03em">qullqi<span style="color:var(--ac)">.</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="font:500 40px/1.08;letter-spacing:-.035em">Envía, cobra y paga con QR en segundos.</div>
+    <div style="font:400 15px/1.5;color:var(--tx2);margin-top:14px;max-width:300px">Abre tu cuenta con tu celular y tu correo. Verificas tu identidad cuando quieras.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+      3 × <div style="display:flex;align-items:center;gap:12px;font:400 14.5px"><i class="{{ p.icon }}" style="font-size:20px;color:var(--ac)"></i>{{ p.t }}</div>
+  </div></div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button style="height:52px;border-radius:8px;border:1px solid var(--ac);background:color-mix(in srgb,var(--ac) 8%,transparent);color:var(--ac);font:500 15px;box-shadow:0 0 28px -12px var(--ac)">Crear cuenta</button>
+    <button style="height:52px;border-radius:8px;border:1px solid var(--ln);background:transparent;font:500 15px">Ya tengo cuenta</button>
+  </div>
+</div>
+```
+
+Perks: `ph-qr-code` "Paga y cobra con QR"; `ph-arrows-left-right` "Cambia Bs ⇄ USD sin comisión"; `ph-credit-card` "Tarjeta virtual al instante".
+
+**Independent Test**: desktop renders (scratch clone, as for the splash) of Login (idle, 2 digits, error, locked) and Welcome at 400×860 compared with the markup above; on the device, "Cambiar de cuenta" → "Volver al inicio" reaches Welcome; `:shared:testAndroidHostTest` green.
+
+### Shared design system
+
+- [ ] T080 Download Phosphor regular `qr-code`, `arrows-left-right`, `credit-card` (same approved source and conversion as T005) to `shared/src/commonMain/composeResources/drawable/ph_qr_code.xml`, `ph_arrows_left_right.xml`, `ph_credit_card.xml` and add `Ph.QrCode`, `Ph.ArrowsLeftRight`, `Ph.CreditCard` in `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/components/Icons.kt`
+- [ ] T081 Tokens in `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/`: `Type.kt` — set `titleLg` to 26 sp / W500 / −0.025 em; add `key` (24 sp W400, tabular), `avatar` (19 sp W500), `link` (13.5 sp W500), `message` (13 sp W400), `welcomeTitle` (40 sp W500, lineHeight 1.08, −0.035 em), `welcomeWordmark` (22 sp W500, −0.03 em), `perk` (14.5 sp W400), `lead` (15 sp W400 lineHeight 1.5); `Tokens.kt` — `QSize.keyHeight = 58.dp`, `keypadGap = 2.dp`, `keypadPaddingH = 12.dp`, `keyIcon = 24.dp`, `perkIcon = 20.dp`, `loginPaddingH = 28.dp`, `loginPaddingTop = 40.dp`, `messageMinHeight = 18.dp`, `pinGap = 10.dp`, `leadMaxWidth = 300.dp`, `avatarGlow = 26.dp`, `boxGlow = 16.dp` (replaces `glowBox`); `Motion.kt` — `KEY_PRESS_SCALE = 0.93f`
+- [ ] T082 Rewrite `QKeypad` in `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/components/Keypad.kt` to the reference keypad: full available width (remove `widthIn(max = keypadMaxWidth)` and the token if unused), horizontal padding `keypadPaddingH`, 3 equal columns, 2 dp gaps between keys in both directions, each key height `keyHeight` (keep the compact 48 dp rule for windows under `compactHeight`), **transparent** background, radius `QRadius.sm`, `s1` background only while hovered or pressed, press scale `KEY_PRESS_SCALE`; digits in `Q.type.key` with `tx`; backspace icon `keyIcon` in `tx`; the bottom-left slot renders `leftKey` (empty Box otherwise); `QKey` (used for the fingerprint) follows the same style with its icon tinted by the caller (`ac`). Applies to every keypad (login, code and PIN steps), which all use the same reference style
+- [ ] T083 Update `QPinBoxes` in `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/components/PinBoxes.kt` to the reference `dots()` rules: gap `pinGap`; filled box → border `ac` and `ac` dot; current box (index == filled) → border `ac` + glow `boxGlow`; other boxes → border `ln`, no dot; parameter `success: Boolean` → all borders and dots `ac`; `error && filled == 0` → all borders `neg`; radius `QRadius.sm` (8, not xs)
+- [ ] T084 [P] Add `QLinkButton(text, onClick, color)` to `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/components/Buttons.kt`: no border/fill, `Q.type.link`, vertical padding 6 dp, min touch height `QSize.touchTarget`, press scale; used for the login footer links
+
+### US2 — Login
+
+- [ ] T085 [US2] Rewrite the layout of `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/login/LoginScreen.kt` to the reference (no `QScreen` scroll column): root fills `bg` (no glow) with top padding `loginPaddingTop` + status-bar inset; on wide windows the same centered 480 dp panel rule as `QScreen` (`QSize.wideWindow`); (1) a `Column(weight 1f)` with horizontal padding `loginPaddingH`, `verticalArrangement = Center`, **start-aligned**: avatar 56 dp (`acT` fill, initials `Q.type.avatar` in `acTx`, 1 dp `ac` ring + `avatarGlow` accent glow), 18 dp, title `Q.type.titleLg` "Hola de nuevo, {first}" (unlock mode: "Desbloquea, {first}"), 4 dp, subtitle `Q.type.bodySm` `tx2` "Ingresa tu PIN de 4 dígitos", 26 dp, `QPinBoxes` (start-aligned, `success` while status is Entering), 14 dp, message `Q.type.message` with min height `messageMinHeight` colored `ac` (Entering) / `neg` (Wrong, Locked) / `tx2`; (2) `QKeypad` with the fingerprint `leftKey` when visible; (3) footer `Row(SpaceBetween)` padding start/end 24 dp, top 10 dp, bottom 30 dp + navigation-bar inset: `QLinkButton("¿Olvidaste tu PIN?", color = ac)` and, outside unlock mode, `QLinkButton("Cambiar de cuenta", color = tx2)` without icon. Locked state: same layout, boxes with `neg` borders, message "Bloqueamos el acceso por seguridad. Recupera tu PIN." in `neg`, keypad disabled at 40 % opacity, and the footer's left link reads "Recuperar PIN" (`ac`) — remove the lock icon and the separate primary button
+- [ ] T086 [US2] Add `LoginEvent.GoToWelcome` and `LoginEffect.ToWelcome` in `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/login/LoginViewModel.kt` (closes the accounts sheet, emits `ToWelcome`), plus a unit test in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/auth/LoginViewModelTest.kt` asserting the effect and that `showAccounts` becomes false
+- [ ] T087 [US2] In `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/login/AccountsSheet.kt` keep the account list and "Agregar otra cuenta", and add a last row "Volver al inicio" (`ph_caret_left` in `tx2`, text `Q.type.bodyMd` `tx2`) sending `LoginEvent.GoToWelcome`; in `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/AuthFlow.kt` map `LoginEffect.ToWelcome` → `actions.navigator.resetTo(AuthRoute.Welcome)` (Welcome's "Ya tengo cuenta" returns to login, "Crear cuenta" starts registration)
+
+### US1 — Welcome
+
+- [ ] T088 [P] [US1] Rewrite `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/start/WelcomeScreen.kt` to the reference: root `bg` + `accentGlow(Q.colors.ac, alpha = 0.16f, centerX = 0.90f, centerY = 0.18f, radiusX = 0.80f, radiusY = 0.40f)` (same wide-window panel rule); padding top 56 dp (+ status-bar inset), sides 24 dp, bottom 28 dp (+ navigation-bar inset); `QWordmark(style = Q.type.welcomeWordmark)`; middle `Column(weight 1f, verticalArrangement = Center)`: `Text("Envía, cobra y paga con QR en segundos.", Q.type.welcomeTitle, tx)`, 14 dp, `Text("Abre tu cuenta con tu celular y tu correo. Verificas tu identidad cuando quieras.", Q.type.lead, tx2, widthIn(max = leadMaxWidth))`, 28 dp, 3 perk rows spaced 12 dp, each `Row(gap 12, CenterVertically)` with `QIcon(…, size = perkIcon, tint = ac)` + `Text(Q.type.perk, tx)`: `Ph.QrCode` "Paga y cobra con QR", `Ph.ArrowsLeftRight` "Cambia Bs ⇄ USD sin comisión", `Ph.CreditCard` "Tarjeta virtual al instante"; bottom `Column(gap 8)`: `QPrimaryButton("Crear cuenta")`, `QSecondaryButton("Ya tengo cuenta")`. Content scrolls only if the window is shorter than the content
+
+### Polish
+
+- [ ] T089 Render in a scratch clone (same method as Phase 10, never committed to `jvmTest`): Login idle, Login with 2 digits, Login error, Login locked, Accounts sheet, Welcome — 400×860 PNGs; compare each against the markup above (positions, sizes, colors, texts); save the final renders to `specs/003-access-registration/assets/login-render.png` and `welcome-render.png`
+- [ ] T090 Run `./gradlew :shared:compileAndroidMain :androidApp:assembleDebug :desktopApp:compileKotlin :shared:testAndroidHostTest` — all green; grep `feature/auth/login/` and `feature/auth/start/WelcomeScreen.kt` for literal `.dp`, `.sp`, `Color(` — none
+- [ ] T091 Validate on the physical device: login layout and keypad vs reference, footer link colors, fingerprint key, accounts sheet → "Volver al inicio" → Welcome → "Ya tengo cuenta" → login; update `specs/003-access-registration/quickstart.md` rows 2 and 11 with the observed result
+
+**Dependencies**: T080, T081 → T082, T083, T084 (parallel, different files) → T085 → T086 → T087; T088 after T080/T081 (parallel with T082–T087); then T089 → T090 → T091.
