@@ -15,6 +15,13 @@ import com.codewave.qullqi.feature.auth.login.LoginEffect
 import com.codewave.qullqi.feature.auth.login.LoginMode
 import com.codewave.qullqi.feature.auth.login.LoginScreen
 import com.codewave.qullqi.feature.auth.login.LoginViewModel
+import com.codewave.qullqi.feature.auth.register.CodeStep
+import com.codewave.qullqi.feature.auth.register.DoneScreen
+import com.codewave.qullqi.feature.auth.register.InfoStep
+import com.codewave.qullqi.feature.auth.register.PhoneStep
+import com.codewave.qullqi.feature.auth.register.PinStep
+import com.codewave.qullqi.feature.auth.register.RegEffect
+import com.codewave.qullqi.feature.auth.register.RegistrationViewModel
 import com.codewave.qullqi.feature.auth.start.SplashScreen
 import com.codewave.qullqi.feature.auth.start.StartEffect
 import com.codewave.qullqi.feature.auth.start.StartViewModel
@@ -67,6 +74,9 @@ class AuthActions(
     val restart: () -> Unit,
     /** Changes after each [restart] so start-up ViewModels are recreated. */
     val generation: () -> Int,
+    /** Starts a new registration with a fresh draft (FR-014: the draft lives only inside the flow). */
+    val startRegistration: () -> Unit,
+    val registrationId: () -> Int,
 )
 
 /**
@@ -92,6 +102,7 @@ fun AuthFlow(
     val veil = rememberVeilState(startCovered = start != AuthStart.Splash)
     val scope = rememberCoroutineScope()
     var generation by remember { mutableIntStateOf(0) }
+    var registrationId by remember { mutableIntStateOf(0) }
     val actions = remember {
         AuthActions(
             navigator = navigator,
@@ -100,6 +111,8 @@ fun AuthFlow(
             kycDone = { scope.launch { veil.coverThen(onKycDone) } },
             restart = { generation++; navigator.resetTo(AuthRoute.Splash) },
             generation = { generation },
+            startRegistration = { registrationId++; navigator.push(AuthRoute.RegPhone) },
+            registrationId = { registrationId },
         )
     }
     Box(Modifier.fillMaxSize()) {
@@ -119,6 +132,8 @@ private fun AuthRouteContent(
     when (route) {
         AuthRoute.Splash, AuthRoute.Welcome -> StartRoute(route, deps, actions)
         is AuthRoute.Login -> LoginRoute(route, deps, actions)
+        AuthRoute.RegPhone, AuthRoute.RegCode, AuthRoute.RegInfo, AuthRoute.RegPin, AuthRoute.RegDone ->
+            RegistrationRoute(route, deps, actions)
         AuthRoute.KycIntro -> kycEntry(actions.kycDone)
         else -> PendingRoute(route.toString())
     }
@@ -135,7 +150,7 @@ private fun StartRoute(route: AuthRoute, deps: AppDependencies, actions: AuthAct
                     if (route == AuthRoute.Splash) actions.navigator.replace(AuthRoute.Login(e.userId))
                     else actions.navigator.push(AuthRoute.Login(e.userId))
                 StartEffect.ToWelcome -> actions.navigator.replace(AuthRoute.Welcome)
-                StartEffect.ToRegistration -> actions.navigator.push(AuthRoute.RegPhone)
+                StartEffect.ToRegistration -> actions.startRegistration()
                 is StartEffect.Toast -> actions.toast.show(e.text)
             }
         }
@@ -152,7 +167,7 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
         vm.effects.collect { e ->
             when (e) {
                 LoginEffect.EnterMain -> actions.enterMain()
-                LoginEffect.ToRegistration -> actions.navigator.push(AuthRoute.RegPhone)
+                LoginEffect.ToRegistration -> actions.startRegistration()
                 is LoginEffect.ToRecover -> actions.navigator.push(AuthRoute.RecoverPin(e.userId))
                 LoginEffect.Unlocked -> Unit
             }
@@ -162,6 +177,40 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
     Box(Modifier.fillMaxSize()) {
         LoginScreen(state, vm::onEvent)
         AccountsSheet(state, vm::onEvent)
+    }
+}
+
+@Composable
+private fun RegistrationRoute(route: AuthRoute, deps: AppDependencies, actions: AuthActions) {
+    // One ViewModel shared by the 4 steps of this registration.
+    val vm = viewModel(key = "registration-${actions.registrationId()}") {
+        RegistrationViewModel(deps.registration, deps.session, deps.preferences, deps.appLock)
+    }
+    LaunchedEffect(vm, route) {
+        vm.effects.collect { e ->
+            when (e) {
+                RegEffect.ToCode -> if (route != AuthRoute.RegCode) actions.navigator.push(AuthRoute.RegCode)
+                RegEffect.ToInfo -> actions.navigator.push(AuthRoute.RegInfo)
+                RegEffect.ToPin -> actions.navigator.push(AuthRoute.RegPin)
+                // Account created: the steps can no longer be revisited.
+                RegEffect.ToDone -> actions.navigator.resetTo(AuthRoute.RegDone)
+                is RegEffect.ToLogin -> actions.navigator.resetTo(AuthRoute.Login(e.userId))
+                is RegEffect.Toast -> actions.toast.show(e.text)
+            }
+        }
+    }
+    val state by vm.state.collectAsState()
+    val back = { actions.navigator.back(); Unit }
+    when (route) {
+        AuthRoute.RegPhone -> PhoneStep(state, vm::onEvent, back)
+        AuthRoute.RegCode -> CodeStep(state, vm::onEvent, back)
+        AuthRoute.RegInfo -> InfoStep(state, vm::onEvent, back)
+        AuthRoute.RegPin -> PinStep(state, vm::onEvent, back)
+        else -> DoneScreen(
+            firstName = state.createdName,
+            onVerify = { actions.navigator.push(AuthRoute.KycIntro) },
+            onLater = actions.enterMain,
+        )
     }
 }
 

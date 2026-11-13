@@ -105,6 +105,7 @@ object QSize {
     val iconButton = 42.dp
     val touchTarget = 44.dp
     val pinDot = 12.dp
+    val checkbox = 22.dp
     val progressBar = 3.dp
     val sheetHandleWidth = 32.dp
     val sheetHandleHeight = 4.dp
