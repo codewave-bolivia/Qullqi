@@ -1,0 +1,35 @@
+-- Users, credentials, the single open session and terms acceptances (spec 002, data-model.md).
+
+CREATE TABLE user (
+  id TEXT NOT NULL PRIMARY KEY,
+  full_name TEXT NOT NULL CHECK (length(trim(full_name)) > 0),
+  phone TEXT NOT NULL UNIQUE CHECK (phone GLOB '+591[67][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+  email TEXT NOT NULL,
+  verification TEXT NOT NULL DEFAULT 'NOT_VERIFIED'
+    CHECK (verification IN ('NOT_VERIFIED', 'UNDER_REVIEW', 'VERIFIED')),
+  is_new INTEGER NOT NULL DEFAULT 1 CHECK (is_new IN (0, 1)),
+  pin_attempts_left INTEGER NOT NULL DEFAULT 3 CHECK (pin_attempts_left BETWEEN 0 AND 3),
+  created_at INTEGER NOT NULL
+);
+
+CREATE TABLE credential (
+  user_id TEXT NOT NULL PRIMARY KEY REFERENCES user(id) ON DELETE CASCADE,
+  pin_hash TEXT NOT NULL,
+  pin_salt TEXT NOT NULL,
+  iterations INTEGER NOT NULL CHECK (iterations >= 100000),
+  updated_at INTEGER NOT NULL
+);
+
+-- At most one open session on the device: the table can only ever hold slot 1.
+CREATE TABLE current_session (
+  slot INTEGER NOT NULL PRIMARY KEY CHECK (slot = 1),
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  opened_at INTEGER NOT NULL
+);
+
+CREATE TABLE terms_acceptance (
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  terms_version TEXT NOT NULL,
+  accepted_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, terms_version)
+);
