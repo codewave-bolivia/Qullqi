@@ -223,3 +223,44 @@ Setup + Foundational + US1 + US2: launch screen, splash, login with lock, hand-o
 
 Add US3 (registration), US4 (recovery), US5 (biometrics), US6 (MainActivity placeholder, logout,
 KYC entry, 5-minute unlock). Then the polish phase and device validation by the owner.
+
+---
+
+## Phase 10: Refinement — Splash fidelity (US1)
+
+**Goal**: The in-app splash matches the reference splash exactly (owner review 2026-11-13: position,
+missing tagline, bar position, missing radial glow). **Only the splash** is in scope; other screens
+are untouched except where they share `QWordmark` (T073).
+
+**Source of truth** — `docs/references-views/Qullqi Pay Auth.dc.html`, block `<sc-if value="{{ is.splash }}">`:
+
+```html
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+     padding:0 32px 60px;
+     background:radial-gradient(70% 45% at 25% 42%,color-mix(in srgb,var(--ac) 18%,transparent),transparent),var(--bg)">
+  <div style="font:500 64px var(--font-heading);letter-spacing:-.05em;animation:qRise .7s cubic-bezier(.2,.8,.2,1)">
+       qullqi<span style="color:var(--ac)">.</span></div>
+  <div style="width:24px;height:2px;background:var(--ac);margin-top:10px;box-shadow:0 0 12px var(--ac);animation:qGlow 1.6s infinite"></div>
+  <div style="font:400 15px var(--font-body);color:var(--tx2);margin-top:14px;animation:qRise .7s .15s both">
+       Tu billetera en Bolivianos y dólares</div>
+  <div style="position:absolute;left:32px;right:32px;bottom:64px;height:2px;border-radius:1px;background:var(--s3);overflow:hidden">
+       <div style="height:100%;background:var(--ac);animation:qLoad 1.7s ease-in-out forwards"></div></div>
+</div>
+```
+
+Keyframes: `qRise` = opacity 0→1 + translateY 14px→0; `qGlow` = opacity .55→1→.55; `qLoad` = width 0→100 %.
+
+**Independent Test**: on the device, the splash shown side by side with the reference (browser,
+400×860 frame) matches in position, sizes, texts, glow and bar; `./gradlew :shared:compileAndroidMain` passes.
+
+- [ ] T072 [US1] Add splash tokens to `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/Tokens.kt` (`QSize.splashUnderlineWidth = 24.dp`, `splashUnderlineHeight = 2.dp`, `splashUnderlineGlow = 12.dp`, `splashBarHeight = 2.dp`, `splashBarRadius = 1.dp`, `splashBarInset = 32.dp`, `splashBarBottom = 64.dp`, `splashPaddingH = 32.dp`, `splashPaddingBottom = 60.dp`; remove the now-unused `QSize.splashBar`), `Type.kt` (`QType.display` = Inter W500 64 sp, letterSpacing −0.05 em, lineHeight 1.0; `QType.tagline` = Inter W400 15 sp) and `Motion.kt` (`RISE_MS = 700`, `RISE_DELAY_MS = 150`, `riseOffset = 14.dp`, `GLOW_MS = 1600` with alpha .55↔1, `SPLASH_BAR_MS = 1700` with `FastOutSlowInEasing`-equivalent ease-in-out `CubicBezierEasing(0.42f, 0f, 0.58f, 1f)`)
+- [ ] T073 [US1] Change `QWordmark` in `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/components/Wordmark.kt` to render a single `Text` with `buildAnnotatedString { append("qullqi"); withStyle(SpanStyle(color = Q.colors.ac)) { append(".") } }` (the reference uses an accent period character, not a dot shape), taking `style` (default `Q.type.wordmark`) so the splash passes `Q.type.display`; keep the `modifier` parameter (splash long-press). Note: Welcome/Main placeholder wordmarks change only to match the same reference markup
+- [ ] T074 [P] [US1] Create `shared/src/commonMain/kotlin/com/codewave/qullqi/designsystem/Backgrounds.kt` with `fun Modifier.accentGlow(color: Color, alpha: Float = 0.18f, centerX: Float = 0.25f, centerY: Float = 0.42f, radiusX: Float = 0.70f, radiusY: Float = 0.45f)` that reproduces CSS `radial-gradient(70% 45% at 25% 42%, color 18%, transparent)`: in `drawBehind`, compute rx = radiusX·width, ry = radiusY·height, center = (centerX·width, centerY·height); `withTransform({ scale(1f, ry / rx, pivot = center) })` then `drawRect` covering the (inverse-scaled) bounds with `Brush.radialGradient(listOf(color.copy(alpha = alpha), Color.Transparent), center, radius = rx)`
+- [ ] T075 [US1] Rewrite the layout of `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/start/SplashScreen.kt` to the reference: root `Box(fillMaxSize)` with `background(Q.colors.page)`; inner panel = full screen on compact widths, centered max 480 dp on widths ≥ 600 dp (same rule as `QScreen`), filled with `Q.colors.bg` + `accentGlow(Q.colors.ac)`; inside it a `Column` **start-aligned** and vertically centered (`verticalArrangement = Center`), padding start/end `splashPaddingH`, bottom `splashPaddingBottom`; children: (1) `QWordmark(style = Q.type.display)` keeping the debug long-press, entering with rise (alpha 0→1, translationY 14 dp→0, `RISE_MS`, `QMotion.pushEasing`); (2) underline `Box(size(splashUnderlineWidth, splashUnderlineHeight))` 10 dp below, `background(Q.colors.ac)`, accent `shadow(splashUnderlineGlow)` and an infinite alpha pulse .55↔1 over `GLOW_MS` (`rememberInfiniteTransition`); (3) `Text("Tu billetera en Bolivianos y dólares", style = Q.type.tagline, color = Q.colors.tx2)` 14 dp below, rise with `RISE_DELAY_MS` delay; progress bar **not** in the column: a separate `Box` aligned `BottomCenter` with padding start/end `splashBarInset` and bottom `splashBarBottom` + navigation-bar inset, height `splashBarHeight`, `clip(RoundedCornerShape(splashBarRadius))`, track `Q.colors.s3`, fill `Q.colors.ac` animating `fillMaxWidth` 0→1 over `SPLASH_BAR_MS` with the ease-in-out easing; keep the debug reset sheet unchanged
+- [ ] T076 [US1] Keep routing timing consistent: `StartViewModel` still routes after `QMotion.SPLASH_MS` (1 900 ms) so the 1 700 ms bar completes before leaving (reference: bar 1.7 s inside the 1.9 s splash) — verify, no code change expected, in `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/start/StartViewModel.kt`
+- [ ] T077 Run `./gradlew :shared:compileAndroidMain :androidApp:assembleDebug :desktopApp:compileKotlin :shared:testAndroidHostTest` — all green; grep `feature/auth/start/SplashScreen.kt` for literal `.dp`, `.sp`, `Color(` — none
+- [ ] T078 Validate on the physical device (`./gradlew :androidApp:installDebug`): cold start → system launch screen → splash; compare with the reference opened in a browser (frame 400×860): left-aligned 64 sp wordmark with accent period, pulsing 24×2 underline, tagline, glow centred upper-left, 2 dp bar 64 dp above the bottom spanning the width minus 32 dp each side; record the result in `specs/003-access-registration/quickstart.md` row 1
+- [ ] T079 Update `specs/003-access-registration/spec.md` FR-001 to reference the splash layout of `Qullqi Pay Auth.dc.html` (`is.splash` block: left-aligned wordmark, underline, tagline "Tu billetera en Bolivianos y dólares", radial accent glow, bottom progress bar) so future reviews check against it
+
+**Dependencies**: T072 → T073, T074 (parallel) → T075 → T076 → T077 → T078 → T079.
+**Parallel**: T074 ∥ T073 (different files) once T072 is done.
