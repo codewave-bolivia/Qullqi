@@ -25,6 +25,10 @@ data class QType(
     val caption: TextStyle,
     val overline: TextStyle,
     val wordmark: TextStyle,
+    /** Splash wordmark: 64 / 500 / −0.05em. */
+    val display: TextStyle,
+    /** Splash tagline: 15 / 400. */
+    val tagline: TextStyle,
     /** Digits in boxes and keypads: tabular figures so they never jump. */
     val digits: TextStyle,
 )
@@ -56,6 +60,8 @@ fun qType(): QType {
         caption = style(12.5f, 400, 0f, 1.4f),
         overline = style(11f, 500, 0.08f, 1.3f),
         wordmark = style(34f, 500, -0.04f, 1.05f),
+        display = style(64f, 500, -0.05f, 1.0f),
+        tagline = style(15f, 400, 0f, 1.4f),
         digits = style(24f, 500, 0f, 1.1f).copy(fontFeatureSettings = "tnum"),
     )
 }

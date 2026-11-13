@@ -110,13 +110,24 @@ object QSize {
     val sheetHandleWidth = 32.dp
     val sheetHandleHeight = 4.dp
     val contentMaxWidth = 480.dp
+    /** From this window width, screens become a centered [contentMaxWidth] panel (research R8). */
+    val wideWindow = 600.dp
     val avatar = 56.dp
     val iconInline = 18.dp
     val iconBar = 22.dp
     val iconResult = 40.dp
     val border = 1.dp
     val focusOutline = 2.dp
-    val splashBar = 120.dp
+    // Splash (Qullqi Pay Auth.dc.html, is.splash block)
+    val splashUnderlineWidth = 24.dp
+    val splashUnderlineHeight = 2.dp
+    val splashUnderlineGlow = 12.dp
+    val splashBarHeight = 2.dp
+    val splashBarRadius = 1.dp
+    val splashBarInset = 32.dp
+    val splashBarBottom = 64.dp
+    val splashPaddingH = 32.dp
+    val splashPaddingBottom = 60.dp
     val keypadMaxWidth = 360.dp
     /** Window height under which keypad keys shrink (research R8). */
     val compactHeight = 640.dp

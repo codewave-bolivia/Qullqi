@@ -224,8 +224,11 @@ login.
 
 **Entry**
 
-- **FR-001**: The app MUST show the splash for about 1.9 s with the wordmark and a loading bar, then
-  route to login (≥ 1 stored account) or welcome (none).
+- **FR-001**: The app MUST show the splash for about 1.9 s, then route to login (≥ 1 stored account)
+  or welcome (none). Its layout MUST match the `is.splash` block of `Qullqi Pay Auth.dc.html`:
+  left-aligned 64 px wordmark `qullqi` + accent period, pulsing 24×2 accent underline, tagline
+  "Tu billetera en Bolivianos y dólares", elliptical accent glow `radial-gradient(70% 45% at 25% 42%)`,
+  and a 2 px progress bar 64 px above the bottom with 32 px side insets, filling in 1.7 s.
 - **FR-001a**: On Android, the system launch screen MUST use the Nocturne background (`#161826`) and
   the Qullqi icon, and hand off to the in-app splash with no white flash, generic icon or visible
   jump between them.

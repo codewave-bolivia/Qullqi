@@ -12,6 +12,8 @@ object QMotion {
     val popEasing: Easing = CubicBezierEasing(0.2f, 0.9f, 0.3f, 1.2f)
     val veilEasing: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
     val linear: Easing = LinearEasing
+    /** CSS `ease-in-out`. */
+    val easeInOut: Easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1f)
 
     const val PUSH_MS = 300
     const val TAB_MS = 250
@@ -26,7 +28,14 @@ object QMotion {
     const val SPLASH_MS = 1900
     const val TOAST_MS = 1900
     const val ENTERING_MS = 380
+    /** Splash: qRise (.7 s, tagline delayed .15 s), qGlow (1.6 s loop, .55↔1), qLoad (1.7 s ease-in-out). */
+    const val RISE_MS = 700
+    const val RISE_DELAY_MS = 150
+    const val GLOW_MS = 1600
+    const val GLOW_MIN_ALPHA = 0.55f
+    const val SPLASH_BAR_MS = 1700
 
     val pushOffset = 26.dp
+    val riseOffset = 14.dp
     const val PRESS_SCALE = 0.94f
 }

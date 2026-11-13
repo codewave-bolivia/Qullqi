@@ -38,7 +38,7 @@ fun QScreen(
 ) {
     val c = Q.colors
     BoxWithConstraints(modifier.fillMaxSize().background(c.page)) {
-        val wide = maxWidth >= 600.dp
+        val wide = maxWidth >= QSize.wideWindow
         val panel = Modifier
             .widthIn(max = QSize.contentMaxWidth)
             .fillMaxWidth()
