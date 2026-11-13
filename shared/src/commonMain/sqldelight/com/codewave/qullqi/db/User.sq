@@ -33,3 +33,58 @@ CREATE TABLE terms_acceptance (
   accepted_at INTEGER NOT NULL,
   PRIMARY KEY (user_id, terms_version)
 );
+
+-- Session (US1)
+
+storedUsers:
+SELECT id, full_name, phone, pin_attempts_left FROM user ORDER BY full_name;
+
+credentialFor:
+SELECT pin_hash, pin_salt, iterations FROM credential WHERE user_id = ?;
+
+attemptsLeft:
+SELECT pin_attempts_left FROM user WHERE id = ?;
+
+decrementAttempts:
+UPDATE user SET pin_attempts_left = max(pin_attempts_left - 1, 0) WHERE id = ?;
+
+resetAttempts:
+UPDATE user SET pin_attempts_left = 3 WHERE id = ?;
+
+openSession:
+INSERT OR REPLACE INTO current_session (slot, user_id, opened_at) VALUES (1, ?, ?);
+
+closeSession:
+DELETE FROM current_session;
+
+currentSessionUserId:
+SELECT user_id FROM current_session;
+
+currentUser:
+SELECT u.id, u.full_name, u.phone, u.email, u.verification
+FROM current_session s JOIN user u ON u.id = s.user_id;
+
+markNotNew:
+UPDATE user SET is_new = 0 WHERE id = ?;
+
+-- Registration and PIN reset (US2)
+
+insertUser:
+INSERT INTO user (id, full_name, phone, email, created_at) VALUES (?, ?, ?, ?, ?);
+
+insertCredential:
+INSERT INTO credential (user_id, pin_hash, pin_salt, iterations, updated_at) VALUES (?, ?, ?, ?, ?);
+
+updateCredential:
+UPDATE credential SET pin_hash = ?, pin_salt = ?, iterations = ?, updated_at = ? WHERE user_id = ?;
+
+insertTerms:
+INSERT INTO terms_acceptance (user_id, terms_version, accepted_at) VALUES (?, ?, ?);
+
+userIdByPhone:
+SELECT id FROM user WHERE phone = ?;
+
+-- Verification (US3)
+
+userVerification:
+SELECT verification FROM user WHERE id = ?;

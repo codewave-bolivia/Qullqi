@@ -24,7 +24,8 @@ fun testDatabase(withSamples: Boolean = true): TestDb {
     return TestDb(driver, DatabaseFactory.create(driver))
 }
 
-class FakeClock(var now: Long = 1_767_225_600_000L) : Clock {
+/** Starts after the seed data timestamps so new rows sort as newer. */
+class FakeClock(var now: Long = 1_770_000_000_000L) : Clock {
     override fun nowMillis(): Long = now
     fun advance(millis: Long) {
         now += millis

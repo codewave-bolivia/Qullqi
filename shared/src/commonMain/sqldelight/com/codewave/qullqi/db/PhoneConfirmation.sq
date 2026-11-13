@@ -12,3 +12,18 @@ CREATE TABLE phone_confirmation (
 );
 
 CREATE INDEX phone_confirmation_phone ON phone_confirmation(phone, issued_at);
+
+latestForPhone:
+SELECT * FROM phone_confirmation WHERE phone = ? ORDER BY issued_at DESC LIMIT 1;
+
+insertCode:
+INSERT INTO phone_confirmation (id, phone, code, issued_at, expires_at) VALUES (?, ?, ?, ?, ?);
+
+decrementTries:
+UPDATE phone_confirmation SET tries_left = max(tries_left - 1, 0) WHERE id = ?;
+
+markConfirmed:
+UPDATE phone_confirmation SET confirmed_at = ? WHERE id = ?;
+
+linkUser:
+UPDATE phone_confirmation SET user_id = ? WHERE id = ?;

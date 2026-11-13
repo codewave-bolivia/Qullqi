@@ -40,3 +40,44 @@ BEGIN
     END
   WHERE id = new.user_id;
 END;
+
+insertDraft:
+INSERT INTO kyc_attempt (id, user_id, document_type, created_at) VALUES (?, ?, ?, ?);
+
+attemptById:
+SELECT * FROM kyc_attempt WHERE id = ?;
+
+attemptsForUser:
+SELECT * FROM kyc_attempt WHERE user_id = ? ORDER BY created_at DESC, rowid DESC;
+
+openAttemptForUser:
+SELECT id FROM kyc_attempt WHERE user_id = ? AND state IN ('DRAFT', 'SUBMITTED');
+
+setDocumentNumber:
+UPDATE kyc_attempt SET document_number = ? WHERE id = ? AND state = 'DRAFT';
+
+setFront:
+UPDATE kyc_attempt SET front_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setBack:
+UPDATE kyc_attempt SET back_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setSelfie:
+UPDATE kyc_attempt SET selfie_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setExtracted:
+UPDATE kyc_attempt SET extracted_full_name = ?, extracted_document_number = ?,
+  extracted_birth_date = ?, extracted_expiry_date = ?
+WHERE id = ? AND state = 'DRAFT';
+
+setDeclaration:
+UPDATE kyc_attempt SET declaration_accepted_at = ? WHERE id = ? AND state = 'DRAFT';
+
+setSubmitted:
+UPDATE kyc_attempt SET state = 'SUBMITTED' WHERE id = ? AND state = 'DRAFT';
+
+setFinal:
+UPDATE kyc_attempt SET state = ?, finished_at = ?, rejection_reason = ? WHERE id = ? AND state = 'SUBMITTED';
+
+deleteDraft:
+DELETE FROM kyc_attempt WHERE id = ? AND state = 'DRAFT';
