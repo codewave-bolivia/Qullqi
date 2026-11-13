@@ -770,9 +770,10 @@ repository is pushed to GitHub.
 
 ### 16.2 Develop release — `develop-release.yml`
 
-- Runs **only when a pull request into `develop` is closed as merged**. Closed-unmerged pull
-  requests and direct pushes do not trigger it.
-- Builds `:androidApp:assembleRelease` from the merge commit, signs it with `apksigner` using
+- Runs on **`develop` after a pull request is merged** (trigger: push to `develop`). A guard job
+  publishes only if the pushed commit is the merge commit of a pull request into `develop`;
+  direct pushes and other commits produce no release.
+- Builds `:androidApp:assembleRelease` from that `develop` commit, signs it with `apksigner` using
   repository secrets, and publishes it as a GitHub **pre-release** tagged `develop-build-<run>`.
   It never touches `master`.
 - Required repository secrets (Settings → Secrets and variables → Actions):
