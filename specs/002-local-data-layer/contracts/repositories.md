@@ -7,6 +7,7 @@ Errors are returned as typed results, never thrown for expected business outcome
 interface SessionRepository : CurrentUserSource {
     fun storedUsers(): Flow<List<StoredUser>>                 // for login / switch account (FR-008)
     suspend fun login(userId: UserId, pin: String): LoginResult
+    suspend fun loginWithBiometrics(userId: UserId): LoginResult   // added by spec 003; never changes attempts
     suspend fun logout()
 }
 sealed interface LoginResult {

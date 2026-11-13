@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window background = Nocturne bg so no white frame appears between activities. -->
+    <style name="Theme.Qullqi" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/qullqi_bg</item>
+        <item name="android:colorBackground">@color/qullqi_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- System launch screen (core-splashscreen); hands off to the in-app splash on the same background. -->
+    <style name="Theme.Qullqi.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/qullqi_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_qullqi</item>
+        <item name="postSplashScreenTheme">@style/Theme.Qullqi</item>
+    </style>
+</resources>

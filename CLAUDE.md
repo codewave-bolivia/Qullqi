@@ -30,7 +30,7 @@ Update this section whenever the project structure changes through an approved a
 
 ### Repository Directory Tree
 
-<!-- Maintain this tree using the actual repository structure. Last verified: 2026-11-13. -->
+<!-- Maintain this tree using the actual repository structure. Last verified: 2026-11-13 (spec 003). -->
 
 Package root for all Kotlin code: `com.codewave.qullqi`.
 
@@ -48,25 +48,32 @@ Qullqi/
 │   └── src/
 │       ├── commonMain/
 │       │   ├── kotlin/com/codewave/qullqi/
-│       │   │   ├── App.kt            # Root Compose UI
+│       │   │   ├── App.kt            # App(deps?) → QullqiRoot, or "no disponible" without deps
+│       │   │   ├── AppDependencies.kt · QullqiRoot.kt   # wiring; single-window host for iOS/Desktop
+│       │   │   ├── designsystem/     # Nocturne tokens, theme, type, motion, veil, components/  [shared]
+│       │   │   ├── navigation/       # FlowNavigator, FlowHost (per-activity back stacks)       [shared]
+│       │   │   ├── feature/auth/     # AuthFlow (AuthActivity): start/, login/, register/, recover/, KYC slot
+│       │   │   ├── feature/main/     # MainFlow (MainActivity): M4 content slot, UnlockScreen, placeholder
 │       │   │   ├── Greeting.kt
 │       │   │   ├── GreetingUtil.kt
 │       │   │   ├── Platform.kt       # expect declarations
 │       │   │   ├── domain/
 │       │   │   │   ├── model/        # UserId, VerificationStatus, CurrentUser, KYC types   [shared]
 │       │   │   │   ├── repository/   # CurrentUserSource (M4+ contract), Session/Registration/Kyc  [shared]
-│       │   │   │   ├── security/     # PinHasher interface
+│       │   │   │   ├── security/     # PinHasher, BiometricAuthenticator interfaces
+│       │   │   │   ├── session/      # AppLock (5-minute re-authentication)
 │       │   │   │   └── system/       # Clock, IdGenerator, OtpCodeGenerator
 │       │   │   └── data/             # Sql*Repository, MockKycProcessor, LocalDataReset; db/DatabaseFactory
-│       │   ├── sqldelight/com/codewave/qullqi/db/   # User.sq, PhoneConfirmation.sq, KycAttempt.sq, Seed.sq  [shared]
-│       │   └── composeResources/drawable/
+│       │   ├── sqldelight/com/codewave/qullqi/db/   # User, PhoneConfirmation, KycAttempt, AccountPreference, Seed .sq  [shared]
+│       │   └── composeResources/   # font/ (Inter 400/500, OFL), drawable/ph_*.xml (Phosphor, MIT)
 │       ├── commonTest/kotlin/com/codewave/qullqi/SharedCommonTest.kt
 │       ├── androidMain/kotlin/com/codewave/qullqi/
 │       │   ├── Platform.android.kt
 │       │   └── data/                 # AndroidDatabaseFactory, Pbkdf2PinHasher
 │       ├── androidHostTest/kotlin/com/codewave/qullqi/
 │       │   ├── SharedLogicAndroidHostTest.kt
-│       │   └── data/                 # data-layer tests (in-memory SQLite)
+│       │   ├── data/                 # data-layer tests (in-memory SQLite)
+│       │   └── feature/              # ViewModel + AppLock tests (coroutines-test)
 │       ├── jvmMain/kotlin/com/codewave/qullqi/Platform.jvm.kt          # Desktop actuals   [Desktop — do not modify]
 │       ├── jvmTest/kotlin/com/codewave/qullqi/SharedLogicDesktopTest.kt                     [Desktop — do not modify]
 │       ├── iosMain/kotlin/com/codewave/qullqi/
@@ -78,8 +85,12 @@ Qullqi/
 │   ├── proguard-rules.pro
 │   └── src/main/
 │       ├── AndroidManifest.xml
-│       ├── kotlin/com/codewave/qullqi/MainActivity.kt
-│       └── res/                      # drawable, drawable-v24, mipmap-*, values/strings.xml
+│       ├── kotlin/com/codewave/qullqi/
+│       │   ├── QullqiApplication.kt  # builds AppDependencies once per process
+│       │   ├── AuthActivity.kt       # launcher: system launch screen + AuthFlow
+│       │   ├── MainActivity.kt       # MainFlow (M4) + AppLock on onStop/onStart
+│       │   └── AndroidBiometricAuthenticator.kt
+│       └── res/                      # ic_qullqi + adaptive icon, values/themes.xml (Theme.Qullqi[.Starting]), colors.xml
 ├── desktopApp/                       # Desktop (JVM) entry point                  [Desktop — do not modify]
 │   ├── build.gradle.kts
 │   └── src/main/kotlin/com/codewave/qullqi/main.kt
@@ -87,6 +98,7 @@ Qullqi/
 │   ├── Configuration/Config.xcconfig
 │   ├── iosApp/                       # iOSApp.swift, ContentView.swift, Info.plist, Assets.xcassets
 │   └── iosApp.xcodeproj/
+├── docs/licenses/                    # Inter-OFL.txt, Phosphor-MIT.txt (bundled assets)
 ├── docs/references-views/            # UI reference designs and guidelines (read-only reference)
 │   ├── ARCHITECTURE.md
 │   ├── STYLEGUIDE.md
@@ -622,7 +634,12 @@ defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardc
 >
 > **Sample credentials** (synthetic seed): PIN `1234` for every sample user, SMS code `123456`,
 > KYC outcome by the last digit of the document number: `0` → rejected, `5` → under review,
-> anything else → approved. `LocalDataReset.reset(withSamples = false)` gives an empty device.
+> anything else → approved. `LocalDataReset.reset(withSamples = false)` gives an empty device; in
+> debug builds, long-press the splash wordmark to reset data with or without samples.
+>
+> Spec 003 added `account_preference` (biometrics enabled/prompted, last login). From spec 003 on,
+> installed builds create the database: any further schema change needs a `.sqm` migration or an
+> explicit pre-release reset note (§14.6).
 
 ### 14.1 Location
 
@@ -807,3 +824,19 @@ Workflows cannot enforce approval by themselves. Protect `develop` with a branch
 
 With this rule, every merge into `develop` comes from an approved pull request whose branch
 passed the compile check, which is what triggers the develop release.
+
+---
+
+## 17. App Structure (M2)
+
+- Android has **two activities** (spec 003, ARCHITECTURE.md §2): `AuthActivity` (launcher; system
+  launch screen, splash, welcome, login, registration, PIN recovery, M3 KYC entry) and
+  `MainActivity` (M4 main area). Screens are shared Compose; each activity hosts one flow root
+  (`AuthFlow`, `MainFlow`). Switching activities uses the veil transition and clears the task.
+- **M3** plugs into `AuthFlow(kycEntry = …)`; **M4** plugs into `MainFlow(content = …)`. Do not edit
+  M2 screens or `MainActivity`'s lock handling from those milestones (contracts in
+  `specs/003-access-registration/contracts/`).
+- `designsystem/` and `navigation/` are **shared areas** reused by M4: use `Q.colors`, `Q.type`,
+  `QSpacing`, `QRadius`, `QSize` only — no literal colors or sizes in screens (constitution VI).
+- Re-authentication: cold start always goes through login; returning after > 5 minutes in the
+  background shows `UnlockScreen` over MainActivity (`AppLock`).

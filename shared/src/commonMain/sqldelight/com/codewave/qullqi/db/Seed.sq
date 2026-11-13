@@ -46,6 +46,7 @@ insertSamples {
 -- Children first; phone confirmations may have no user, so they are deleted explicitly.
 deleteAll {
   DELETE FROM current_session;
+  DELETE FROM account_preference;
   DELETE FROM phone_confirmation;
   DELETE FROM kyc_attempt;
   DELETE FROM terms_acceptance;
