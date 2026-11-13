@@ -34,9 +34,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          pr=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
-            --jq '[.[] | select(.merged_at != null and .base.ref == "develop"
-                    and .merge_commit_sha == "${{ github.sha }}")][0] // empty')
+          # GitHub links the merge commit to its pull request a few seconds after the push:
+          # retry for up to ~2 minutes before concluding it is not a PR merge.
+          pr=""
+          for attempt in 1 2 3 4 5 6 7 8; do
+            pr=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+              --jq '[.[] | select(.merged_at != null and .base.ref == "develop"
+                      and .merge_commit_sha == "${{ github.sha }}")][0] // empty')
+            [[ -n $pr ]] && break
+            echo "No merged pull request linked yet (attempt $attempt); retrying in 15s"
+            sleep 15
+          done
           if [[ -z $pr ]]; then
             echo "::notice::${{ github.sha }} is not the result of a merged pull request; no release."
             exit 0
