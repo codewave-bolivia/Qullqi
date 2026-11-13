@@ -1,0 +1,54 @@
+-- Deterministic synthetic sample data (spec 002, data-model.md "Sample data").
+-- Fictitious people, phones in +59170000xxx, emails @example.com. No real personal data.
+-- Sample PIN for every user: 1234 (PBKDF2-HMAC-SHA256, 120000 iterations, fixed salt per user).
+-- Run by SeededSchema.create and LocalDataReset.reset(withSamples = true).
+
+insertSamples {
+  INSERT INTO user (id, full_name, phone, email, verification, is_new, pin_attempts_left, created_at) VALUES
+    ('usr-verified',   'Lucía Prueba Quispe',    '+59170000001', 'usr-verified@example.com',   'VERIFIED',     0, 3, 1767225600000),
+    ('usr-unverified', 'Mateo Demo Choque',      '+59170000002', 'usr-unverified@example.com', 'NOT_VERIFIED', 0, 3, 1767225600000),
+    ('usr-review',     'Valeria Ejemplo Mamani', '+59170000003', 'usr-review@example.com',     'UNDER_REVIEW', 0, 3, 1767225600000),
+    ('usr-rejected',   'Diego Muestra Flores',   '+59170000004', 'usr-rejected@example.com',   'NOT_VERIFIED', 0, 3, 1767225600000),
+    ('usr-locked',     'Sofía Ficticia Rojas',   '+59170000005', 'usr-locked@example.com',     'VERIFIED',     0, 0, 1767225600000),
+    ('usr-new',        'Andrés Nuevo Condori',   '+59170000006', 'usr-new@example.com',        'NOT_VERIFIED', 1, 3, 1767225600000);
+
+  INSERT INTO credential (user_id, pin_hash, pin_salt, iterations, updated_at) VALUES
+    ('usr-verified',   'VRNzRXffI0GsPDHEjulVUPzojJ6+ZUFCvlkA/t+X+ec=', 'Fmh9rPjcxeuh0drNcorTsQ==', 120000, 1767225600000),
+    ('usr-unverified', 'Mesb8qjbk1t15dB25ub+xPYHLpBEB4y300Jl/u5x0Co=', '4ZpIoU6eCarYWrgkfBtmOQ==', 120000, 1767225600000),
+    ('usr-review',     'LDDqQBxCuSAjJSNtXJiaSQ89JCiC7k0g0WAtAWLpxJg=', 'tFBpsTafmhrab3OmWbw/Vw==', 120000, 1767225600000),
+    ('usr-rejected',   'JqgJKy7CrpFcMfk4y8Vkl16KJzN5nfcVXqClvsoX5z0=', 'enihNXogXGuqoLGFBEA8Fg==', 120000, 1767225600000),
+    ('usr-locked',     '6BqkxEHOzKMkZKfXWY6ngZqjzI8TC9d/lhjOx16x/r8=', '/kXN1RyAPN2tM1F8XqGNlQ==', 120000, 1767225600000),
+    ('usr-new',        'MEYKp12CFI9GokejGkZ2lg3Gw++v62UsM5Xb+0Bh444=', '5tnIQyelxE/icApolh09fA==', 120000, 1767225600000);
+
+  INSERT INTO terms_acceptance (user_id, terms_version, accepted_at) VALUES
+    ('usr-verified',   '2026-01', 1767225600000),
+    ('usr-unverified', '2026-01', 1767225600000),
+    ('usr-review',     '2026-01', 1767225600000),
+    ('usr-rejected',   '2026-01', 1767225600000),
+    ('usr-locked',     '2026-01', 1767225600000),
+    ('usr-new',        '2026-01', 1767225600000);
+
+  INSERT INTO kyc_attempt (
+    id, user_id, document_type, document_number, front_ref, back_ref, selfie_ref,
+    extracted_full_name, extracted_document_number, extracted_birth_date, extracted_expiry_date,
+    declaration_accepted_at, state, rejection_reason, created_at, finished_at
+  ) VALUES
+    ('att-verified-1', 'usr-verified', 'CI', '9000001', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
+     'Lucía Prueba Quispe', '9000001', '1995-03-14', '2031-03-14', 1767229200000, 'APPROVED', NULL, 1767229200000, 1767229203000),
+    ('att-review-1', 'usr-review', 'PASSPORT', 'P9000005', 'placeholder:passport', NULL, 'placeholder:selfie',
+     'Valeria Ejemplo Mamani', 'P9000005', '1998-07-02', '2030-07-02', 1767229200000, 'REVIEW', NULL, 1767229200000, 1767229203000),
+    ('att-rejected-1', 'usr-rejected', 'CI', '9000010', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
+     'Diego Muestra Flores', '9000010', '1990-11-23', '2029-11-23', 1767229200000, 'REJECTED', 'Documento ilegible', 1767229200000, 1767229203000),
+    ('att-locked-1', 'usr-locked', 'CI', '9000004', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
+     'Sofía Ficticia Rojas', '9000004', '1993-05-30', '2032-05-30', 1767229200000, 'APPROVED', NULL, 1767229200000, 1767229203000);
+}
+
+-- Children first; phone confirmations may have no user, so they are deleted explicitly.
+deleteAll {
+  DELETE FROM current_session;
+  DELETE FROM phone_confirmation;
+  DELETE FROM kyc_attempt;
+  DELETE FROM terms_acceptance;
+  DELETE FROM credential;
+  DELETE FROM user;
+}

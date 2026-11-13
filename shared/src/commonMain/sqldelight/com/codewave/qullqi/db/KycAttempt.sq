@@ -1,0 +1,83 @@
+-- Identity verification attempts (spec 002, FR-013..FR-019).
+
+CREATE TABLE kyc_attempt (
+  id TEXT NOT NULL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  document_type TEXT NOT NULL CHECK (document_type IN ('CI', 'PASSPORT')),
+  document_number TEXT,
+  -- Only references to bundled synthetic images; real captures are never stored (FR-019).
+  front_ref TEXT CHECK (front_ref IS NULL OR front_ref LIKE 'placeholder:%'),
+  back_ref TEXT CHECK (back_ref IS NULL OR back_ref LIKE 'placeholder:%'),
+  selfie_ref TEXT CHECK (selfie_ref IS NULL OR selfie_ref LIKE 'placeholder:%'),
+  extracted_full_name TEXT,
+  extracted_document_number TEXT,
+  extracted_birth_date TEXT,
+  extracted_expiry_date TEXT,
+  declaration_accepted_at INTEGER,
+  state TEXT NOT NULL DEFAULT 'DRAFT'
+    CHECK (state IN ('DRAFT', 'SUBMITTED', 'APPROVED', 'REVIEW', 'REJECTED')),
+  rejection_reason TEXT,
+  created_at INTEGER NOT NULL,
+  finished_at INTEGER,
+  CHECK (document_type = 'CI' OR back_ref IS NULL),
+  CHECK (state <> 'REJECTED' OR rejection_reason IS NOT NULL)
+);
+
+-- At most one non-final attempt per user (FR-015).
+CREATE UNIQUE INDEX kyc_attempt_one_open ON kyc_attempt(user_id) WHERE state IN ('DRAFT', 'SUBMITTED');
+
+CREATE INDEX kyc_attempt_history ON kyc_attempt(user_id, created_at);
+
+-- The user's status always follows their latest final attempt (FR-016).
+CREATE TRIGGER kyc_attempt_final_sets_user_status
+AFTER UPDATE OF state ON kyc_attempt
+WHEN new.state IN ('APPROVED', 'REVIEW', 'REJECTED')
+BEGIN
+  UPDATE user SET verification = CASE new.state
+      WHEN 'APPROVED' THEN 'VERIFIED'
+      WHEN 'REVIEW' THEN 'UNDER_REVIEW'
+      ELSE 'NOT_VERIFIED'
+    END
+  WHERE id = new.user_id;
+END;
+
+insertDraft:
+INSERT INTO kyc_attempt (id, user_id, document_type, created_at) VALUES (?, ?, ?, ?);
+
+attemptById:
+SELECT * FROM kyc_attempt WHERE id = ?;
+
+attemptsForUser:
+SELECT * FROM kyc_attempt WHERE user_id = ? ORDER BY created_at DESC, rowid DESC;
+
+openAttemptForUser:
+SELECT id FROM kyc_attempt WHERE user_id = ? AND state IN ('DRAFT', 'SUBMITTED');
+
+setDocumentNumber:
+UPDATE kyc_attempt SET document_number = ? WHERE id = ? AND state = 'DRAFT';
+
+setFront:
+UPDATE kyc_attempt SET front_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setBack:
+UPDATE kyc_attempt SET back_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setSelfie:
+UPDATE kyc_attempt SET selfie_ref = ? WHERE id = ? AND state = 'DRAFT';
+
+setExtracted:
+UPDATE kyc_attempt SET extracted_full_name = ?, extracted_document_number = ?,
+  extracted_birth_date = ?, extracted_expiry_date = ?
+WHERE id = ? AND state = 'DRAFT';
+
+setDeclaration:
+UPDATE kyc_attempt SET declaration_accepted_at = ? WHERE id = ? AND state = 'DRAFT';
+
+setSubmitted:
+UPDATE kyc_attempt SET state = 'SUBMITTED' WHERE id = ? AND state = 'DRAFT';
+
+setFinal:
+UPDATE kyc_attempt SET state = ?, finished_at = ?, rejection_reason = ? WHERE id = ? AND state = 'SUBMITTED';
+
+deleteDraft:
+DELETE FROM kyc_attempt WHERE id = ? AND state = 'DRAFT';

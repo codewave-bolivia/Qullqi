@@ -1,0 +1,29 @@
+-- SMS codes issued to a phone during registration and PIN recovery (spec 002, FR-009..FR-011).
+
+CREATE TABLE phone_confirmation (
+  id TEXT NOT NULL PRIMARY KEY,
+  phone TEXT NOT NULL CHECK (phone GLOB '+591[67][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+  code TEXT NOT NULL CHECK (length(code) = 6 AND code NOT GLOB '*[^0-9]*'),
+  issued_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  tries_left INTEGER NOT NULL DEFAULT 3 CHECK (tries_left BETWEEN 0 AND 3),
+  confirmed_at INTEGER,
+  user_id TEXT REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE INDEX phone_confirmation_phone ON phone_confirmation(phone, issued_at);
+
+latestForPhone:
+SELECT * FROM phone_confirmation WHERE phone = ? ORDER BY issued_at DESC LIMIT 1;
+
+insertCode:
+INSERT INTO phone_confirmation (id, phone, code, issued_at, expires_at) VALUES (?, ?, ?, ?, ?);
+
+decrementTries:
+UPDATE phone_confirmation SET tries_left = max(tries_left - 1, 0) WHERE id = ?;
+
+markConfirmed:
+UPDATE phone_confirmation SET confirmed_at = ? WHERE id = ?;
+
+linkUser:
+UPDATE phone_confirmation SET user_id = ? WHERE id = ?;

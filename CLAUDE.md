@@ -30,7 +30,7 @@ Update this section whenever the project structure changes through an approved a
 
 ### Repository Directory Tree
 
-<!-- Maintain this tree using the actual repository structure. Last verified: 2026-11-12. -->
+<!-- Maintain this tree using the actual repository structure. Last verified: 2026-11-13. -->
 
 Package root for all Kotlin code: `com.codewave.qullqi`.
 
@@ -51,11 +51,22 @@ Qullqi/
 │       │   │   ├── App.kt            # Root Compose UI
 │       │   │   ├── Greeting.kt
 │       │   │   ├── GreetingUtil.kt
-│       │   │   └── Platform.kt       # expect declarations
+│       │   │   ├── Platform.kt       # expect declarations
+│       │   │   ├── domain/
+│       │   │   │   ├── model/        # UserId, VerificationStatus, CurrentUser, KYC types   [shared]
+│       │   │   │   ├── repository/   # CurrentUserSource (M4+ contract), Session/Registration/Kyc  [shared]
+│       │   │   │   ├── security/     # PinHasher interface
+│       │   │   │   └── system/       # Clock, IdGenerator, OtpCodeGenerator
+│       │   │   └── data/             # Sql*Repository, MockKycProcessor, LocalDataReset; db/DatabaseFactory
+│       │   ├── sqldelight/com/codewave/qullqi/db/   # User.sq, PhoneConfirmation.sq, KycAttempt.sq, Seed.sq  [shared]
 │       │   └── composeResources/drawable/
 │       ├── commonTest/kotlin/com/codewave/qullqi/SharedCommonTest.kt
-│       ├── androidMain/kotlin/com/codewave/qullqi/Platform.android.kt
-│       ├── androidHostTest/kotlin/com/codewave/qullqi/SharedLogicAndroidHostTest.kt
+│       ├── androidMain/kotlin/com/codewave/qullqi/
+│       │   ├── Platform.android.kt
+│       │   └── data/                 # AndroidDatabaseFactory, Pbkdf2PinHasher
+│       ├── androidHostTest/kotlin/com/codewave/qullqi/
+│       │   ├── SharedLogicAndroidHostTest.kt
+│       │   └── data/                 # data-layer tests (in-memory SQLite)
 │       ├── jvmMain/kotlin/com/codewave/qullqi/Platform.jvm.kt          # Desktop actuals   [Desktop — do not modify]
 │       ├── jvmTest/kotlin/com/codewave/qullqi/SharedLogicDesktopTest.kt                     [Desktop — do not modify]
 │       ├── iosMain/kotlin/com/codewave/qullqi/
@@ -604,9 +615,14 @@ The application is frontend-only. Until a backend exists, **SQLDelight is the si
 source**. The SQLDelight schema is where mock data and the relationships between tables are
 defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardcoded Kotlin lists.
 
-> Status (2026-11-12): SQLDelight is **not yet installed**. Adding the Gradle plugin, the
-> dependencies and the first schema is a feature delivered through Spec Kit, and requires approval
-> because it changes high-risk shared Gradle files (§9).
+> Status (2026-11-13): SQLDelight 2.4.1 installed by spec 002 (`specs/002-local-data-layer/`),
+> database `QullqiDatabase`. Only the Android `SqlDriver` and `PinHasher` exist
+> (`AndroidDatabaseFactory`, `Pbkdf2PinHasher`); the iOS and Desktop implementations are pending
+> from the Builder. They are injected, not `expect`ed, so their absence does not break compilation.
+>
+> **Sample credentials** (synthetic seed): PIN `1234` for every sample user, SMS code `123456`,
+> KYC outcome by the last digit of the document number: `0` → rejected, `5` → under review,
+> anything else → approved. `LocalDataReset.reset(withSamples = false)` gives an empty device.
 
 ### 14.1 Location
 
