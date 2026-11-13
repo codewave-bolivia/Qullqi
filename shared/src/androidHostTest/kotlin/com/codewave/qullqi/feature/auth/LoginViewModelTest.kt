@@ -196,4 +196,32 @@ class LoginViewModelTest : MainDispatcherTest() {
         assertFalse(vm.state.value.showEnableBiometrics)
         assertEquals(LoginEffect.EnterMain, vm.effects.first())
     }
+
+    // --- US6: unlock mode (MainActivity, 5-minute lock) ---------------------------------
+
+    @Test fun unlockModeUnlocksWithoutChangingUser() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.deps.session.login(verified, "1234")
+        val vm = LoginViewModel(verified, LoginMode.Unlock, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        assertTrue(env.deps.appLock.locked.value)
+        type(vm, "1234")
+        assertEquals(LoginEffect.Unlocked, vm.effects.first())
+        assertFalse(env.deps.appLock.locked.value)
+        assertEquals(verified, env.deps.currentUser.currentUser.first()?.id)
+        assertFalse(vm.state.value.showEnableBiometrics)
+    }
+
+    @Test fun unlockModeSharesAttemptCounter() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.deps.session.login(verified, "0000") // one wrong attempt at login
+        val vm = LoginViewModel(verified, LoginMode.Unlock, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        type(vm, "0000")
+        assertEquals(LoginStatus.Wrong(1), vm.state.value.status)
+        type(vm, "0000")
+        assertEquals(LoginStatus.Locked, vm.state.value.status)
+        vm.onEvent(LoginEvent.Recover)
+        assertEquals(LoginEffect.ToRecover(verified), vm.effects.first())
+    }
 }

@@ -2,7 +2,6 @@ package com.codewave.qullqi.feature.auth
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,10 +31,8 @@ import com.codewave.qullqi.feature.auth.start.StartViewModel
 import com.codewave.qullqi.feature.auth.start.WelcomeScreen
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.codewave.qullqi.AppDependencies
-import com.codewave.qullqi.designsystem.Q
 import com.codewave.qullqi.designsystem.VeilOverlay
 import com.codewave.qullqi.designsystem.components.QToastHost
 import com.codewave.qullqi.designsystem.components.QToastState
@@ -146,7 +143,6 @@ private fun AuthRouteContent(
             RegistrationRoute(route, deps, actions)
         is AuthRoute.RecoverPin -> RecoverRoute(route, deps, actions)
         AuthRoute.KycIntro -> kycEntry(actions.kycDone)
-        else -> PendingRoute(route.toString())
     }
 }
 
@@ -242,10 +238,4 @@ private fun RecoverRoute(route: AuthRoute.RecoverPin, deps: AppDependencies, act
     }
     val state by vm.state.collectAsState()
     RecoverPinScreen(state, vm::onEvent) { actions.navigator.back() }
-}
-
-/** Temporary body for routes implemented in later tasks. */
-@Composable
-internal fun PendingRoute(name: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(name, color = Q.colors.tx2) }
 }
