@@ -160,10 +160,10 @@ invariants). UI is validated manually on a physical device (quickstart.md §2).
 
 **Independent Test**: LoginViewModelTest biometric cases; quickstart rows 2, 5 on the physical device.
 
-- [ ] T059 [US5] Extend `T/feature/auth/LoginViewModelTest.kt`: key hidden when preference off, device unavailable or account locked; `Fingerprint` + Success → `EnterMain` and attempts unchanged; Failed/Cancelled → Idle and attempts unchanged; first successful login of an account with `biometrics_prompted = 0` and device available → `ShowEnableBiometrics` once; `EnableBiometrics(true)` stores enabled + prompted, `(false)` stores prompted only
-- [ ] T060 [US5] Extend `K/feature/auth/login/LoginViewModel.kt` with biometric key visibility, `Fingerprint` event (prompt title "Ingresa con tu huella", subtitle "Toca el sensor") calling `loginWithBiometrics`, and the once-only enable offer before `EnterMain`
-- [ ] T061 [P] [US5] Create `K/feature/auth/login/EnableBiometricsSheet.kt` (`ph_fingerprint`, title "Ingresa con tu huella", text "Activa la huella para entrar más rápido.", `QPrimaryButton("Activar huella")`, `QTextButton("Ahora no")`) and pass the fingerprint key (`ph_fingerprint`) as `QKeypad.leftKey` in `LoginScreen.kt`
-- [ ] T062 [US5] In `AuthActivity.kt` and `MainActivity.kt`, create `AndroidBiometricAuthenticator(this)` and inject it into the dependencies used by the flow (per-activity copy of `AppDependencies` with the authenticator)
+- [X] T059 [US5] Extend `T/feature/auth/LoginViewModelTest.kt`: key hidden when preference off, device unavailable or account locked; `Fingerprint` + Success → `EnterMain` and attempts unchanged; Failed/Cancelled → Idle and attempts unchanged; first successful login of an account with `biometrics_prompted = 0` and device available → `ShowEnableBiometrics` once; `EnableBiometrics(true)` stores enabled + prompted, `(false)` stores prompted only
+- [X] T060 [US5] Extend `K/feature/auth/login/LoginViewModel.kt` with biometric key visibility, `Fingerprint` event (prompt title "Ingresa con tu huella", subtitle "Toca el sensor") calling `loginWithBiometrics`, and the once-only enable offer before `EnterMain`
+- [X] T061 [P] [US5] Create `K/feature/auth/login/EnableBiometricsSheet.kt` (`ph_fingerprint`, title "Ingresa con tu huella", text "Activa la huella para entrar más rápido.", `QPrimaryButton("Activar huella")`, `QTextButton("Ahora no")`) and pass the fingerprint key (`ph_fingerprint`) as `QKeypad.leftKey` in `LoginScreen.kt`
+- [X] T062 [US5] In `AuthActivity.kt` and `MainActivity.kt`, create `AndroidBiometricAuthenticator(this)` and inject it into the dependencies used by the flow (per-activity copy of `AppDependencies` with the authenticator)
 
 ---
 

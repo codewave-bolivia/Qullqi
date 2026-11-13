@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import com.codewave.qullqi.feature.auth.login.AccountsSheet
+import com.codewave.qullqi.feature.auth.login.EnableBiometricsSheet
 import com.codewave.qullqi.feature.auth.login.LoginEffect
 import com.codewave.qullqi.feature.auth.login.LoginMode
 import com.codewave.qullqi.feature.auth.login.LoginScreen
@@ -187,6 +188,7 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
     Box(Modifier.fillMaxSize()) {
         LoginScreen(state, vm::onEvent)
         AccountsSheet(state, vm::onEvent)
+        EnableBiometricsSheet(state, vm::onEvent)
     }
 }
 

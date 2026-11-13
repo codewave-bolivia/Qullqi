@@ -1,6 +1,7 @@
 package com.codewave.qullqi.feature.auth
 
 import com.codewave.qullqi.domain.model.UserId
+import com.codewave.qullqi.domain.security.BiometricResult
 import com.codewave.qullqi.feature.MainDispatcherTest
 import com.codewave.qullqi.feature.TestEnv
 import com.codewave.qullqi.feature.auth.login.LoginEffect
@@ -22,8 +23,9 @@ class LoginViewModelTest : MainDispatcherTest() {
 
     private val verified = UserId("usr-verified")
 
-    private fun TestScope.setup(user: UserId? = verified, mode: LoginMode = LoginMode.Login): Pair<TestEnv, LoginViewModel> {
+    private fun TestScope.setup(user: UserId? = verified, mode: LoginMode = LoginMode.Login, sensor: Boolean = false): Pair<TestEnv, LoginViewModel> {
         val env = testEnv(dispatcher)
+        env.biometrics.available = sensor
         val vm = LoginViewModel(user, mode, env.deps.session, env.deps.preferences, env.deps.biometrics, env.deps.appLock, enteringMillis = 0)
         advanceUntilIdle()
         return env to vm
@@ -103,5 +105,95 @@ class LoginViewModelTest : MainDispatcherTest() {
         advanceUntilIdle()
         assertEquals(1, vm.state.value.filled)
         assertFalse(vm.state.value.toString().contains("12"))
+    }
+
+    // --- US5: biometrics -------------------------------------------------------------
+
+    private fun TestScope.attempts(env: TestEnv, id: String) = env.t.count("SELECT pin_attempts_left FROM user WHERE id = '$id'")
+
+    @Test fun fingerprintKeyHiddenUntilEnabled() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        assertFalse(vm.state.value.biometricKeyVisible)
+    }
+
+    @Test fun fingerprintKeyHiddenWhenDeviceUnavailableOrLocked() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.deps.preferences.setBiometrics(verified, true)
+        env.deps.preferences.setBiometrics(UserId("usr-locked"), true)
+        env.biometrics.available = false
+        val noSensor = LoginViewModel(verified, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        assertFalse(noSensor.state.value.biometricKeyVisible)
+        env.biometrics.available = true
+        val locked = LoginViewModel(UserId("usr-locked"), LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        assertFalse(locked.state.value.biometricKeyVisible)
+    }
+
+    @Test fun fingerprintSuccessEntersWithoutUsingAttempts() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.deps.preferences.setBiometrics(verified, true)
+        val vm = LoginViewModel(verified, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        assertTrue(vm.state.value.biometricKeyVisible)
+        vm.onEvent(LoginEvent.Fingerprint)
+        advanceUntilIdle()
+        assertEquals(LoginEffect.EnterMain, vm.effects.first())
+        assertEquals(3, attempts(env, "usr-verified"))
+        assertEquals(1, env.biometrics.prompts)
+    }
+
+    @Test fun fingerprintCancelOrFailKeepsPinUsable() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.deps.preferences.setBiometrics(verified, true)
+        val vm = LoginViewModel(verified, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        for (r in listOf(BiometricResult.Cancelled, BiometricResult.Failed)) {
+            env.biometrics.nextResult = r
+            vm.onEvent(LoginEvent.Fingerprint)
+            advanceUntilIdle()
+            assertEquals(LoginStatus.Idle, vm.state.value.status)
+            assertEquals(3, attempts(env, "usr-verified"))
+        }
+        type(vm, "1234")
+        assertEquals(LoginEffect.EnterMain, vm.effects.first())
+    }
+
+    @Test fun enableBiometricsOfferedOnceAfterPinLogin() = runTest(dispatcher) {
+        val (env, vm) = setup(sensor = true)
+        type(vm, "1234")
+        assertTrue(vm.state.value.showEnableBiometrics)
+        vm.onEvent(LoginEvent.EnableBiometrics(true))
+        advanceUntilIdle()
+        assertEquals(LoginEffect.EnterMain, vm.effects.first())
+        val pref = env.deps.preferences.preference(verified)
+        assertTrue(pref.biometricsEnabled)
+        assertTrue(pref.biometricsPrompted)
+
+        // Declining is remembered too: no second offer.
+        val other = UserId("usr-review")
+        val vm2 = LoginViewModel(other, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        type(vm2, "1234")
+        vm2.onEvent(LoginEvent.EnableBiometrics(false))
+        advanceUntilIdle()
+        assertEquals(LoginEffect.EnterMain, vm2.effects.first())
+        assertFalse(env.deps.preferences.preference(other).biometricsEnabled)
+        assertTrue(env.deps.preferences.preference(other).biometricsPrompted)
+        val vm3 = LoginViewModel(other, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        type(vm3, "1234")
+        assertFalse(vm3.state.value.showEnableBiometrics)
+        assertEquals(LoginEffect.EnterMain, vm3.effects.first())
+    }
+
+    @Test fun noOfferWithoutSensor() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        env.biometrics.available = false
+        val vm = LoginViewModel(verified, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        type(vm, "1234")
+        assertFalse(vm.state.value.showEnableBiometrics)
+        assertEquals(LoginEffect.EnterMain, vm.effects.first())
     }
 }

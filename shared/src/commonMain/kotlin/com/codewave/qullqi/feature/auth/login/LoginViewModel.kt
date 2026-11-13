@@ -8,6 +8,7 @@ import com.codewave.qullqi.domain.repository.AccountPreferenceRepository
 import com.codewave.qullqi.domain.repository.LoginResult
 import com.codewave.qullqi.domain.repository.SessionRepository
 import com.codewave.qullqi.domain.security.BiometricAuthenticator
+import com.codewave.qullqi.domain.security.BiometricResult
 import com.codewave.qullqi.domain.session.AppLock
 import com.codewave.qullqi.feature.FlowViewModel
 import kotlinx.coroutines.delay
@@ -153,15 +154,34 @@ class LoginViewModel(
         }
     }
 
+    /** Device biometrics (US5): never consumes PIN attempts and never unlocks a locked account (FR-017). */
     private fun fingerprint() {
-        // Implemented in US5.
+        val s = current
+        val id = s.account?.id ?: return
+        if (!s.biometricKeyVisible || s.status !is LoginStatus.Idle && s.status !is LoginStatus.Wrong) return
+        viewModelScope.launch {
+            when (biometrics.authenticate("Ingresa con tu huella", "Toca el sensor")) {
+                BiometricResult.Success -> when (session.loginWithBiometrics(id)) {
+                    LoginResult.Success -> succeed(id, offerBiometrics = false)
+                    LoginResult.Locked -> setState { copy(status = LoginStatus.Locked, message = LOCKED, biometricKeyVisible = false) }
+                    else -> Unit
+                }
+                BiometricResult.Failed -> setState { copy(message = "No reconocimos tu huella. Usa tu PIN.") }
+                BiometricResult.Cancelled, BiometricResult.Unavailable -> Unit
+            }
+        }
     }
 
     private fun enableBiometrics(enable: Boolean) {
-        // Implemented in US5.
+        val id = current.account?.id ?: return
+        setState { copy(showEnableBiometrics = false) }
+        viewModelScope.launch {
+            if (enable) preferences.setBiometrics(id, true) else preferences.markBiometricsPrompted(id)
+            enter()
+        }
     }
 
-    private suspend fun succeed(id: UserId) {
+    private suspend fun succeed(id: UserId, offerBiometrics: Boolean = true) {
         appLock.unlock()
         if (mode == LoginMode.Unlock) {
             setState { copy(filled = 0, status = LoginStatus.Idle, message = null) }
@@ -169,6 +189,16 @@ class LoginViewModel(
             return
         }
         preferences.recordLogin(id)
+        // "Activar huella" is offered once per account, only where the device supports it (FR-018).
+        val pref = preferences.preference(id)
+        if (offerBiometrics && biometrics.isAvailable() && !pref.biometricsPrompted && !pref.biometricsEnabled) {
+            setState { copy(filled = 0, status = LoginStatus.Entering, message = null, showEnableBiometrics = true) }
+            return
+        }
+        enter()
+    }
+
+    private suspend fun enter() {
         setState { copy(filled = 0, status = LoginStatus.Entering, message = ENTERING) }
         delay(enteringMillis)
         emit(LoginEffect.EnterMain)
