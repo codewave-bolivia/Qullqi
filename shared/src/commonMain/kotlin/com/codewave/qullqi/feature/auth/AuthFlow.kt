@@ -9,6 +9,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import com.codewave.qullqi.feature.auth.login.AccountsSheet
+import com.codewave.qullqi.feature.auth.login.LoginEffect
+import com.codewave.qullqi.feature.auth.login.LoginMode
+import com.codewave.qullqi.feature.auth.login.LoginScreen
+import com.codewave.qullqi.feature.auth.login.LoginViewModel
 import com.codewave.qullqi.feature.auth.start.SplashScreen
 import com.codewave.qullqi.feature.auth.start.StartEffect
 import com.codewave.qullqi.feature.auth.start.StartViewModel
@@ -112,6 +118,7 @@ private fun AuthRouteContent(
 ) {
     when (route) {
         AuthRoute.Splash, AuthRoute.Welcome -> StartRoute(route, deps, actions)
+        is AuthRoute.Login -> LoginRoute(route, deps, actions)
         AuthRoute.KycIntro -> kycEntry(actions.kycDone)
         else -> PendingRoute(route.toString())
     }
@@ -134,6 +141,28 @@ private fun StartRoute(route: AuthRoute, deps: AppDependencies, actions: AuthAct
         }
     }
     if (route == AuthRoute.Splash) SplashScreen(deps.debugReset, actions.restart) else WelcomeScreen(vm::onEvent)
+}
+
+@Composable
+private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: AuthActions) {
+    val vm = viewModel(key = "login-${route.userId?.value}-${actions.generation()}") {
+        LoginViewModel(route.userId, LoginMode.Login, deps.session, deps.preferences, deps.biometrics, deps.appLock)
+    }
+    LaunchedEffect(vm) {
+        vm.effects.collect { e ->
+            when (e) {
+                LoginEffect.EnterMain -> actions.enterMain()
+                LoginEffect.ToRegistration -> actions.navigator.push(AuthRoute.RegPhone)
+                is LoginEffect.ToRecover -> actions.navigator.push(AuthRoute.RecoverPin(e.userId))
+                LoginEffect.Unlocked -> Unit
+            }
+        }
+    }
+    val state by vm.state.collectAsState()
+    Box(Modifier.fillMaxSize()) {
+        LoginScreen(state, vm::onEvent)
+        AccountsSheet(state, vm::onEvent)
+    }
 }
 
 /** Temporary body for routes implemented in later tasks. */

@@ -1,0 +1,107 @@
+package com.codewave.qullqi.feature.auth
+
+import com.codewave.qullqi.domain.model.UserId
+import com.codewave.qullqi.feature.MainDispatcherTest
+import com.codewave.qullqi.feature.TestEnv
+import com.codewave.qullqi.feature.auth.login.LoginEffect
+import com.codewave.qullqi.feature.auth.login.LoginEvent
+import com.codewave.qullqi.feature.auth.login.LoginMode
+import com.codewave.qullqi.feature.auth.login.LoginStatus
+import com.codewave.qullqi.feature.auth.login.LoginViewModel
+import com.codewave.qullqi.feature.testEnv
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class LoginViewModelTest : MainDispatcherTest() {
+
+    private val verified = UserId("usr-verified")
+
+    private fun TestScope.setup(user: UserId? = verified, mode: LoginMode = LoginMode.Login): Pair<TestEnv, LoginViewModel> {
+        val env = testEnv(dispatcher)
+        val vm = LoginViewModel(user, mode, env.deps.session, env.deps.preferences, env.deps.biometrics, env.deps.appLock, enteringMillis = 0)
+        advanceUntilIdle()
+        return env to vm
+    }
+
+    private fun TestScope.type(vm: LoginViewModel, pin: String) {
+        pin.forEach { vm.onEvent(LoginEvent.Digit(it.digitToInt())) }
+        advanceUntilIdle()
+    }
+
+    @Test fun showsTargetAccount() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        assertEquals("Lucía", vm.state.value.firstName)
+        assertEquals(LoginStatus.Idle, vm.state.value.status)
+    }
+
+    @Test fun nullTargetUsesMostRecentAccount() = runTest(dispatcher) {
+        val (_, vm) = setup(user = null)
+        assertEquals("usr-new", vm.state.value.account?.id?.value)
+    }
+
+    @Test fun correctPinEntersAndUnlocks() = runTest(dispatcher) {
+        val (env, vm) = setup()
+        type(vm, "1234")
+        assertEquals(LoginEffect.EnterMain, vm.effects.first())
+        assertFalse(env.deps.appLock.locked.value)
+        assertEquals("usr-verified", env.deps.preferences.mostRecentUser()?.value)
+    }
+
+    @Test fun wrongPinsShakeCountDownAndLock() = runTest(dispatcher) {
+        val (env, vm) = setup()
+        type(vm, "0000")
+        assertEquals(LoginStatus.Wrong(2), vm.state.value.status)
+        assertEquals("Te quedan 2 intentos.", vm.state.value.message)
+        assertEquals(0, vm.state.value.filled)
+        assertEquals(1, vm.state.value.shakeCount)
+        type(vm, "0000")
+        assertEquals("Te quedan 1 intento.", vm.state.value.message)
+        type(vm, "0000")
+        assertEquals(LoginStatus.Locked, vm.state.value.status)
+        assertEquals("Bloqueamos el acceso por seguridad. Recupera tu PIN.", vm.state.value.message)
+        assertTrue(env.deps.appLock.locked.value)
+    }
+
+    @Test fun lockedAccountOpensLocked() = runTest(dispatcher) {
+        val (_, vm) = setup(UserId("usr-locked"))
+        assertEquals(LoginStatus.Locked, vm.state.value.status)
+        vm.onEvent(LoginEvent.Recover)
+        assertEquals(LoginEffect.ToRecover(UserId("usr-locked")), vm.effects.first())
+    }
+
+    @Test fun switchAccountListsMaskedAccounts() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        vm.onEvent(LoginEvent.SwitchAccount)
+        advanceUntilIdle()
+        val s = vm.state.value
+        assertTrue(s.showAccounts)
+        assertEquals(6, s.accounts.size)
+        assertEquals("+591 7••• ••01", s.accounts.first { it.id == verified }.maskedPhone)
+        vm.onEvent(LoginEvent.PickAccount(UserId("usr-review")))
+        advanceUntilIdle()
+        assertEquals("Valeria", vm.state.value.firstName)
+        assertFalse(vm.state.value.showAccounts)
+    }
+
+    @Test fun addAccountStartsRegistration() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        vm.onEvent(LoginEvent.AddAccount)
+        assertEquals(LoginEffect.ToRegistration, vm.effects.first())
+    }
+
+    @Test fun deleteAndPartialEntryNeverExposeDigits() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        vm.onEvent(LoginEvent.Digit(1))
+        vm.onEvent(LoginEvent.Digit(2))
+        vm.onEvent(LoginEvent.Delete)
+        advanceUntilIdle()
+        assertEquals(1, vm.state.value.filled)
+        assertFalse(vm.state.value.toString().contains("12"))
+    }
+}
