@@ -53,6 +53,16 @@ class SqlSessionRepository(
         }
     }
 
+    override suspend fun loginWithBiometrics(userId: UserId): LoginResult = withContext(io) {
+        db.transactionWithResult {
+            val left = q.attemptsLeft(userId.value).executeAsOneOrNull() ?: return@transactionWithResult LoginResult.UnknownUser
+            // A locked account can only be recovered with the PIN flow, never with biometrics.
+            if (left == 0L) return@transactionWithResult LoginResult.Locked
+            q.openSession(userId.value, clock.nowMillis())
+            LoginResult.Success
+        }
+    }
+
     override suspend fun logout() = withContext(io) {
         db.transaction {
             // A user stops being "new" once their first session is completed (FR-001).

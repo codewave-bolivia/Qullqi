@@ -17,6 +17,8 @@ interface CurrentUserSource {
 interface SessionRepository : CurrentUserSource {
     fun storedUsers(): Flow<List<StoredUser>>
     suspend fun login(userId: UserId, pin: String): LoginResult
+    /** Opens the session after a successful device biometric check; never touches PIN attempts. */
+    suspend fun loginWithBiometrics(userId: UserId): LoginResult
     suspend fun logout()
 }
 

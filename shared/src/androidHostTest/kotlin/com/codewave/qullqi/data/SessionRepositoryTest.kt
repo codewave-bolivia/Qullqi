@@ -65,4 +65,16 @@ class SessionRepositoryTest {
         assertEquals("usr-review", repo.currentUser.first()?.id?.value)
         assertEquals(1, t.count("SELECT count(*) FROM current_session"))
     }
+
+    @Test fun biometricLoginOpensSessionWithoutTouchingAttempts() = runBlocking {
+        repo.login(verified, "0000")
+        assertEquals(LoginResult.Success, repo.loginWithBiometrics(verified))
+        assertEquals(verified, repo.currentUser.first()?.id)
+        assertEquals(2, attemptsLeft("usr-verified"))
+    }
+
+    @Test fun biometricLoginRefusedWhenLocked() = runBlocking {
+        assertEquals(LoginResult.Locked, repo.loginWithBiometrics(UserId("usr-locked")))
+        assertNull(repo.currentUser.first())
+    }
 }

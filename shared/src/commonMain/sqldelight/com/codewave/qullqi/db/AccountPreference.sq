@@ -1,0 +1,29 @@
+-- Per-account preferences for M2 (spec 003): biometric login and most recently used account.
+
+CREATE TABLE account_preference (
+  user_id TEXT NOT NULL PRIMARY KEY REFERENCES user(id) ON DELETE CASCADE,
+  biometrics_enabled INTEGER NOT NULL DEFAULT 0 CHECK (biometrics_enabled IN (0, 1)),
+  biometrics_prompted INTEGER NOT NULL DEFAULT 0 CHECK (biometrics_prompted IN (0, 1)),
+  last_login_at INTEGER
+);
+
+ensure:
+INSERT OR IGNORE INTO account_preference (user_id) VALUES (?);
+
+preferenceFor:
+SELECT biometrics_enabled, biometrics_prompted, last_login_at FROM account_preference WHERE user_id = ?;
+
+setBiometrics:
+UPDATE account_preference SET biometrics_enabled = ?, biometrics_prompted = 1 WHERE user_id = ?;
+
+markPrompted:
+UPDATE account_preference SET biometrics_prompted = 1 WHERE user_id = ?;
+
+recordLogin:
+UPDATE account_preference SET last_login_at = ? WHERE user_id = ?;
+
+-- Latest login first; accounts never logged in fall back to name order.
+mostRecentUser:
+SELECT u.id FROM user u LEFT JOIN account_preference p ON p.user_id = u.id
+ORDER BY p.last_login_at IS NULL, p.last_login_at DESC, u.full_name
+LIMIT 1;
