@@ -42,3 +42,13 @@ insertSamples {
     ('att-locked-1', 'usr-locked', 'CI', '9000004', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
      'Sofía Ficticia Rojas', '9000004', '1993-05-30', '2032-05-30', 1767229200000, 'APPROVED', NULL, 1767229200000, 1767229203000);
 }
+
+-- Children first; phone confirmations may have no user, so they are deleted explicitly.
+deleteAll {
+  DELETE FROM current_session;
+  DELETE FROM phone_confirmation;
+  DELETE FROM kyc_attempt;
+  DELETE FROM terms_acceptance;
+  DELETE FROM credential;
+  DELETE FROM user;
+}

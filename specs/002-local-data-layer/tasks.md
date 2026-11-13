@@ -139,11 +139,11 @@ quickstart.md §1 defines the test classes. Tests run with `./gradlew :shared:te
 
 ### Tests for User Story 4
 
-- [ ] T033 [US4] Create `T/SeedDataTest.kt`: exactly the 6 ids of data-model.md; each user's `verification` equals the mapping of its latest final attempt (none → `NOT_VERIFIED`); 10 consecutive `LocalDataReset.reset(withSamples = true)` produce identical row dumps of every table; `reset(withSamples = false)` → 0 users; every phone matches `+59170000\d{3}` and every email ends with `@example.com`; every image ref starts with `placeholder:`
+- [X] T033 [US4] Create `T/SeedDataTest.kt`: exactly the 6 ids of data-model.md; each user's `verification` equals the mapping of its latest final attempt (none → `NOT_VERIFIED`); 10 consecutive `LocalDataReset.reset(withSamples = true)` produce identical row dumps of every table; `reset(withSamples = false)` → 0 users; every phone matches `+59170000\d{3}` and every email ends with `@example.com`; every image ref starts with `placeholder:`
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Create `K/data/LocalDataReset.kt`: `class LocalDataReset(private val db: QullqiDatabase)` with `fun reset(withSamples: Boolean)` running, in one transaction, deletes of all tables (children first) and, when `withSamples`, the seed statements — expose the seed as a named query group in `SQ/Seed.sq` (e.g. `insertSamples:` multi-statement query) so `Schema.create` and reset share the same rows; remove `current_session`
+- [X] T034 [US4] Create `K/data/LocalDataReset.kt`: `class LocalDataReset(private val db: QullqiDatabase)` with `fun reset(withSamples: Boolean)` running, in one transaction, deletes of all tables (children first) and, when `withSamples`, the seed statements — expose the seed as a named query group in `SQ/Seed.sq` (e.g. `insertSamples:` multi-statement query) so `Schema.create` and reset share the same rows; remove `current_session`
 
 **Checkpoint**: US4 green.
 
@@ -155,8 +155,8 @@ quickstart.md §1 defines the test classes. Tests run with `./gradlew :shared:te
 
 **Independent Test**: `CurrentUserContractTest` uses only `CurrentUserSource` and contract types.
 
-- [ ] T035 [US5] Create `T/CurrentUserContractTest.kt` typed against `CurrentUserSource` only: emits `null` with no session; emits current value immediately on collection; emits again on login, logout, switch account, and when a KYC attempt for the logged-in user is processed (status change); `canOperateMoney()` true only for `VERIFIED`
-- [ ] T036 [US5] Verify `specs/002-local-data-layer/contracts/current-user.md` matches the code in `K/domain/model/User.kt` and `K/domain/repository/SessionRepository.kt` (names, fields, enum values); fix the code, not the contract, on mismatch
+- [X] T035 [US5] Create `T/CurrentUserContractTest.kt` typed against `CurrentUserSource` only: emits `null` with no session; emits current value immediately on collection; emits again on login, logout, switch account, and when a KYC attempt for the logged-in user is processed (status change); `canOperateMoney()` true only for `VERIFIED`
+- [X] T036 [US5] Verify `specs/002-local-data-layer/contracts/current-user.md` matches the code in `K/domain/model/User.kt` and `K/domain/repository/SessionRepository.kt` (names, fields, enum values); fix the code, not the contract, on mismatch
 
 **Checkpoint**: Contract ready for the other developer's review (spec header stays `**Contract**: Draft` until they approve).
 
@@ -164,11 +164,11 @@ quickstart.md §1 defines the test classes. Tests run with `./gradlew :shared:te
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T037 Run the PR gate locally: `./gradlew clean :shared:compileAndroidMain :shared:compileKotlinJvm :androidApp:compileDebugKotlin :desktopApp:compileKotlin` — must pass (proves no `expect` broke jvm/Desktop)
-- [ ] T038 Run `./gradlew :shared:testAndroidHostTest` — all tests green; record counts
-- [ ] T039 Update `CLAUDE.md` §2 tree: add `shared/src/commonMain/sqldelight/com/codewave/qullqi/db/` (User.sq, PhoneConfirmation.sq, KycAttempt.sq, Seed.sq) and packages `domain/{model,repository,security,system}`, `data/`, `data/db/`; androidMain `data/`; androidHostTest `data/`; refresh "Last verified"
-- [ ] T040 Add to `CLAUDE.md` §14 a "Sample credentials" note: PIN `1234`, SMS code `123456`, document number last digit `0`/`5`/other → rejected/under review/approved; and that iOS/Desktop `SqlDriver` + `PinHasher` implementations are pending from the Builder
-- [ ] T041 Set `**Status**: Ready` in `specs/002-local-data-layer/spec.md`, commit, run `scripts/branches.sh check feature/002-local-data-layer` and produce the CLAUDE.md §11 report (shared-area approvals required: Gradle files, sqldelight, domain/model, domain/repository, CLAUDE.md)
+- [X] T037 Run the PR gate locally: `./gradlew clean :shared:compileAndroidMain :shared:compileKotlinJvm :androidApp:compileDebugKotlin :desktopApp:compileKotlin` — must pass (proves no `expect` broke jvm/Desktop)
+- [X] T038 Run `./gradlew :shared:testAndroidHostTest` — all tests green; record counts
+- [X] T039 Update `CLAUDE.md` §2 tree: add `shared/src/commonMain/sqldelight/com/codewave/qullqi/db/` (User.sq, PhoneConfirmation.sq, KycAttempt.sq, Seed.sq) and packages `domain/{model,repository,security,system}`, `data/`, `data/db/`; androidMain `data/`; androidHostTest `data/`; refresh "Last verified"
+- [X] T040 Add to `CLAUDE.md` §14 a "Sample credentials" note: PIN `1234`, SMS code `123456`, document number last digit `0`/`5`/other → rejected/under review/approved; and that iOS/Desktop `SqlDriver` + `PinHasher` implementations are pending from the Builder
+- [X] T041 Set `**Status**: Ready` in `specs/002-local-data-layer/spec.md`, commit, run `scripts/branches.sh check feature/002-local-data-layer` and produce the CLAUDE.md §11 report (shared-area approvals required: Gradle files, sqldelight, domain/model, domain/repository, CLAUDE.md)
 
 ---
 
