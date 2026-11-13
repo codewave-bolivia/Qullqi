@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.codewave.qullqi.data.LocalDataReset
 import com.codewave.qullqi.designsystem.Q
 import com.codewave.qullqi.designsystem.QMotion
@@ -59,7 +58,7 @@ fun SplashScreen(debugReset: LocalDataReset?, onReset: () -> Unit) {
                     onLongClick = { if (debugReset != null) debugSheet = true },
                 ),
             )
-            Box(Modifier.width(SPLASH_BAR_WIDTH).height(QSize.progressBar).background(c.s3, RoundedCornerShape(50))) {
+            Box(Modifier.width(QSize.splashBar).height(QSize.progressBar).background(c.s3, RoundedCornerShape(50))) {
                 Box(Modifier.fillMaxHeight().fillMaxWidth(progress.value).background(c.ac, RoundedCornerShape(50)))
             }
         }
@@ -78,4 +77,3 @@ fun SplashScreen(debugReset: LocalDataReset?, onReset: () -> Unit) {
     }
 }
 
-private val SPLASH_BAR_WIDTH = 120.dp

@@ -2,7 +2,8 @@
 
 Package `com.codewave.qullqi.feature.auth`. Each exposes `val state: StateFlow<UiState>`,
 `fun onEvent(e: Event)` and `val effects: Flow<Effect>` (one-off: navigate, toast, shake,
-biometric prompt). Constructor injection only.
+biometric prompt). Shakes are a counter in the state (`shakeCount`/`codeShake`/`pinShake`) so the
+screen replays the animation on change. Constructor injection only.
 
 | ViewModel | Depends on | Key events | Key effects |
 |-----------|-----------|------------|-------------|

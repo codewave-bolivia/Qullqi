@@ -71,7 +71,7 @@ private fun Modifier.box(current: Boolean, error: Boolean): Modifier {
         else -> c.ln
     }
     return this
-        .shadow(if (current) 10.dp else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
+        .shadow(if (current) QSize.glowBox else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
         .background(c.s1, shape)
         .border(QSize.border, border, shape)
 }

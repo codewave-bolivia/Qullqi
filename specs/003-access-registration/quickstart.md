@@ -26,7 +26,7 @@ Sample data: PIN `1234`, SMS code `123456` (CLAUDE.md §14).
 
 | # | Scenario | Expected | Spec |
 |---|----------|----------|------|
-| 1 | Cold start | Nocturne launch screen with Qullqi icon → animated splash, no white frame → login "Hola de nuevo, …" | US1, FR-001a |
+| 1 | Cold start | Nocturne launch screen with Qullqi icon → animated splash, no white frame → login "Hola de nuevo, Andrés" (no logins yet → first account by name) | US1, FR-001a |
 | 2 | PIN `1234` | "Ingresando…" → "Activar huella" once → veil → MainActivity placeholder | US2, US5-5, FR-032 |
 | 3 | Back in MainActivity | app closes (does not show login) | FR-033 |
 | 4 | Reopen from launcher | launch screen → splash → login again (cold start rule) | FR-002a |

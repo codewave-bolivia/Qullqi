@@ -36,7 +36,7 @@ fun QFlowTopBar(step: Int, total: Int, onBack: () -> Unit, modifier: Modifier = 
                 val current = i == step - 1
                 Box(
                     Modifier.weight(1f).height(QSize.progressBar)
-                        .shadow(if (current) 6.dp else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
+                        .shadow(if (current) QSize.glowBar else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
                         .background(if (i < step) c.ac else c.s3, shape),
                 )
             }

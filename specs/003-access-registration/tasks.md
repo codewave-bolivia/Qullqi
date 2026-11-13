@@ -184,11 +184,11 @@ invariants). UI is validated manually on a physical device (quickstart.md §2).
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T067 Run `./gradlew :shared:testAndroidHostTest` and the PR gate `./gradlew clean :shared:compileAndroidMain :shared:compileKotlinJvm :androidApp:compileDebugKotlin :desktopApp:compileKotlin` — all green; record counts
-- [ ] T068 Grep `K/feature` for literal `Color(`, `.dp` sizes outside designsystem tokens and `0xFF` — fix any found (FR-030)
+- [X] T067 Run `./gradlew :shared:testAndroidHostTest` and the PR gate `./gradlew clean :shared:compileAndroidMain :shared:compileKotlinJvm :androidApp:compileDebugKotlin :desktopApp:compileKotlin` — all green; record counts
+- [X] T068 Grep `K/feature` for literal `Color(`, `.dp` sizes outside designsystem tokens and `0xFF` — fix any found (FR-030)
 - [ ] T069 Install on the physical device (`./gradlew :androidApp:installDebug`) and hand quickstart.md §2 rows 1–14 to the owner; record which were verified by the owner (the agent cannot operate the device)
-- [ ] T070 Update `CLAUDE.md`: §2 tree (designsystem/, navigation/, feature/auth, feature/main, AuthActivity, QullqiApplication, fonts/icons, docs/licenses), §14 biometric preference table and debug reset action, and a note that `designsystem/` and `navigation/` are shared areas reused by M4
-- [ ] T071 Set `**Status**: Ready` in `specs/003-access-registration/spec.md`, run `scripts/branches.sh check feature/003-access-registration`, and produce the CLAUDE.md §11 report (shared-area approvals; device verification status)
+- [X] T070 Update `CLAUDE.md`: §2 tree (designsystem/, navigation/, feature/auth, feature/main, AuthActivity, QullqiApplication, fonts/icons, docs/licenses), §14 biometric preference table and debug reset action, and a note that `designsystem/` and `navigation/` are shared areas reused by M4
+- [X] T071 Set `**Status**: Ready` in `specs/003-access-registration/spec.md`, run `scripts/branches.sh check feature/003-access-registration`, and produce the CLAUDE.md §11 report (shared-area approvals; device verification status)
 
 ---
 

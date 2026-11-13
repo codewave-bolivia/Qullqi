@@ -63,7 +63,7 @@ fun QPrimaryButton(
             .height(QSize.buttonHeight)
             .alpha(if (enabled) 1f else 0.4f)
             .pressScale(source)
-            .shadow(if (enabled) 14.dp else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
+            .shadow(if (enabled) QSize.glowButton else 0.dp, shape, clip = false, ambientColor = c.ac, spotColor = c.ac)
             .background(c.bg, shape)
             .background(c.ac.copy(alpha = if (pressed) 0.26f else 0.08f), shape)
             .border(QSize.border, c.ac, shape)

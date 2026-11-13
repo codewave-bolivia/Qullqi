@@ -116,4 +116,12 @@ object QSize {
     val iconResult = 40.dp
     val border = 1.dp
     val focusOutline = 2.dp
+    val splashBar = 120.dp
+    val keypadMaxWidth = 360.dp
+    /** Window height under which keypad keys shrink (research R8). */
+    val compactHeight = 640.dp
+    /** Accent glow radii (STYLEGUIDE §3.3 "brillo de acento"). */
+    val glowButton = 14.dp
+    val glowBox = 10.dp
+    val glowBar = 6.dp
 }

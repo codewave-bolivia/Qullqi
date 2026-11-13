@@ -47,9 +47,9 @@ fun QKeypad(
     enabled: Boolean = true,
     leftKey: (@Composable () -> Unit)? = null,
 ) {
-    BoxWithConstraints(modifier.fillMaxWidth().widthIn(max = 360.dp)) {
+    BoxWithConstraints(modifier.fillMaxWidth().widthIn(max = QSize.keypadMaxWidth)) {
         // Shorter keys on short windows so the screen fits (research R8).
-        val keyHeight = if (maxHeight < 640.dp && maxHeight != androidx.compose.ui.unit.Dp.Infinity) QSize.keyHeightCompact else QSize.keyHeight
+        val keyHeight = if (maxHeight < QSize.compactHeight && maxHeight != androidx.compose.ui.unit.Dp.Infinity) QSize.keyHeightCompact else QSize.keyHeight
         Column(verticalArrangement = Arrangement.spacedBy(QSpacing.x8)) {
             listOf(listOf(1, 2, 3), listOf(4, 5, 6), listOf(7, 8, 9)).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(QSpacing.x8)) {
