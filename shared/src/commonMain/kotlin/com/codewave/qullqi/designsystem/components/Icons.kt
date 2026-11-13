@@ -13,15 +13,18 @@ import org.jetbrains.compose.resources.painterResource
 import qullqi.shared.generated.resources.Res
 import qullqi.shared.generated.resources.ph_arrow_down
 import qullqi.shared.generated.resources.ph_arrow_up
+import qullqi.shared.generated.resources.ph_arrows_left_right
 import qullqi.shared.generated.resources.ph_backspace
 import qullqi.shared.generated.resources.ph_caret_left
 import qullqi.shared.generated.resources.ph_check
 import qullqi.shared.generated.resources.ph_compass
+import qullqi.shared.generated.resources.ph_credit_card
 import qullqi.shared.generated.resources.ph_device_mobile
 import qullqi.shared.generated.resources.ph_fingerprint
 import qullqi.shared.generated.resources.ph_identification_card
 import qullqi.shared.generated.resources.ph_lock_simple
 import qullqi.shared.generated.resources.ph_paper_plane_tilt
+import qullqi.shared.generated.resources.ph_qr_code
 import qullqi.shared.generated.resources.ph_seal_check
 import qullqi.shared.generated.resources.ph_sign_out
 import qullqi.shared.generated.resources.ph_user_switch
@@ -32,15 +35,18 @@ import qullqi.shared.generated.resources.ph_x
 object Ph {
     val ArrowDown = Res.drawable.ph_arrow_down
     val ArrowUp = Res.drawable.ph_arrow_up
+    val ArrowsLeftRight = Res.drawable.ph_arrows_left_right
     val Backspace = Res.drawable.ph_backspace
     val CaretLeft = Res.drawable.ph_caret_left
     val Check = Res.drawable.ph_check
     val Compass = Res.drawable.ph_compass
+    val CreditCard = Res.drawable.ph_credit_card
     val DeviceMobile = Res.drawable.ph_device_mobile
     val Fingerprint = Res.drawable.ph_fingerprint
     val IdentificationCard = Res.drawable.ph_identification_card
     val LockSimple = Res.drawable.ph_lock_simple
     val PaperPlaneTilt = Res.drawable.ph_paper_plane_tilt
+    val QrCode = Res.drawable.ph_qr_code
     val SealCheck = Res.drawable.ph_seal_check
     val SignOut = Res.drawable.ph_sign_out
     val UserSwitch = Res.drawable.ph_user_switch

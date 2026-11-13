@@ -1,8 +1,13 @@
 package com.codewave.qullqi.designsystem.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,9 +24,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.foundation.focusable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -29,15 +35,16 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.codewave.qullqi.designsystem.Q
+import com.codewave.qullqi.designsystem.QMotion
 import com.codewave.qullqi.designsystem.QRadius
 import com.codewave.qullqi.designsystem.QSize
-import com.codewave.qullqi.designsystem.QSpacing
 
 /**
- * Custom 3×4 keypad (UI_GUIDELINES §3.6); the system keyboard never opens for PIN/code entry.
- * [leftKey] is the bottom-left slot (fingerprint on login), empty when null.
+ * Custom 3×4 keypad, as the reference (`is.login` keys): full width with 12 dp side padding,
+ * three equal columns, 2 dp gaps, 58 dp transparent keys, digits 24/400, `s1` only on hover/press,
+ * press scale .93. The system keyboard never opens. [leftKey] is the bottom-left slot (fingerprint).
  */
 @Composable
 fun QKeypad(
@@ -47,66 +54,60 @@ fun QKeypad(
     enabled: Boolean = true,
     leftKey: (@Composable () -> Unit)? = null,
 ) {
-    BoxWithConstraints(modifier.fillMaxWidth().widthIn(max = QSize.keypadMaxWidth)) {
+    BoxWithConstraints(modifier.fillMaxWidth().alpha(if (enabled) 1f else 0.4f).padding(horizontal = QSize.keypadPaddingH)) {
         // Shorter keys on short windows so the screen fits (research R8).
-        val keyHeight = if (maxHeight < QSize.compactHeight && maxHeight != androidx.compose.ui.unit.Dp.Infinity) QSize.keyHeightCompact else QSize.keyHeight
-        Column(verticalArrangement = Arrangement.spacedBy(QSpacing.x8)) {
+        val keyHeight = if (maxHeight < QSize.compactHeight && maxHeight != Dp.Infinity) QSize.keyHeightCompact else QSize.keyHeight
+        Column(verticalArrangement = Arrangement.spacedBy(QSize.keypadGap)) {
             listOf(listOf(1, 2, 3), listOf(4, 5, 6), listOf(7, 8, 9)).forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(QSpacing.x8)) {
-                    row.forEach { d -> Key(Modifier.weight(1f), keyHeight, enabled, label = d.toString(), onClick = { onDigit(d) }) }
+                Row(horizontalArrangement = Arrangement.spacedBy(QSize.keypadGap)) {
+                    row.forEach { d -> KeyCell(Modifier.weight(1f), keyHeight, enabled, onClick = { onDigit(d) }) { Digit(d) } }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(QSpacing.x8)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(QSize.keypadGap)) {
                 Box(Modifier.weight(1f).height(keyHeight), contentAlignment = Alignment.Center) { leftKey?.invoke() }
-                Key(Modifier.weight(1f), keyHeight, enabled, label = "0", onClick = { onDigit(0) })
-                Key(Modifier.weight(1f), keyHeight, enabled, label = null, transparent = true, onClick = onDelete) {
-                    QIcon(Ph.Backspace, "Borrar", tint = Q.colors.tx2)
+                KeyCell(Modifier.weight(1f), keyHeight, enabled, onClick = { onDigit(0) }) { Digit(0) }
+                KeyCell(Modifier.weight(1f), keyHeight, enabled, onClick = onDelete) {
+                    QIcon(Ph.Backspace, "Borrar", size = QSize.keyIcon, tint = Q.colors.tx)
                 }
             }
         }
     }
 }
 
-/** A keypad-styled key; also used by screens for the fingerprint slot. */
+/** A key with the keypad style; used by screens for the fingerprint slot (icon tinted by the caller). */
 @Composable
 fun QKey(
     modifier: Modifier = Modifier,
-    height: androidx.compose.ui.unit.Dp = QSize.keyHeight,
+    height: Dp = QSize.keyHeight,
     enabled: Boolean = true,
-    transparent: Boolean = true,
     onClick: () -> Unit,
     content: @Composable () -> Unit,
-) = Key(modifier.fillMaxWidth(), height, enabled, null, transparent, onClick, content)
+) = KeyCell(modifier.fillMaxWidth(), height, enabled, onClick, content)
 
 @Composable
-private fun Key(
+private fun Digit(d: Int) = Text(d.toString(), style = Q.type.key, color = Q.colors.tx)
+
+@Composable
+private fun KeyCell(
     modifier: Modifier,
-    height: androidx.compose.ui.unit.Dp,
+    height: Dp,
     enabled: Boolean,
-    label: String?,
-    transparent: Boolean = false,
     onClick: () -> Unit,
-    content: (@Composable () -> Unit)? = null,
+    content: @Composable () -> Unit,
 ) {
-    val c = Q.colors
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val shape = RoundedCornerShape(QRadius.sm)
-    val fill = when {
-        pressed -> c.s2
-        transparent -> Color.Transparent
-        else -> c.s1
-    }
+    val hovered by source.collectIsHoveredAsState()
+    val scale by animateFloatAsState(if (pressed) QMotion.KEY_PRESS_SCALE else 1f, tween(QMotion.PRESS_MS))
     Box(
         modifier
             .height(height)
-            .pressScale(source)
-            .background(fill, shape)
+            .scale(scale)
+            .background(if (pressed || hovered) Q.colors.s1 else Color.Transparent, RoundedCornerShape(QRadius.sm))
+            .hoverable(source, enabled)
             .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
-    ) {
-        if (label != null) Text(label, style = Q.type.digits, color = c.tx) else content?.invoke()
-    }
+    ) { content() }
 }
 
 /**

@@ -134,3 +134,20 @@ private fun ButtonContent(text: String, color: Color, icon: (@Composable () -> U
         Text(text, style = Q.type.bodyLg.copy(fontWeight = Q.type.bodyMd.fontWeight), color = color)
     }
 }
+
+/** Footer link as in the reference login ("¿Olvidaste tu PIN?", "Cambiar de cuenta"): 13.5/500, no border or fill. */
+@Composable
+fun QLinkButton(text: String, onClick: () -> Unit, color: Color, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    val source = remember { MutableInteractionSource() }
+    Box(
+        modifier
+            .heightIn(min = QSize.touchTarget)
+            .alpha(if (enabled) 1f else 0.4f)
+            .pressScale(source)
+            .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(vertical = QSpacing.x6),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, style = Q.type.link, color = color)
+    }
+}

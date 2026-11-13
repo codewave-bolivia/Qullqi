@@ -175,6 +175,8 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
             when (e) {
                 LoginEffect.EnterMain -> actions.enterMain()
                 LoginEffect.ToRegistration -> actions.startRegistration()
+                // Welcome becomes the root again: "Crear cuenta" / "Ya tengo cuenta".
+                LoginEffect.ToWelcome -> actions.navigator.resetTo(AuthRoute.Welcome)
                 is LoginEffect.ToRecover -> actions.startRecover(e.userId)
                 LoginEffect.Unlocked -> Unit
             }

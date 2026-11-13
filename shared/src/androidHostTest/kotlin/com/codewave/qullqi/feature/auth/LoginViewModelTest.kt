@@ -91,6 +91,15 @@ class LoginViewModelTest : MainDispatcherTest() {
         assertFalse(vm.state.value.showAccounts)
     }
 
+    @Test fun goToWelcomeFromAccountsSheet() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        vm.onEvent(LoginEvent.SwitchAccount)
+        advanceUntilIdle()
+        vm.onEvent(LoginEvent.GoToWelcome)
+        assertFalse(vm.state.value.showAccounts)
+        assertEquals(LoginEffect.ToWelcome, vm.effects.first())
+    }
+
     @Test fun addAccountStartsRegistration() = runTest(dispatcher) {
         val (_, vm) = setup()
         vm.onEvent(LoginEvent.AddAccount)

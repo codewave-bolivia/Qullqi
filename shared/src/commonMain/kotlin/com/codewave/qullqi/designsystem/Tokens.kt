@@ -79,9 +79,12 @@ object QSpacing {
     val x20 = 20.dp
     val x22 = 22.dp
     val x24 = 24.dp
+    val x26 = 26.dp
     val x28 = 28.dp
+    val x30 = 30.dp
     val x32 = 32.dp
     val x36 = 36.dp
+    val x56 = 56.dp
 }
 
 /** Corner radii (STYLEGUIDE §3.2). */
@@ -100,7 +103,7 @@ object QSize {
     val pinBoxWidth = 54.dp
     val pinBoxHeight = 62.dp
     val codeBoxHeight = 56.dp
-    val keyHeight = 56.dp
+    val keyHeight = 58.dp
     val keyHeightCompact = 48.dp
     val iconButton = 42.dp
     val touchTarget = 44.dp
@@ -118,6 +121,17 @@ object QSize {
     val iconResult = 40.dp
     val border = 1.dp
     val focusOutline = 2.dp
+    // Login / keypad / welcome (Qullqi Pay Auth.dc.html, is.login and is.welcome blocks)
+    val keypadGap = 2.dp
+    val keypadPaddingH = 12.dp
+    val keyIcon = 24.dp
+    val perkIcon = 20.dp
+    val loginPaddingH = 28.dp
+    val loginPaddingTop = 40.dp
+    val messageMinHeight = 18.dp
+    val pinGap = 10.dp
+    val leadMaxWidth = 300.dp
+    val avatarGlow = 26.dp
     // Splash (Qullqi Pay Auth.dc.html, is.splash block)
     val splashUnderlineWidth = 24.dp
     val splashUnderlineHeight = 2.dp
@@ -128,11 +142,10 @@ object QSize {
     val splashBarBottom = 64.dp
     val splashPaddingH = 32.dp
     val splashPaddingBottom = 60.dp
-    val keypadMaxWidth = 360.dp
     /** Window height under which keypad keys shrink (research R8). */
     val compactHeight = 640.dp
     /** Accent glow radii (STYLEGUIDE §3.3 "brillo de acento"). */
     val glowButton = 14.dp
-    val glowBox = 10.dp
+    val boxGlow = 16.dp
     val glowBar = 6.dp
 }

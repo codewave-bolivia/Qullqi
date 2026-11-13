@@ -38,4 +38,5 @@ object QMotion {
     val pushOffset = 26.dp
     val riseOffset = 14.dp
     const val PRESS_SCALE = 0.94f
+    const val KEY_PRESS_SCALE = 0.93f
 }

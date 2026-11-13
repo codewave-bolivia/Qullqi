@@ -53,6 +53,12 @@ fun AccountsSheet(state: LoginState, onEvent: (LoginEvent) -> Unit) {
                 }
                 Text("Agregar otra cuenta", style = Q.type.bodyMd, color = c.ac, modifier = Modifier.weight(1f))
             }
+            SheetRow(onClick = { onEvent(LoginEvent.GoToWelcome) }) {
+                Box(Modifier.size(QSize.touchTarget), contentAlignment = Alignment.Center) {
+                    QIcon(Ph.CaretLeft, null, size = QSize.iconInline, tint = c.tx2)
+                }
+                Text("Volver al inicio", style = Q.type.bodyMd, color = c.tx2, modifier = Modifier.weight(1f))
+            }
         }
     }
 }

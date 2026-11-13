@@ -50,6 +50,8 @@ sealed interface LoginEvent {
     data object DismissAccounts : LoginEvent
     data class PickAccount(val userId: UserId) : LoginEvent
     data object AddAccount : LoginEvent
+    /** Accounts sheet → "Volver al inicio": back to Welcome (Crear cuenta / Ya tengo cuenta). */
+    data object GoToWelcome : LoginEvent
     data object Recover : LoginEvent
     data class EnableBiometrics(val enable: Boolean) : LoginEvent
 }
@@ -58,6 +60,7 @@ sealed interface LoginEffect {
     data object EnterMain : LoginEffect
     data object Unlocked : LoginEffect
     data object ToRegistration : LoginEffect
+    data object ToWelcome : LoginEffect
     data class ToRecover(val userId: UserId) : LoginEffect
 }
 
@@ -97,6 +100,10 @@ class LoginViewModel(
             LoginEvent.AddAccount -> {
                 setState { copy(showAccounts = false) }
                 emit(LoginEffect.ToRegistration)
+            }
+            LoginEvent.GoToWelcome -> {
+                setState { copy(showAccounts = false) }
+                emit(LoginEffect.ToWelcome)
             }
             LoginEvent.Recover -> current.account?.let { emit(LoginEffect.ToRecover(it.id)) }
             is LoginEvent.EnableBiometrics -> enableBiometrics(event.enable)
