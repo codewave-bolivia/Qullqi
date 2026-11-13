@@ -150,9 +150,9 @@ invariants). UI is validated manually on a physical device (quickstart.md §2).
 
 **Independent Test**: `RecoverPinViewModelTest`; quickstart row 10.
 
-- [ ] T056 [US4] Create `T/feature/auth/RecoverPinViewModelTest.kt`: for `usr-locked` code is requested to its phone (masked "+591 7••• ••05"), `123456` confirms, new PIN twice → toast "PIN actualizado" + `Navigate(Login(usr-locked))`, attempts back to 3; mismatch shakes
-- [ ] T057 [US4] Create `K/feature/auth/recover/RecoverPinViewModel.kt` and `K/feature/auth/recover/RecoverPinScreen.kt` (steps: code → new PIN → confirm, reusing `QCodeBoxes`, `QPinBoxes`, `QKeypad`, texts "Te enviamos un código por SMS", "Crea un PIN de 4 dígitos", "Confirma tu PIN")
-- [ ] T058 [US4] Wire `AuthRoute.RecoverPin(id)` in `AuthFlow.kt`; also from login "¿Olvidaste tu PIN?"
+- [X] T056 [US4] Create `T/feature/auth/RecoverPinViewModelTest.kt`: for `usr-locked` code is requested to its phone (masked "+591 7••• ••05"), `123456` confirms, new PIN twice → toast "PIN actualizado" + `Navigate(Login(usr-locked))`, attempts back to 3; mismatch shakes
+- [X] T057 [US4] Create `K/feature/auth/recover/RecoverPinViewModel.kt` and `K/feature/auth/recover/RecoverPinScreen.kt` (steps: code → new PIN → confirm, reusing `QCodeBoxes`, `QPinBoxes`, `QKeypad`, texts "Te enviamos un código por SMS", "Crea un PIN de 4 dígitos", "Confirma tu PIN")
+- [X] T058 [US4] Wire `AuthRoute.RecoverPin(id)` in `AuthFlow.kt`; also from login "¿Olvidaste tu PIN?"
 
 ---
 

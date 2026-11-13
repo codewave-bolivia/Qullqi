@@ -22,6 +22,9 @@ import com.codewave.qullqi.feature.auth.register.PhoneStep
 import com.codewave.qullqi.feature.auth.register.PinStep
 import com.codewave.qullqi.feature.auth.register.RegEffect
 import com.codewave.qullqi.feature.auth.register.RegistrationViewModel
+import com.codewave.qullqi.feature.auth.recover.RecoverEffect
+import com.codewave.qullqi.feature.auth.recover.RecoverPinScreen
+import com.codewave.qullqi.feature.auth.recover.RecoverPinViewModel
 import com.codewave.qullqi.feature.auth.start.SplashScreen
 import com.codewave.qullqi.feature.auth.start.StartEffect
 import com.codewave.qullqi.feature.auth.start.StartViewModel
@@ -77,6 +80,9 @@ class AuthActions(
     /** Starts a new registration with a fresh draft (FR-014: the draft lives only inside the flow). */
     val startRegistration: () -> Unit,
     val registrationId: () -> Int,
+    /** Starts PIN recovery for an account with a fresh ViewModel. */
+    val startRecover: (UserId) -> Unit,
+    val recoverId: () -> Int,
 )
 
 /**
@@ -103,6 +109,7 @@ fun AuthFlow(
     val scope = rememberCoroutineScope()
     var generation by remember { mutableIntStateOf(0) }
     var registrationId by remember { mutableIntStateOf(0) }
+    var recoverId by remember { mutableIntStateOf(0) }
     val actions = remember {
         AuthActions(
             navigator = navigator,
@@ -113,6 +120,8 @@ fun AuthFlow(
             generation = { generation },
             startRegistration = { registrationId++; navigator.push(AuthRoute.RegPhone) },
             registrationId = { registrationId },
+            startRecover = { id -> recoverId++; navigator.push(AuthRoute.RecoverPin(id)) },
+            recoverId = { recoverId },
         )
     }
     Box(Modifier.fillMaxSize()) {
@@ -134,6 +143,7 @@ private fun AuthRouteContent(
         is AuthRoute.Login -> LoginRoute(route, deps, actions)
         AuthRoute.RegPhone, AuthRoute.RegCode, AuthRoute.RegInfo, AuthRoute.RegPin, AuthRoute.RegDone ->
             RegistrationRoute(route, deps, actions)
+        is AuthRoute.RecoverPin -> RecoverRoute(route, deps, actions)
         AuthRoute.KycIntro -> kycEntry(actions.kycDone)
         else -> PendingRoute(route.toString())
     }
@@ -168,7 +178,7 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
             when (e) {
                 LoginEffect.EnterMain -> actions.enterMain()
                 LoginEffect.ToRegistration -> actions.startRegistration()
-                is LoginEffect.ToRecover -> actions.navigator.push(AuthRoute.RecoverPin(e.userId))
+                is LoginEffect.ToRecover -> actions.startRecover(e.userId)
                 LoginEffect.Unlocked -> Unit
             }
         }
@@ -212,6 +222,24 @@ private fun RegistrationRoute(route: AuthRoute, deps: AppDependencies, actions: 
             onLater = actions.enterMain,
         )
     }
+}
+
+@Composable
+private fun RecoverRoute(route: AuthRoute.RecoverPin, deps: AppDependencies, actions: AuthActions) {
+    val vm = viewModel(key = "recover-${route.userId.value}-${actions.recoverId()}") {
+        RecoverPinViewModel(route.userId, deps.registration, deps.session)
+    }
+    LaunchedEffect(vm) {
+        vm.effects.collect { e ->
+            when (e) {
+                is RecoverEffect.Toast -> actions.toast.show(e.text)
+                // Fresh login for the account, with attempts reset (FR-015).
+                is RecoverEffect.ToLogin -> actions.navigator.resetTo(AuthRoute.Login(e.userId))
+            }
+        }
+    }
+    val state by vm.state.collectAsState()
+    RecoverPinScreen(state, vm::onEvent) { actions.navigator.back() }
 }
 
 /** Temporary body for routes implemented in later tasks. */
