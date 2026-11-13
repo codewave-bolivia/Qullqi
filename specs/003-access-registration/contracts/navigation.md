@@ -1,47 +1,50 @@
-# Contract: Navigation and Hand-off
+# Contract: Activities, Flow Roots and Navigation
 
-Package `com.codewave.qullqi.navigation` (shared area).
+Package `com.codewave.qullqi.navigation` and flow roots in `feature/auth`, `feature/main`
+(shared areas). Android hosts in `androidApp`.
+
+## Activities (Android)
+
+| Activity | Role | Launch | Hosts |
+|----------|------|--------|-------|
+| `AuthActivity` | launcher (exported) | system launch screen → `AuthFlow(start)` | splash, welcome, login, registration, recover PIN, `kycIntro` (M3) |
+| `MainActivity` | not exported | only from AuthActivity or the task | `MainFlow` (M4 content) + `UnlockScreen` overlay |
+
+Intent extra `start` for AuthActivity: `Splash` (default), `Login(userId)`, `Kyc`.
+
+| Transition | Mechanism |
+|------------|-----------|
+| Login / biometric / "Hacerlo más tarde" → main | veil out → `MainActivity`, `NEW_TASK | CLEAR_TASK` |
+| "Verificar mi identidad" (regDone) | push `KycIntro` inside AuthActivity; `onKycDone` → MainActivity (`CLEAR_TASK`) |
+| "Verificar" (MainActivity) | veil out → `AuthActivity(start = Kyc)` on top; KYC end → `finish()` → MainActivity revealed |
+| Logout | veil out → `AuthActivity(start = Login(id))`, `NEW_TASK | CLEAR_TASK` |
+| Back at a flow root | not consumed → activity finishes → app exits (FR-033) |
+
+## Shared flow roots
 
 ```kotlin
-sealed interface Route {
-    // M2 (this feature)
-    data object Splash : Route
-    data object Welcome : Route
-    data class Login(val userId: UserId? = null) : Route   // null → most recent account
-    data object RegPhone : Route
-    data object RegCode : Route
-    data object RegInfo : Route
-    data object RegPin : Route
-    data object RegDone : Route
-    data class RecoverPin(val userId: UserId) : Route
-    // Hand-off entry points (owners replace the placeholder screens)
-    data object MainArea : Route          // owner: M4 (other developer)
-    data object KycEntry : Route          // owner: M3
-}
+sealed interface AuthStart { data object Splash : AuthStart; data class Login(val userId: UserId) : AuthStart; data object Kyc : AuthStart }
 
-class Navigator(start: Route) {
-    val stack: StateFlow<List<Route>>
-    fun push(route: Route)
-    fun replace(route: Route)             // replaces the top (e.g. Checking → result)
-    fun resetTo(route: Route)             // clears the stack (login → MainArea, logout → Login)
-    fun back(): Boolean                   // false at root
-}
+@Composable fun AuthFlow(deps: AppDependencies, start: AuthStart,
+                         onEnterMain: () -> Unit, onKycDone: () -> Unit,
+                         kycEntry: @Composable (onDone: () -> Unit) -> Unit = { KycPlaceholderScreen(it) })
+
+@Composable fun MainFlow(deps: AppDependencies, onLogout: (UserId) -> Unit, onVerify: () -> Unit,
+                         content: @Composable () -> Unit = { MainPlaceholderScreen(onLogout, onVerify) })
+
+@Composable fun QullqiRoot(deps: AppDependencies)   // iOS/Desktop: one window, swaps AuthFlow/MainFlow
 ```
 
-## Rules
+In-activity routes:
 
-- Entering the app (login, biometric, registration "más tarde") → `resetTo(MainArea)`; back cannot
-  return to auth screens.
-- Logout → `resetTo(Login(userId))`.
-- Registration steps use `push`; back keeps the ViewModel draft.
-- Transitions: push = enter from +26 dp + fade, back = from −26 dp + fade, 300 ms
-  `cubic-bezier(.2,.8,.2,1)`; `resetTo` = fade 250 ms.
+```kotlin
+sealed interface AuthRoute { Splash, Welcome, Login(userId?), RegPhone, RegCode, RegInfo, RegPin, RegDone, RecoverPin(userId), KycIntro }
+class FlowNavigator<R>(start: R) { val stack: StateFlow<List<R>>; fun push(r: R); fun replace(r: R); fun resetTo(r: R); fun back(): Boolean }
+```
 
-## Hand-off for M3 and M4
+## Hand-off rules for M3 / M4
 
-- `MainArea` and `KycEntry` are rendered by `@Composable` slots passed to `App`:
-  `App(dependencies, mainArea = { MainPlaceholderScreen() }, kycEntry = { KycPlaceholderScreen() })`.
-  M3/M4 replace the default slot content; they do not edit M2 screens.
-- Inside their slots, M3/M4 may use `Navigator.resetTo(Route.Login(...))` for logout and
-  `Navigator.push(Route.KycEntry)` for "Verificar".
-- Changing `Route` names or `Navigator` signatures requires coordination (shared area).
+- **M4** replaces `MainFlow`'s `content` slot (default: placeholder). It must not edit
+  `MainActivity`'s lock handling; it calls `onLogout(id)` / `onVerify()`.
+- **M3** replaces `AuthFlow`'s `kycEntry` slot; it calls `onDone()` when verification finishes.
+- Changing these signatures, activity extras or flags is a shared-area change (coordinate).

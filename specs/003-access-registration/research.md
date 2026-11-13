@@ -41,14 +41,26 @@ press scale .94 over 110 ms; reduce-motion → 150 ms fades.
 - **Alternatives**: phosphor KMP library (third-party dependency for ~11 icons); system font
   (does not match the reference).
 
-## R3. Navigation
+## R3. Activities, flow roots and in-activity navigation (rev. 2)
 
-- **Decision**: own `Navigator` holding a `List<Route>` in a `StateFlow`; `NavHost` renders the top
-  route with `AnimatedContent`, direction-aware (push: enter from +26 dp, back: from −26 dp, fade,
-  300 ms). Android back via `BackHandler` from Compose Multiplatform UI.
-- **Rationale**: 12 routes, linear flows, custom motion. A library adds a dependency and makes the
-  reference transitions harder; `ponytail:` comment names the upgrade path (navigation-compose or
-  Navigation 3) when M4 needs tabs and deep links.
+- **Decision**: two Android activities (clarified). Shared code exposes two flow roots:
+  `AuthFlow(deps, start: AuthStart, onEnterMain, onKycDone)` and
+  `MainFlow(deps, onLogout(UserId), onVerify())`. Inside each, a tiny `FlowNavigator` (back stack of
+  that flow's routes in a `StateFlow`) renders the top route with `AnimatedContent` (push +26 dp,
+  back −26 dp, fade, 300 ms). Android back via Compose `BackHandler`; at a flow root back is not
+  consumed, so the activity finishes (FR-033).
+- **Activity switching** (androidApp): login/registration success → `MainActivity` with
+  `FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_CLEAR_TASK`; logout → `AuthActivity(start = Login(id))`
+  with the same flags; "Verificar" in MainActivity → `AuthActivity(start = Kyc)` *without* clearing,
+  and AuthActivity finishes itself when the KYC flow ends (`onKycDone`) to reveal MainActivity.
+- **Veil** (FR-032): the origin's `FlowHost` animates a `bg`-colored veil 0→1 (460 ms,
+  `cubic-bezier(.4,0,.2,1)`), then starts the activity with `overridePendingTransition(0, 0)`
+  (`overrideActivityTransition` on API 34+); the destination composes with the veil at 1 and fades it
+  1→0 in 600 ms. Window background = `bg`, so no flash between activities.
+- **iOS/Desktop** (FR-034): `QullqiRoot(deps)` keeps one window and swaps `AuthFlow`/`MainFlow` with
+  the same veil; used by `App(deps)`; the Builder hosts it.
+- **Rationale**: matches the reference architecture while keeping all UI shared; ponytail note in
+  `FlowNavigator` names the upgrade path (navigation-compose / Navigation 3) when M4 needs tabs.
 
 ## R4. Biometrics
 
@@ -56,8 +68,8 @@ press scale .94 over 110 ms; reduce-motion → 150 ms fades.
   `androidApp`. `BiometricManager.canAuthenticate(BIOMETRIC_STRONG or BIOMETRIC_WEAK)` for
   availability; `BiometricPrompt` with negative button "Usar PIN". Common interface:
   `suspend fun authenticate(title: String): BiometricResult { Success, Failed, Cancelled, Unavailable }`.
-- **Activity**: `BiometricPrompt` requires `FragmentActivity`; `MainActivity` extends it
-  (androidx.fragment comes transitively). `enableEdgeToEdge` and `setContent` keep working.
+- **Activity**: `BiometricPrompt` requires `FragmentActivity`; `AuthActivity` and `MainActivity`
+  (unlock overlay) extend it (androidx.fragment comes transitively).
 - **Security note**: biometric success only opens the session for a non-locked account
   (`loginWithBiometrics`); it does not reveal or use the PIN. A real backend would bind a keystore
   key to biometric auth — out of scope (no backend).
@@ -65,8 +77,8 @@ press scale .94 over 110 ms; reduce-motion → 150 ms fades.
 
 ## R5. App wiring and unsupported platforms
 
-- **Decision**: `App(dependencies: AppDependencies? = null)`. `MainActivity` builds the
-  dependencies (AndroidDatabaseFactory, Pbkdf2PinHasher, SampleOtpCodeGenerator, UuidIdGenerator,
+- **Decision**: `App(dependencies: AppDependencies? = null)`. `QullqiApplication` (androidApp) builds
+  the dependencies once (AndroidDatabaseFactory, Pbkdf2PinHasher, SampleOtpCodeGenerator, UuidIdGenerator,
   system clock, Dispatchers.IO via `kotlinx.coroutines.IO`, AndroidBiometricAuthenticator).
   `desktopApp` and iOS keep calling `App()` → `UnavailableScreen` ("Qullqi aún no está disponible
   en esta plataforma").
@@ -107,3 +119,42 @@ The reference shows "Demo: cualquier código de 6 dígitos"; spec 002 uses a fix
 - `kotlinx-coroutines-test` `StandardTestDispatcher` + `Dispatchers.setMain`; ViewModels receive
   repositories built on the in-memory DB from spec 002 tests (`testDatabase()`), a fake biometric
   authenticator and `FakeClock`. Splash delay injected (0 in tests).
+
+## R10. System launch screen (clarified)
+
+- **Decision**: `androidx.core:core-splashscreen:1.2.0` (stable). `Theme.Qullqi.Starting`:
+  `windowSplashScreenBackground = #161826`, `windowSplashScreenAnimatedIcon = @drawable/ic_qullqi`,
+  `postSplashScreenTheme = @style/Theme.Qullqi` (window background `#161826`). AuthActivity calls
+  `installSplashScreen()` before `super.onCreate`; the system screen is dismissed on the first frame,
+  which is the in-app splash on the same background → no jump (FR-001a).
+- **Icon**: no Qullqi app icon exists in the references (current one is the KMP template). Plan: a
+  vector derived from the Inter Medium `q` glyph (extracted with fontTools after the approved Inter
+  download) plus an accent `#9184d9` dot, on `#161826`, as adaptive icon + splash icon. The owner can
+  replace it later with a designed icon.
+
+## R11. Re-authentication lock (clarified)
+
+- **Decision**: `AppLock(clock, timeoutMillis = 300_000)` in `commonMain`, a process-wide object held by
+  `AppDependencies`: `unlocked` flag (false at process start), `onBackground()` records time,
+  `onForeground()` locks if elapsed > timeout, `unlock()` after a successful PIN/biometric.
+  AuthActivity calls `unlock()` before handing off. MainActivity calls `onBackground()` in `onStop`
+  and `onForeground()` in `onStart`.
+- **Process death**: a restored MainActivity starts with `unlocked = false` ⇒ shows unlock (cold start
+  rule FR-002a holds even when Android restores the task).
+- **Unlock UI**: `UnlockScreen` = login UI fixed to the current account (same `LoginViewModel` in
+  unlock mode: same 3-attempt counter, biometric key, "Recuperar PIN" → AuthActivity recover then
+  back). While locked, `MainFlow` content is not composed, so its state lives in its ViewModels and
+  is restored after unlocking (FR-002b).
+- **Recents snapshot**: `setRecentsScreenshotEnabled(false)` on MainActivity for API 33+. Below 33 no
+  equivalent without `FLAG_SECURE` (which also blocks user screenshots) — documented limitation.
+
+## R12. Splash duration vs readiness
+
+The animated splash runs 1.9 s (reference) while `StartViewModel` reads the most recent account; it
+routes when both are done. Tests inject `splashMillis = 0`.
+
+## R13. Debug-only empty-device action
+
+- **Decision**: in debug builds only, long-press the splash wordmark → sheet "Reiniciar datos"
+  (con / sin ejemplos) using `LocalDataReset`. Lets the owner reach the welcome route on the device
+  (quickstart). Excluded from release (`BuildConfig.DEBUG` passed via `AppDependencies.debugTools`).

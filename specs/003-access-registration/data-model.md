@@ -48,16 +48,29 @@ is left without finishing.
 | status | `Idle · Checking · Entering · Wrong(attemptsLeft) · Locked` |
 | biometricKeyVisible | preference on ∧ device available ∧ not locked |
 
+### AppLock (in-memory, process-wide)
+
+| Field | Rules |
+|-------|-------|
+| unlocked | false at process start; true after successful PIN/biometric in AuthActivity or UnlockScreen |
+| backgroundedAt | epoch ms set on MainActivity `onStop` |
+| timeout | 300 000 ms; on `onStart`, `now - backgroundedAt > timeout` ⇒ unlocked = false |
+
 ### State transitions
 
 ```text
-Start:  Splash ──(≥1 user)──▶ Login(most recent)     Splash ──(0 users)──▶ Welcome
-Login:  Idle ─4 digits─▶ Checking ─ok─▶ Entering ─▶ [EnableBiometrics once] ─▶ MainArea
-                                  └─wrong─▶ Wrong(n) (shake, clear) ─▶ Idle
-                                  └─0 left─▶ Locked ─"Recuperar PIN"─▶ RecoverPin
-        Idle ─fingerprint─▶ Success ─▶ MainArea | Failed/Cancelled ─▶ Idle (no attempt used)
-Register: Phone ─code sent─▶ Code ─confirmed─▶ Info ─valid─▶ Pin ─match─▶ Done
-          Done ─"Verificar mi identidad"─▶ KycEntry   Done ─"Hacerlo más tarde"─▶ MainArea
-Recover: SendCode(masked phone) ─confirmed─▶ NewPin ─match─▶ toast "PIN actualizado" ─▶ Login
-MainArea placeholder ─"Cerrar sesión" (sheet confirm)─▶ Login(same account)
+AuthActivity
+  Launch: system screen ─▶ Splash ──(≥1 user)──▶ Login(most recent)   Splash ──(0)──▶ Welcome
+  Login:  Idle ─4 digits─▶ Checking ─ok─▶ Entering ─▶ [EnableBiometrics once] ─▶ veil ─▶ MainActivity
+                                    └─wrong─▶ Wrong(n) ─▶ Idle      └─0 left─▶ Locked ─▶ RecoverPin
+          Idle ─fingerprint─▶ ok ─▶ MainActivity | failed/cancel ─▶ Idle (no attempt used)
+  Register: Phone ─▶ Code ─▶ Info ─▶ Pin ─▶ Done ─"Verificar"─▶ KycIntro ─done─▶ MainActivity
+                                              └─"Más tarde"─▶ MainActivity
+  Recover: SendCode ─▶ NewPin ─▶ toast ─▶ Login
+MainActivity
+  Unlocked ─onStop─▶ Backgrounded ─onStart ≤5 min─▶ Unlocked
+                                  └─onStart >5 min─▶ Locked(UnlockScreen) ─PIN/fingerprint─▶ Unlocked
+  process restored ─▶ Locked
+  "Verificar" ─▶ AuthActivity(Kyc) ─done─▶ (finish) ─▶ MainActivity
+  "Cerrar sesión" (sheet) ─▶ AuthActivity(Login(id)), task cleared
 ```
