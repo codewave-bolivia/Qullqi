@@ -4,6 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.codewave.qullqi.feature.auth.start.SplashScreen
+import com.codewave.qullqi.feature.auth.start.StartEffect
+import com.codewave.qullqi.feature.auth.start.StartViewModel
+import com.codewave.qullqi.feature.auth.start.WelcomeScreen
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -48,6 +57,10 @@ class AuthActions(
     val enterMain: () -> Unit,
     /** M3 entry finished: back to MainActivity (or into it after registration). */
     val kycDone: () -> Unit,
+    /** Debug reset: route again from the splash with a fresh StartViewModel. */
+    val restart: () -> Unit,
+    /** Changes after each [restart] so start-up ViewModels are recreated. */
+    val generation: () -> Int,
 )
 
 /**
@@ -72,12 +85,15 @@ fun AuthFlow(
     // Arriving from MainActivity (logout, verify) the veil uncovers the screen; a cold start uses the launch screen.
     val veil = rememberVeilState(startCovered = start != AuthStart.Splash)
     val scope = rememberCoroutineScope()
+    var generation by remember { mutableIntStateOf(0) }
     val actions = remember {
         AuthActions(
             navigator = navigator,
             toast = toast,
             enterMain = { scope.launch { veil.coverThen(onEnterMain) } },
             kycDone = { scope.launch { veil.coverThen(onKycDone) } },
+            restart = { generation++; navigator.resetTo(AuthRoute.Splash) },
+            generation = { generation },
         )
     }
     Box(Modifier.fillMaxSize()) {
@@ -95,9 +111,29 @@ private fun AuthRouteContent(
     kycEntry: @Composable (onDone: () -> Unit) -> Unit,
 ) {
     when (route) {
+        AuthRoute.Splash, AuthRoute.Welcome -> StartRoute(route, deps, actions)
         AuthRoute.KycIntro -> kycEntry(actions.kycDone)
         else -> PendingRoute(route.toString())
     }
+}
+
+@Composable
+private fun StartRoute(route: AuthRoute, deps: AppDependencies, actions: AuthActions) {
+    val vm = viewModel(key = "start-${actions.generation()}") { StartViewModel(deps.preferences) }
+    LaunchedEffect(vm) {
+        vm.effects.collect { e ->
+            when (e) {
+                // From the splash the target replaces it, so back never returns to the splash.
+                is StartEffect.ToLogin ->
+                    if (route == AuthRoute.Splash) actions.navigator.replace(AuthRoute.Login(e.userId))
+                    else actions.navigator.push(AuthRoute.Login(e.userId))
+                StartEffect.ToWelcome -> actions.navigator.replace(AuthRoute.Welcome)
+                StartEffect.ToRegistration -> actions.navigator.push(AuthRoute.RegPhone)
+                is StartEffect.Toast -> actions.toast.show(e.text)
+            }
+        }
+    }
+    if (route == AuthRoute.Splash) SplashScreen(deps.debugReset, actions.restart) else WelcomeScreen(vm::onEvent)
 }
 
 /** Temporary body for routes implemented in later tasks. */

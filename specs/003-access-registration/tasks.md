@@ -101,11 +101,11 @@ invariants). UI is validated manually on a physical device (quickstart.md §2).
 
 **Independent Test**: `StartViewModelTest`; on device quickstart rows 1 and 13.
 
-- [ ] T038 [US1] Create `T/feature/auth/StartViewModelTest.kt`: with samples and no logins → `Navigate(Login(usr-locked…))` per `mostRecentUser` (first by name) after `splashMillis`; after `recordLogin(usr-review)` → Login(usr-review); empty DB → `Navigate(Welcome)`; `HaveAccount` on empty DB → toast "No hay cuentas en este dispositivo" and stays
-- [ ] T039 [US1] Create `K/feature/auth/start/StartViewModel.kt` (`splashMillis = 1900`; waits for both splash time and `mostRecentUser()`; effects per contracts/viewmodels.md)
-- [ ] T040 [P] [US1] Create `K/feature/auth/start/SplashScreen.kt`: `QWordmark` centered on `bg`, loading bar under it animating width 0→100 % over 1.9 s (`qLoad`), rise-in text; debug only (`deps.debugTools != null`): long-press on the wordmark opens a `QBottomSheet` "Reiniciar datos" with "Con ejemplos" / "Sin ejemplos" calling `LocalDataReset.reset`
-- [ ] T041 [P] [US1] Create `K/feature/auth/start/WelcomeScreen.kt`: wordmark, title "Tu billetera en Bolivianos y dólares", subtitle "Envía, cobra y paga con QR en segundos.", `QPrimaryButton("Crear cuenta")`, `QSecondaryButton("Ya tengo cuenta")`, `QScreen` layout
-- [ ] T042 [US1] Wire `AuthRoute.Splash` and `AuthRoute.Welcome` in `K/feature/auth/AuthFlow.kt` (`viewModel { StartViewModel(...) }`, effects → navigator)
+- [X] T038 [US1] Create `T/feature/auth/StartViewModelTest.kt`: with samples and no logins → `Navigate(Login(usr-locked…))` per `mostRecentUser` (first by name) after `splashMillis`; after `recordLogin(usr-review)` → Login(usr-review); empty DB → `Navigate(Welcome)`; `HaveAccount` on empty DB → toast "No hay cuentas en este dispositivo" and stays
+- [X] T039 [US1] Create `K/feature/auth/start/StartViewModel.kt` (`splashMillis = 1900`; waits for both splash time and `mostRecentUser()`; effects per contracts/viewmodels.md)
+- [X] T040 [P] [US1] Create `K/feature/auth/start/SplashScreen.kt`: `QWordmark` centered on `bg`, loading bar under it animating width 0→100 % over 1.9 s (`qLoad`), rise-in text; debug only (`deps.debugTools != null`): long-press on the wordmark opens a `QBottomSheet` "Reiniciar datos" with "Con ejemplos" / "Sin ejemplos" calling `LocalDataReset.reset`
+- [X] T041 [P] [US1] Create `K/feature/auth/start/WelcomeScreen.kt`: wordmark, title "Tu billetera en Bolivianos y dólares", subtitle "Envía, cobra y paga con QR en segundos.", `QPrimaryButton("Crear cuenta")`, `QSecondaryButton("Ya tengo cuenta")`, `QScreen` layout
+- [X] T042 [US1] Wire `AuthRoute.Splash` and `AuthRoute.Welcome` in `K/feature/auth/AuthFlow.kt` (`viewModel { StartViewModel(...) }`, effects → navigator)
 
 **Checkpoint**: Cold start routes correctly.
 
