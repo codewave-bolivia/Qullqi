@@ -149,3 +149,16 @@ androidApp/
 
 Deliberately skipped: Electric Lime, density, theme toggle UI (M9), reduce-motion setting UI
 (system setting respected).
+
+## Approvals
+
+Approved by the owner (krypton612) on 2026-11-13:
+
+1. Download of bundled assets: Inter v4.1 Regular/Medium (SIL OFL 1.1, rsms/inter) and ~11 Phosphor
+   regular icons (MIT); licence texts stored in `docs/licenses/`.
+2. New dependencies: `androidx.biometric:biometric:1.1.0`, `androidx.core:core-splashscreen:1.2.0`
+   (androidApp), `org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0` (androidHostTest).
+3. Launcher/splash icon generated from the Inter Medium "q" glyph + accent dot (replaceable later).
+4. Deviations from the reference: SMS hint "Demo: usa el código 123456"; no PIN hint on login.
+
+Still required at integration: the other developer's approval for shared areas (CLAUDE.md §15.4).

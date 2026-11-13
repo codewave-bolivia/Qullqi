@@ -36,8 +36,8 @@ press scale .94 over 110 ms; reduce-motion → 150 ms fades.
   `seal-check`, `sign-out`, `device-mobile`.
 - **Rationale**: FR-026 forbids runtime downloads; the reference loads Inter from Google Fonts,
   which the app must not do.
-- **Action**: downloading these files is a new external source → **ask the user before the
-  download task runs**; store licence texts in `docs/licenses/`.
+- **Action**: downloading these files is a new external source — **approved 2026-11-13** (plan.md "Approvals");
+  store licence texts in `docs/licenses/`.
 - **Alternatives**: phosphor KMP library (third-party dependency for ~11 icons); system font
   (does not match the reference).
 
