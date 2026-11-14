@@ -204,7 +204,7 @@ login.
 ### Edge Cases
 
 - App sent to background during the splash: on return, routing continues normally.
-- Rotation or window resize in the middle of a step: entered data and step are kept.
+- Window resize (split screen, large screens) in the middle of a step: entered data and step are kept.
 - Desktop/tablet: physical keyboard digits and Backspace work on PIN and code boxes; Enter submits.
 - Paste of a 6-digit code: fills all boxes.
 - Countdown keeps running correctly if the app is backgrounded during step 2.
@@ -263,7 +263,8 @@ login.
 - **FR-012**: Step 4 MUST ask for the PIN twice; mismatch MUST shake and clear the confirmation.
 - **FR-013**: On success the account MUST be stored as "Sin verificar", the session opened, and the
   "Cuenta creada" screen offered with "Verificar mi identidad" and "Hacerlo más tarde".
-- **FR-014**: Each step MUST keep its data when going back and when the screen is rotated or resized.
+- **FR-014**: Each step MUST keep its data when going back and when the window is resized (multi-window,
+  large screens).
 
 **PIN recovery**
 
@@ -301,6 +302,10 @@ login.
 - **FR-033**: Back from the root screen of AuthActivity (welcome or login) MUST leave the app; it MUST
   NOT return to MainActivity after logout. Back from MainActivity's root MUST leave the app, never
   return to login.
+- **FR-035**: Every Android activity — including activities added by libraries — MUST be locked to
+  portrait (`screenOrientation="portrait"`), enforced at build time. Layouts MUST still adapt to
+  width/height changes, because Android 16+ ignores the lock on large screens (≥ 600 dp) and the app
+  targets SDK 37, where no opt-out exists.
 - **FR-034**: On iOS and Desktop the same two flows MUST be exposed as two independent roots
   (auth and main) switched by the session, for the Builder to host; they show the "no disponible"
   screen until the Builder provides local data.
@@ -376,6 +381,12 @@ login.
   splash (wordmark + 1.9 s loading bar) in AuthActivity.
 - Q: What is required when the app returns with an open session? → A: PIN or fingerprint on every
   cold start, and when returning from background after more than 5 minutes.
+
+### Session 2026-11-14
+
+- Q: Which screen orientations are allowed? → A: Portrait only on every Android activity (no
+  landscape, no upside-down). Phones are locked; large screens (≥ 600 dp) may still rotate or resize
+  because Android 16+ ignores the lock for targetSdk 37.
 
 ## Assumptions
 

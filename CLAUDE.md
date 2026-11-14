@@ -349,7 +349,7 @@ All UI implementations must consider:
 - Different screen widths.
 - Different screen heights.
 - Window resizing.
-- Orientation changes.
+- Orientation changes on large screens only (phones are portrait-locked, §17).
 - Dynamic content.
 - Scrollable layouts.
 - Touch interactions.
@@ -840,3 +840,9 @@ passed the compile check, which is what triggers the develop release.
   `QSpacing`, `QRadius`, `QSize` only — no literal colors or sizes in screens (constitution VI).
 - Re-authentication: cold start always goes through login; returning after > 5 minutes in the
   background shows `UnlockScreen` over MainActivity (`AppLock`).
+- **Portrait only**: every Android activity — ours and library ones in the merged manifest — MUST
+  declare `android:screenOrientation="portrait"` (library activities via `tools:node="merge"` in
+  `androidApp/src/main/AndroidManifest.xml`). Enforced by `:androidApp:verifyPortraitActivities`,
+  which runs before `assembleDebug`/`assembleRelease` and fails the build otherwise. Android 16+
+  ignores the lock on large screens (≥ 600 dp; targetSdk 37 has no opt-out), so layouts stay
+  responsive.

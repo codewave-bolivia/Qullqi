@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:name=".QullqiApplication"
@@ -14,6 +15,7 @@
         <activity
             android:name=".AuthActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Qullqi.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +27,19 @@
         <!-- Main area (M4). Only reachable from AuthActivity after authentication. -->
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- Activities added by libraries (Compose preview tooling) are locked too: the app ships
+             with no activity that can turn landscape on phones (spec 003, FR-035). -->
+        <activity
+            android:name="androidx.compose.ui.tooling.PreviewActivity"
+            android:screenOrientation="portrait"
+            tools:node="merge" />
+        <activity
+            android:name="org.jetbrains.androidx.compose.ui.tooling.PreviewActivity"
+            android:screenOrientation="portrait"
+            tools:node="merge" />
     </application>
 
 </manifest>

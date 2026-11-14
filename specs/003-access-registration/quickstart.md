@@ -37,7 +37,8 @@ Sample data: PIN `1234`, SMS code `123456` (CLAUDE.md §14).
 | 9 | "Cerrar sesión" | confirm sheet → veil → login for same account; back exits the app | FR-021, FR-033 |
 | 10 | Wrong PIN ×3 on another account → Recuperar PIN | locked → code `123456` → new PIN ×2 → toast → login works | US2, US4 |
 | 11 | Cambiar de cuenta → Agregar otra cuenta | registration 1/4…4/4 → "Cuenta creada" · Sin verificar | US3 |
-| 12 | Rotate / split-screen in registration step 3 | data kept, no horizontal overflow | FR-014, FR-022 |
+| 12 | Split-screen / resize in registration step 3 | data kept, no horizontal overflow | FR-014, FR-022 |
+| 12b | Auto-rotate on, turn the phone on every screen (splash, welcome, login, registration, recovery, KYC placeholder, main, unlock) | stays portrait, no reload | FR-035 |
 | 13 | Debug: long-press wordmark → "Reiniciar datos sin ejemplos", restart | welcome screen | US1-2 (research R13) |
 | 14 | Compare every screen with `Qullqi Pay Auth.dc.html` | colors, type, outlined primary, boxes, keypad match | FR-026–FR-030 |
 

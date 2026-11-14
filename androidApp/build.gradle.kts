@@ -54,3 +54,32 @@ android {
         compose = true
     }
 }
+// Every activity in the final app — ours and those added by libraries — must be locked to
+// portrait (spec 003, FR-035). Fails the build instead of shipping a landscape surprise.
+// Note: Android 16+ ignores the lock on large screens (≥ 600 dp, targetSdk 37: no opt-out).
+listOf("debug", "release").forEach { variant ->
+    val cap = variant.replaceFirstChar { it.uppercase() }
+    val verify = tasks.register("verifyPortraitActivities$cap") {
+        group = "verification"
+        description = "Fails if any activity in the merged $variant manifest is not screenOrientation=portrait."
+        dependsOn("process${cap}MainManifest")
+        val manifest = layout.buildDirectory.file("intermediates/merged_manifest/$variant/process${cap}MainManifest/AndroidManifest.xml")
+        inputs.file(manifest)
+        doLast {
+            val xml = manifest.get().asFile.readText()
+            val activities = Regex("<activity\\b[^>]*>").findAll(xml).map { it.value }.toList()
+            val notPortrait = activities
+                .filterNot { it.contains("android:screenOrientation=\"portrait\"") }
+                .map { Regex("android:name=\"([^\"]+)\"").find(it)?.groupValues?.get(1) ?: it }
+            if (notPortrait.isNotEmpty()) {
+                throw GradleException("Activities not locked to portrait (FR-035): ${notPortrait.joinToString()}")
+            }
+            logger.lifecycle("verifyPortraitActivities$cap: ${activities.size} activities, all portrait")
+        }
+    }
+    tasks.matching { it.name == "assemble$cap" }.configureEach { dependsOn(verify) }
+}
+tasks.register("verifyPortraitActivities") {
+    group = "verification"
+    dependsOn("verifyPortraitActivitiesDebug", "verifyPortraitActivitiesRelease")
+}
