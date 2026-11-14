@@ -354,3 +354,30 @@ Perks: `ph-qr-code` "Paga y cobra con QR"; `ph-arrows-left-right` "Cambia Bs ⇄
 - [ ] T091 Validate on the physical device: login layout and keypad vs reference, footer link colors, fingerprint key, accounts sheet → "Volver al inicio" → Welcome → "Ya tengo cuenta" → login; update `specs/003-access-registration/quickstart.md` rows 2 and 11 with the observed result
 
 **Dependencies**: T080, T081 → T082, T083, T084 (parallel, different files) → T085 → T086 → T087; T088 after T080/T081 (parallel with T082–T087); then T089 → T090 → T091.
+
+---
+
+## Phase 12: Amendment — Portrait-only Android activities
+
+**Goal**: Every Android activity runs in portrait only; no landscape on phones (owner request
+2026-11-14: "no quiero sorpresas"). Branch `fix/003-portrait-only` (amendment to integrated spec 003).
+
+**Platform limit (must be documented, not worked around)**: the app targets SDK 37. Since Android 16
+(API 36) the system **ignores** `screenOrientation`, `resizeableActivity` and aspect-ratio limits on
+large screens (smallest width ≥ 600 dp: tablets, unfolded foldables, desktop windowing), and for
+target API 37 there is no opt-out (`PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY` only applied to
+API 36). Result: **phones are locked to portrait; large screens may still rotate or resize**, so the
+existing responsive layouts (constitution VI, `QScreen` 480 dp panel) remain required.
+
+**Independent Test**: merged manifest declares `screenOrientation="portrait"` on every activity; on
+the phone, rotating with auto-rotate on keeps every screen (splash, welcome, login, registration,
+recovery, KYC placeholder, main placeholder, unlock) in portrait and the activity is not recreated.
+
+- [ ] T092 [US6] In `androidApp/src/main/AndroidManifest.xml` add `android:screenOrientation="portrait"` to **both** `<activity>` elements (`.AuthActivity`, `.MainActivity`); keep everything else unchanged. Use `portrait` (not `sensorPortrait`/`userPortrait`) so upside-down portrait and landscape never apply on phones
+- [ ] T093 Add a build-time guard in `androidApp/build.gradle.kts`: a task `verifyPortraitActivities` that runs after `processDebugMainManifest`, reads the merged manifest (`build/intermediates/merged_manifest/debug/processDebugMainManifest/AndroidManifest.xml`) and fails the build listing any `<activity>` without `android:screenOrientation="portrait"`; hook it with `tasks.named("assembleDebug") { dependsOn(...) }` and run it locally (`./gradlew :androidApp:verifyPortraitActivities`) — so any future activity (M3/M4) cannot silently allow landscape
+- [ ] T094 Update `specs/003-access-registration/spec.md`: new clarification bullet (Session 2026-11-14: "Q: Orientation? → A: Portrait only on every Android activity; large screens (≥ 600 dp) may still rotate because Android 16+ ignores the lock"); FR-014 → "Each step MUST keep its data when going back and when the window is resized (multi-window, large screens)"; Edge case "Rotation or window resize in the middle of a step" → "Window resize (split screen, large screens) in the middle of a step"; add **FR-035**: "Every Android activity MUST be locked to portrait; layouts MUST still adapt to width/height changes because large screens ignore the lock"
+- [ ] T095 [P] Update `specs/003-access-registration/quickstart.md` row 12 to "Split-screen / resize in registration step 3 — data kept, no horizontal overflow" and add a row "Rotate the phone on every screen with auto-rotate on — stays portrait, no reload (FR-035)"
+- [ ] T096 [P] Add to `CLAUDE.md` §17 a rule: "Every Android activity MUST declare `android:screenOrientation="portrait"` (enforced by `:androidApp:verifyPortraitActivities`). Large screens (≥ 600 dp) ignore it on Android 16+ (targetSdk 37, no opt-out), so layouts stay responsive." — and replace "Orientation changes." in the §7 checklist with "Orientation changes on large screens only (phones are portrait-locked, §17)."
+- [ ] T097 Run `./gradlew :androidApp:assembleDebug :androidApp:verifyPortraitActivities :shared:testAndroidHostTest` and the PR gate — all green; then on the physical device verify the Independent Test above; open the PR to `develop` (milestone M2) and note the large-screen limit in its description
+
+**Dependencies**: T092 → T093 → T097; T094, T095, T096 in parallel after T092.
