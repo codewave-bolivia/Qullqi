@@ -193,8 +193,9 @@ status.
   pre-release builds MAY connect over unencrypted HTTP (constitution v2.1.0 temporary exception);
   the production release MUST connect only over encrypted connections.
 - **FR-003**: Every backend error MUST be shown as a Spanish (Bolivia, "tú") message per
-  UI_GUIDELINES §7: no connection → "Sin conexión. Intenta de nuevo."; server error or unknown
-  error code → "Algo salió mal. Intenta de nuevo."; known errors keep the spec 003 texts. Failures
+  UI_GUIDELINES §7: no connection, server error or unknown error code → "No pudimos conectarnos.
+  Intenta de nuevo." (one message: the app cannot tell them apart reliably); known errors keep
+  the spec 003 texts. Failures
   MUST NOT consume attempts or lose entered data, and no technical detail is shown.
 - **FR-003a**: While a backend call is in progress the screen MUST show progress and its action
   (button, keypad, code boxes) MUST NOT accept a second submission.

@@ -54,4 +54,19 @@ class RecoverPinViewModelTest : MainDispatcherTest() {
         assertEquals(1, vm.state.value.shake)
         assertEquals("Código incorrecto. Te quedan 2 intentos.", vm.state.value.message)
     }
+
+    @Test fun unavailableResetKeepsUserOnNewPin() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        val offline = object : com.codewave.qullqi.domain.repository.RegistrationRepository by env.deps.registration {
+            override suspend fun resetPin(phone: String, newPin: String) = com.codewave.qullqi.domain.repository.PinResetResult.Unavailable
+        }
+        val vm = RecoverPinViewModel("+59170000005", offline)
+        runCurrent()
+        type(vm, SampleOtpCodeGenerator.CODE)
+        type(vm, "5678")
+        type(vm, "5678")
+        assertEquals(RecoverStep.NewPin, vm.state.value.step)
+        assertEquals(com.codewave.qullqi.feature.auth.AuthMessages.UNAVAILABLE, vm.state.value.message)
+        assertEquals(false, vm.state.value.busy)
+    }
 }
