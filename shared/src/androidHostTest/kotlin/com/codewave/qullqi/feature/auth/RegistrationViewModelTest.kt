@@ -2,6 +2,9 @@ package com.codewave.qullqi.feature.auth
 
 import com.codewave.qullqi.domain.model.UserId
 import com.codewave.qullqi.domain.model.VerificationStatus
+import com.codewave.qullqi.domain.repository.RegistrationForm
+import com.codewave.qullqi.domain.repository.RegistrationRepository
+import com.codewave.qullqi.domain.repository.RegistrationResult
 import com.codewave.qullqi.domain.system.SampleOtpCodeGenerator
 import com.codewave.qullqi.feature.MainDispatcherTest
 import com.codewave.qullqi.feature.TestEnv
@@ -104,7 +107,8 @@ class RegistrationViewModelTest : MainDispatcherTest() {
 
     @Test fun infoValidation() = runTest(dispatcher) {
         val (_, vm) = setup()
-        vm.onEvent(RegEvent.Name("Persona Prueba"))
+        vm.onEvent(RegEvent.FirstName("Persona"))
+        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
         vm.onEvent(RegEvent.Email("no-arroba"))
         assertFalse(vm.state.value.emailValid ?: true)
         assertEquals("Revisa el formato del correo.", vm.state.value.emailHelp)
@@ -119,7 +123,8 @@ class RegistrationViewModelTest : MainDispatcherTest() {
         toCodeStep(vm)
         code(vm, SampleOtpCodeGenerator.CODE)
         assertEquals(RegEffect.ToInfo, vm.effects.first())
-        vm.onEvent(RegEvent.Name("Persona Prueba"))
+        vm.onEvent(RegEvent.FirstName("Persona"))
+        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
         vm.onEvent(RegEvent.Email(" Persona@Example.com "))
         vm.onEvent(RegEvent.Terms(true))
         vm.onEvent(RegEvent.Continue)
@@ -145,10 +150,77 @@ class RegistrationViewModelTest : MainDispatcherTest() {
     @Test fun backKeepsDraft() = runTest(dispatcher) {
         val (_, vm) = setup()
         vm.onEvent(RegEvent.Phone("71234567"))
-        vm.onEvent(RegEvent.Name("Persona"))
+        vm.onEvent(RegEvent.FirstName("Persona"))
         // Navigating back does not touch the ViewModel: values stay.
         assertEquals("71234567", vm.state.value.phone)
-        assertEquals("Persona", vm.state.value.fullName)
+        assertEquals("Persona", vm.state.value.firstName)
         assertNull(vm.state.value.createdName)
+    }
+
+    /** Fills steps 3 and 4 with valid data. */
+    private suspend fun TestScope.infoAndPin(vm: RegistrationViewModel) {
+        vm.onEvent(RegEvent.FirstName("Persona"))
+        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
+        vm.onEvent(RegEvent.Email("persona@example.com"))
+        vm.onEvent(RegEvent.Terms(true))
+        vm.onEvent(RegEvent.Continue)
+        assertEquals(RegEffect.ToPin, vm.effects.first())
+        pin(vm, "4321")
+        pin(vm, "4321")
+        advanceUntilIdle()
+    }
+
+    @Test fun nameFieldsValidation() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        vm.onEvent(RegEvent.Email("persona@example.com"))
+        vm.onEvent(RegEvent.Terms(true))
+        vm.onEvent(RegEvent.FirstName("Persona"))
+        assertFalse(vm.state.value.infoValid) // paternal surname required
+        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
+        assertTrue(vm.state.value.infoValid) // maternal surname optional
+        vm.onEvent(RegEvent.LastNameMaternal("x".repeat(70)))
+        assertEquals(60, vm.state.value.lastNameMaternal.length) // capped at 60
+        vm.onEvent(RegEvent.FirstName("   "))
+        assertFalse(vm.state.value.infoValid)
+    }
+
+    @Test fun expiredPhoneProofReturnsToCodeKeepingData() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        val expired = object : RegistrationRepository by env.deps.registration {
+            override suspend fun register(form: RegistrationForm) = RegistrationResult.PhoneNotConfirmed
+        }
+        val vm = RegistrationViewModel(expired, env.deps.session, env.deps.preferences, env.deps.appLock)
+        toCodeStep(vm)
+        code(vm, SampleOtpCodeGenerator.CODE)
+        assertEquals(RegEffect.ToInfo, vm.effects.first())
+        infoAndPin(vm)
+        assertEquals(RegEffect.Toast("Tu código venció. Confirma tu número otra vez."), vm.effects.first())
+        assertEquals(RegEffect.ToCode, vm.effects.first())
+        assertEquals("Persona", vm.state.value.firstName)
+        assertEquals("Prueba", vm.state.value.lastNamePaternal)
+    }
+
+    @Test fun unavailableKeepsDataAndAllowsRetry() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        var calls = 0
+        val offline = object : RegistrationRepository by env.deps.registration {
+            override suspend fun register(form: RegistrationForm): RegistrationResult { calls++; return RegistrationResult.Unavailable }
+        }
+        val vm = RegistrationViewModel(offline, env.deps.session, env.deps.preferences, env.deps.appLock)
+        toCodeStep(vm)
+        code(vm, SampleOtpCodeGenerator.CODE)
+        assertEquals(RegEffect.ToInfo, vm.effects.first())
+        infoAndPin(vm)
+        assertEquals(1, calls) // never retried automatically (FR-004)
+        assertEquals(AuthMessages.UNAVAILABLE, vm.state.value.pinMessage)
+        assertFalse(vm.state.value.creating)
+        assertEquals("Persona", vm.state.value.firstName)
+    }
+
+    @Test fun loginInsteadFromCodeStep() = runTest(dispatcher) {
+        val (_, vm) = setup()
+        toCodeStep(vm)
+        vm.onEvent(RegEvent.LoginInstead)
+        assertEquals(RegEffect.ToLoginPhone("+59171234567"), vm.effects.first())
     }
 }

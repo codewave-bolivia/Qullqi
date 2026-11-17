@@ -30,8 +30,8 @@ fun UnlockScreen(deps: AppDependencies, actions: MainActions) {
     LaunchedEffect(vm) {
         vm.effects.collect { e ->
             when (e) {
-                is LoginEffect.ToRecover -> actions.requireLogin(e.userId)
-                LoginEffect.Unlocked, LoginEffect.EnterMain, LoginEffect.ToRegistration, LoginEffect.ToWelcome -> Unit
+                is LoginEffect.ToRecover -> actions.requireLogin(id)
+                LoginEffect.Unlocked, LoginEffect.EnterMain, LoginEffect.ToRegistration, LoginEffect.ToWelcome, LoginEffect.ToLoginPhone -> Unit
             }
         }
     }

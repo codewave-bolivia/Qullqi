@@ -1,5 +1,7 @@
 package com.codewave.qullqi
 
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -43,6 +45,8 @@ class MainActivity : FragmentActivity() {
     override fun onStart() {
         super.onStart()
         deps.appLock.onForeground()
+        // Name and verification status may have changed in the backend (spec 004, FR-017).
+        lifecycleScope.launch { deps.session.refreshCurrentUser() }
     }
 
     override fun onStop() {

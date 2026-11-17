@@ -15,9 +15,11 @@ import com.codewave.qullqi.domain.security.PinHasher
 import com.codewave.qullqi.domain.system.Clock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
+// ponytail: in-memory implementation kept for ViewModel tests; delete when they move to MockEngine (spec 004).
 class SqlSessionRepository(
     private val db: QullqiDatabase,
     private val hasher: PinHasher,
@@ -62,6 +64,16 @@ class SqlSessionRepository(
             LoginResult.Success
         }
     }
+
+    override suspend fun loginWithPhone(phone: String, pin: String): LoginResult {
+        val normalized = SqlRegistrationRepository.normalizePhone(phone) ?: return LoginResult.UnknownUser
+        val id = withContext(io) { q.userByPhone(normalized).executeAsOneOrNull() } ?: return LoginResult.UnknownUser
+        return login(UserId(id), pin)
+    }
+
+    override suspend fun refreshCurrentUser() = Unit
+
+    override val sessionExpired: Flow<UserId> = emptyFlow()
 
     override suspend fun logout() = withContext(io) {
         db.transaction {

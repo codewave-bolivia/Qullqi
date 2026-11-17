@@ -21,9 +21,9 @@ import com.codewave.qullqi.designsystem.Q
 import com.codewave.qullqi.designsystem.QSpacing
 import com.codewave.qullqi.designsystem.components.QCodeBoxes
 import com.codewave.qullqi.designsystem.components.QKeypad
+import com.codewave.qullqi.designsystem.components.QLinkButton
 import com.codewave.qullqi.designsystem.components.QTextButton
 import com.codewave.qullqi.designsystem.components.digitKeyboardInput
-import com.codewave.qullqi.domain.system.SampleOtpCodeGenerator
 
 /** Step 2/4: six-digit SMS code with a 30-second resend countdown (FR-010). */
 @Suppress("DEPRECATION") // LocalClipboardManager: simplest text paste on every target.
@@ -50,7 +50,8 @@ fun CodeStep(state: RegState, onEvent: (RegEvent) -> Unit, onBack: () -> Unit) {
         QCodeBoxes(state.code, error = state.codeMessage != null && state.code.isEmpty(), shakeTrigger = state.codeShake)
         Spacer(Modifier.height(QSpacing.x12))
         Text(
-            state.codeMessage ?: "Demo: usa el código ${SampleOtpCodeGenerator.CODE}",
+            // The code comes from the backend by SMS (dev backend: fixed 123456, see quickstart).
+            state.codeMessage ?: "El código vence en 5 minutos.",
             style = Q.type.caption,
             color = if (state.codeMessage != null) Q.colors.neg else Q.colors.tx2,
         )
@@ -61,6 +62,9 @@ fun CodeStep(state: RegState, onEvent: (RegEvent) -> Unit, onBack: () -> Unit) {
             enabled = state.resendSeconds == 0,
             muted = state.resendSeconds > 0,
         )
+        // The backend never says whether a number is registered: no SMS arrives for an existing
+        // account, so offer the way out (spec 004, FR-011).
+        QLinkButton("¿Ya tienes cuenta? Inicia sesión", { onEvent(RegEvent.LoginInstead) }, color = Q.colors.acTx)
         Spacer(Modifier.weight(1f))
         QKeypad(
             onDigit = { onEvent(RegEvent.CodeDigit(it)) },

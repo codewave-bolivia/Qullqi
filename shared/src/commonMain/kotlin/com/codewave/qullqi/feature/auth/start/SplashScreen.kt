@@ -49,7 +49,6 @@ import com.codewave.qullqi.designsystem.QSpacing
 import com.codewave.qullqi.designsystem.accentGlow
 import com.codewave.qullqi.designsystem.components.QBottomSheet
 import com.codewave.qullqi.designsystem.components.QPrimaryButton
-import com.codewave.qullqi.designsystem.components.QSecondaryButton
 import com.codewave.qullqi.designsystem.components.QWordmark
 
 /**
@@ -116,9 +115,7 @@ fun SplashScreen(debugReset: LocalDataReset?, onReset: () -> Unit) {
             Spacer(Modifier.height(QSpacing.x8))
             Text("Solo en builds de desarrollo. Borra todo lo guardado en este dispositivo.", style = Q.type.bodySm, color = c.tx2)
             Spacer(Modifier.height(QSpacing.x20))
-            QPrimaryButton("Con datos de ejemplo", { debugReset.reset(withSamples = true); debugSheet = false; onReset() })
-            Spacer(Modifier.height(QSpacing.x10))
-            QSecondaryButton("Sin datos de ejemplo", { debugReset.reset(withSamples = false); debugSheet = false; onReset() })
+            QPrimaryButton("Reiniciar datos", { debugReset.reset(); debugSheet = false; onReset() })
         }
     }
 }

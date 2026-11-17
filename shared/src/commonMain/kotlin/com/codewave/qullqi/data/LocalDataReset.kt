@@ -1,16 +1,16 @@
 package com.codewave.qullqi.data
 
+import com.codewave.qullqi.data.remote.TokenStore
 import com.codewave.qullqi.db.QullqiDatabase
 
 /**
- * Restores the local data (spec 002, FR-022, FR-024). `withSamples = false` gives the
- * "empty device" state used to demo the welcome and registration flow.
+ * Debug only: clears everything stored on this device (cached accounts, session, preferences,
+ * device id) and the renewal credentials, giving the "new device" state (spec 004, FR-021).
+ * The app no longer ships sample accounts; the seed is used by tests only.
  */
-class LocalDataReset(private val db: QullqiDatabase) {
-    fun reset(withSamples: Boolean) {
-        db.transaction {
-            db.seedQueries.deleteAll()
-            if (withSamples) db.seedQueries.insertSamples()
-        }
+class LocalDataReset(private val db: QullqiDatabase, private val tokens: TokenStore) {
+    fun reset() {
+        db.seedQueries.deleteAll()
+        tokens.clearAll()
     }
 }

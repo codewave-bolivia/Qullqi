@@ -80,7 +80,11 @@ fun LoginScreen(state: LoginState, onEvent: (LoginEvent) -> Unit, unlock: Boolea
                 Avatar(state.account?.initials.orEmpty())
                 Spacer(Modifier.height(QSpacing.x18))
                 Text(
-                    if (unlock) "Desbloquea, ${state.firstName}" else "Hola de nuevo, ${state.firstName}",
+                    when {
+                        unlock -> "Desbloquea, ${state.firstName}"
+                        state.account == null && state.phone != null -> "Ingresa a ${LoginViewModel.maskPhone(state.phone)}"
+                        else -> "Hola de nuevo, ${state.firstName}"
+                    },
                     style = Q.type.titleLg,
                     color = c.tx,
                 )

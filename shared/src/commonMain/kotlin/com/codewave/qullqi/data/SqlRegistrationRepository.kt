@@ -3,6 +3,7 @@ package com.codewave.qullqi.data
 import com.codewave.qullqi.db.QullqiDatabase
 import com.codewave.qullqi.domain.model.UserId
 import com.codewave.qullqi.domain.repository.CodeConfirmResult
+import com.codewave.qullqi.domain.repository.CodePurpose
 import com.codewave.qullqi.domain.repository.CodeRequestResult
 import com.codewave.qullqi.domain.repository.PinResetResult
 import com.codewave.qullqi.domain.repository.RegistrationField
@@ -16,6 +17,7 @@ import com.codewave.qullqi.domain.system.OtpCodeGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
+// ponytail: in-memory implementation kept for ViewModel tests; delete when they move to MockEngine (spec 004).
 class SqlRegistrationRepository(
     private val db: QullqiDatabase,
     private val hasher: PinHasher,
@@ -28,7 +30,7 @@ class SqlRegistrationRepository(
     private val codes = db.phoneConfirmationQueries
     private val users = db.userQueries
 
-    override suspend fun requestCode(phone: String): CodeRequestResult = withContext(io) {
+    override suspend fun requestCode(phone: String, purpose: CodePurpose): CodeRequestResult = withContext(io) {
         val normalized = normalizePhone(phone) ?: return@withContext CodeRequestResult.InvalidPhone
         val now = clock.nowMillis()
         db.transactionWithResult<CodeRequestResult> {
@@ -41,7 +43,7 @@ class SqlRegistrationRepository(
         }
     }
 
-    override suspend fun confirmCode(phone: String, code: String): CodeConfirmResult = withContext(io) {
+    override suspend fun confirmCode(phone: String, code: String, purpose: CodePurpose): CodeConfirmResult = withContext(io) {
         val normalized = normalizePhone(phone) ?: return@withContext CodeConfirmResult.NoCode
         val now = clock.nowMillis()
         db.transactionWithResult<CodeConfirmResult> {
@@ -67,7 +69,7 @@ class SqlRegistrationRepository(
         val phone = normalizePhone(form.phone)
         val email = form.email.trim().lowercase()
         val invalid = buildSet {
-            if (form.fullName.isBlank()) add(RegistrationField.NAME)
+            addAll(nameErrors(form))
             if (!EMAIL.matches(email)) add(RegistrationField.EMAIL)
             if (form.termsVersion.isBlank()) add(RegistrationField.TERMS)
             if (!PIN.matches(form.pin)) add(RegistrationField.PIN)
@@ -83,7 +85,10 @@ class SqlRegistrationRepository(
                 ?: return@transactionWithResult RegistrationResult.PhoneNotConfirmed
 
             val id = ids.newId()
-            users.insertUser(id, form.fullName.trim(), phone, email, now)
+            val first = form.firstName.trim()
+            val paternal = form.lastNamePaternal.trim()
+            val maternal = form.lastNameMaternal?.trim()?.ifEmpty { null }
+            users.insertUser(id, "$first $paternal", first, paternal, maternal, phone, email, now)
             val pin = hasher.hash(form.pin)
             users.insertCredential(id, pin.hashB64, pin.saltB64, pin.iterations.toLong(), now)
             users.insertTerms(id, form.termsVersion.trim(), now)
@@ -116,6 +121,15 @@ class SqlRegistrationRepository(
     }
 
     companion object {
+        const val NAME_MAX = 60
+
+        /** Name rules shared with the registration screen (spec 004, FR-009). */
+        fun nameErrors(form: RegistrationForm): Set<RegistrationField> = buildSet {
+            if (form.firstName.trim().length !in 1..NAME_MAX) add(RegistrationField.FIRST_NAME)
+            if (form.lastNamePaternal.trim().length !in 1..NAME_MAX) add(RegistrationField.LAST_NAME_PATERNAL)
+            if ((form.lastNameMaternal?.trim()?.length ?: 0) > NAME_MAX) add(RegistrationField.LAST_NAME_MATERNAL)
+        }
+
         const val RESEND_WINDOW_MS = 30_000L
         const val CODE_VALIDITY_MS = 5 * 60_000L
         const val CONFIRMATION_USABLE_MS = 15 * 60_000L

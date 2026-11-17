@@ -1,6 +1,8 @@
 package com.codewave.qullqi.feature.auth
 
 import com.codewave.qullqi.domain.model.UserId
+import com.codewave.qullqi.domain.repository.LoginResult
+import com.codewave.qullqi.domain.repository.SessionRepository
 import com.codewave.qullqi.domain.security.BiometricResult
 import com.codewave.qullqi.feature.MainDispatcherTest
 import com.codewave.qullqi.feature.TestEnv
@@ -17,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class LoginViewModelTest : MainDispatcherTest() {
@@ -74,7 +77,7 @@ class LoginViewModelTest : MainDispatcherTest() {
         val (_, vm) = setup(UserId("usr-locked"))
         assertEquals(LoginStatus.Locked, vm.state.value.status)
         vm.onEvent(LoginEvent.Recover)
-        assertEquals(LoginEffect.ToRecover(UserId("usr-locked")), vm.effects.first())
+        assertEquals(LoginEffect.ToRecover("+59170000005"), vm.effects.first())
     }
 
     @Test fun switchAccountListsMaskedAccounts() = runTest(dispatcher) {
@@ -100,10 +103,39 @@ class LoginViewModelTest : MainDispatcherTest() {
         assertEquals(LoginEffect.ToWelcome, vm.effects.first())
     }
 
-    @Test fun addAccountStartsRegistration() = runTest(dispatcher) {
+    @Test fun addAccountGoesToLoginByPhone() = runTest(dispatcher) {
         val (_, vm) = setup()
         vm.onEvent(LoginEvent.AddAccount)
-        assertEquals(LoginEffect.ToRegistration, vm.effects.first())
+        assertEquals(LoginEffect.ToLoginPhone, vm.effects.first())
+    }
+
+    @Test fun phoneTargetLogsInAccountNotStoredHere() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        val vm = LoginViewModel(null, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0, requestedPhone = "+59170000099")
+        advanceUntilIdle()
+        assertEquals("+59170000099", vm.state.value.phone)
+        assertNull(vm.state.value.account)
+        type(vm, "1234")
+        advanceUntilIdle()
+        assertEquals(LoginViewModel.UNKNOWN, vm.state.value.message) // not in the in-memory source
+        val cached = LoginViewModel(null, LoginMode.Login, env.deps.session, env.deps.preferences, env.biometrics, env.deps.appLock, 0, requestedPhone = "+59170000001")
+        advanceUntilIdle()
+        assertEquals(verified, cached.state.value.account?.id) // stored account: normal login
+    }
+
+    @Test fun unavailableKeepsAttemptsAndShowsMessage() = runTest(dispatcher) {
+        val env = testEnv(dispatcher)
+        val offline = object : SessionRepository by env.deps.session {
+            override suspend fun login(userId: UserId, pin: String) = LoginResult.Unavailable
+        }
+        val vm = LoginViewModel(verified, LoginMode.Login, offline, env.deps.preferences, env.biometrics, env.deps.appLock, 0)
+        advanceUntilIdle()
+        type(vm, "1234")
+        advanceUntilIdle()
+        assertEquals(AuthMessages.UNAVAILABLE, vm.state.value.message)
+        assertEquals(LoginStatus.Idle, vm.state.value.status)
+        assertEquals(0, vm.state.value.filled)
+        assertEquals(LoginResult.Success, env.deps.session.login(verified, "1234")) // no attempt used
     }
 
     @Test fun deleteAndPartialEntryNeverExposeDigits() = runTest(dispatcher) {
@@ -231,6 +263,6 @@ class LoginViewModelTest : MainDispatcherTest() {
         type(vm, "0000")
         assertEquals(LoginStatus.Locked, vm.state.value.status)
         vm.onEvent(LoginEvent.Recover)
-        assertEquals(LoginEffect.ToRecover(verified), vm.effects.first())
+        assertEquals(LoginEffect.ToRecover("+59170000001"), vm.effects.first())
     }
 }

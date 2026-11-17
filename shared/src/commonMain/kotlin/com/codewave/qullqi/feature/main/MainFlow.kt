@@ -1,5 +1,7 @@
 package com.codewave.qullqi.feature.main
 
+import androidx.compose.runtime.LaunchedEffect
+import com.codewave.qullqi.feature.auth.AuthMessages
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -48,6 +50,13 @@ fun MainFlow(
             verify = { scope.launch { veil.coverThen(onVerify) } },
             requireLogin = { id -> scope.launch { veil.coverThen { onRequireLogin(id) } } },
         )
+    }
+    // Session ended by a rejected renewal (not by logout): back to login once (spec 004, FR-016a).
+    LaunchedEffect(Unit) {
+        deps.session.sessionExpired.collect { id ->
+            toast.show(AuthMessages.SESSION_EXPIRED)
+            actions.requireLogin(id)
+        }
     }
     val locked by deps.appLock.locked.collectAsState()
     Box(Modifier.fillMaxSize()) {
