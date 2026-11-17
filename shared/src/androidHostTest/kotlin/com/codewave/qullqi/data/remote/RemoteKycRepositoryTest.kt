@@ -47,6 +47,10 @@ class RemoteKycRepositoryTest {
         assertEquals(DeclineReason.OTHER, ((env.kyc.current() as KycRead.Found).verification)!!.declineReason)
         env.backend.on("my/kyc", 200, kycData("WEIRD"))
         assertEquals(KycStatus.PENDING, ((env.kyc.current() as KycRead.Found).verification)!!.status)
+        env.backend.on("my/kyc", 200, kycData("COMPLETED"))
+        assertEquals(KycStatus.PENDING, ((env.kyc.current() as KycRead.Found).verification)!!.status)
+        env.backend.on("my/kyc", 200, kycData("EXPIRED"))
+        assertEquals(KycRead.Found(null), env.kyc.current()) // start again
         env.backend.offline = true
         assertEquals(KycRead.Unavailable, env.kyc.current())
     }

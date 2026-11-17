@@ -15,7 +15,8 @@ import kotlinx.serialization.json.JsonObject
 class RemoteKycRepository(private val api: QullqiApi) : KycRepository {
 
     override suspend fun current(): KycRead = when (val r = api.kycCurrent()) {
-        is ApiResult.Ok -> KycRead.Found(r.value?.toDomain())
+        // EXPIRED (provider session timed out) counts as "no verification": the user starts again.
+        is ApiResult.Ok -> KycRead.Found(r.value?.takeIf { it.kycStatus != "EXPIRED" }?.toDomain())
         else -> KycRead.Unavailable
     }
 
@@ -43,6 +44,7 @@ class RemoteKycRepository(private val api: QullqiApi) : KycRepository {
     }
 
     private fun KycDto.toDomain() = Verification(
+        // Unknown or COMPLETED (finished in the provider, decision pending) → in review.
         status = KycStatus.entries.firstOrNull { it.name == kycStatus } ?: KycStatus.PENDING,
         pageUrl = hostedUrl,
         declineReason = declineReason?.let { REASONS[it] ?: DeclineReason.OTHER },
