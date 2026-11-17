@@ -1,0 +1,99 @@
+# Tasks: Identity Verification with Persona (M3)
+
+**Input**: `specs/005-kyc-persona/` (spec, plan, research, data-model, contracts, quickstart)
+**Tests**: required by constitution VII (ViewModel/domain) and the plan (repository on `MockEngine`,
+migration verify). Run `./gradlew :shared:testAndroidHostTest`.
+**Precondition**: spec 004 integrated into `develop`; then `git merge develop` into this branch and set
+the spec header `**Depends on**: 004-backend-auth-integration waiting (integrated)`, `**Status**: In Progress`.
+
+Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
+`shared/src/commonMain/sqldelight/com/codewave/qullqi/db`, `HT` =
+`shared/src/androidHostTest/kotlin/com/codewave/qullqi`, `A` = `androidApp/src/main/kotlin/com/codewave/qullqi`.
+
+## Phase 1: Setup (shared build files — coordinate)
+
+- [ ] T001 Look up the latest **stable** `androidx.browser:browser` on Google Maven (no alpha/beta/RC); add `browser = "<version>"` and `androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }` to `gradle/libs.versions.toml`; add `implementation(libs.androidx.browser)` to `androidApp/build.gradle.kts`
+- [ ] T002 Generate the v2 schema snapshot **before editing any `.sq`**: `./gradlew :shared:generateCommonMainQullqiDatabaseSchema` → commit `shared/src/commonMain/sqldelight/databases/2.db`
+- [ ] T003 Baseline: `./gradlew :shared:testAndroidHostTest :androidApp:compileDebugKotlin` green
+
+## Phase 2: Foundational (blocks every story)
+
+**Remove the spec 002 local KYC (research R4)**
+
+- [ ] T004 Delete `SQ/KycAttempt.sq`; remove `DELETE FROM kyc_attempt;` from `deleteAll` and any `kyc_attempt` insert from `insertSamples` in `SQ/Seed.sq`; create `SQ/2.sqm` with `DROP TRIGGER IF EXISTS kyc_attempt_final_sets_user_status; DROP INDEX IF EXISTS kyc_attempt_one_open; DROP INDEX IF EXISTS kyc_attempt_history; DROP TABLE IF EXISTS kyc_attempt;`; run `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration` until it passes
+- [ ] T005 Delete `S/data/SqlKycRepository.kt`, `S/data/MockKycProcessor.kt`, `HT/data/KycRepositoryTest.kt`; in `HT/data/CurrentUserContractTest.kt` replace the KYC-driven status change with a direct `UPDATE user SET verification = 'VERIFIED' WHERE id = …` and keep the contract assertions; update `HT/data/SchemaIntegrityTest.kt`/`HT/data/SeedDataTest.kt` table lists (no `kyc_attempt`)
+
+**New domain contract (contracts/kyc-repository.md — shared area)**
+
+- [ ] T006 Replace `S/domain/model/Kyc.kt` with: `enum class DocumentType { CI, PASSPORT }`, `enum class KycStatus { CREATED, PENDING, APPROVED, DECLINED }`, `enum class DeclineReason { DATA_MISMATCH, DOCUMENT, IDENTITY, OTHER }`, `data class SimpleDate(year, month, day)` with `iso()` → `"YYYY-MM-DD"` and `companion fun parseDigits(d: String): SimpleDate?` (8 digits DDMMYYYY; month 1–12; day ≤ month length; Feb 29 only in leap years), `fun SimpleDate.isAdultOn(today: SimpleDate): Boolean` (birth < today ∧ age ≥ 18, birthday reached), `fun documentNumberValid(n: String) = Regex("^[A-Za-z0-9]{5,15}$").matches(n.trim())`, `data class Verification(status, pageUrl: String?, declineReason: DeclineReason?)`
+- [ ] T007 Replace `S/domain/repository/KycRepository.kt` with `KycRepository { suspend fun current(): KycRead; suspend fun start(type, number, birthDate: SimpleDate): KycStart }`, `KycRead { Found(verification: Verification?), Unavailable }`, `KycStart { Started(pageUrl), AlreadyVerified, InProgress, DocumentTaken, Invalid(fields: Set<KycField>), Refused, Unavailable }`, `enum class KycField { NUMBER, BIRTH_DATE, TYPE }`
+- [ ] T008 [P] Create `S/domain/system/ExternalPageOpener.kt`: `fun interface ExternalPageOpener { fun open(url: String) }` and `fun interface Today { fun date(): SimpleDate }`; `object NoPageOpener : ExternalPageOpener { override fun open(url: String) = Unit }`
+- [ ] T009 [P] Tests `HT/domain/KycRulesTest.kt`: `parseDigits("15041992")` ok, `"31022020"` null, `"29022024"` ok, `"29022023"` null; `isAdultOn` exactly 18 today true, one day before false, future false; `documentNumberValid` 5/15 chars ok, 4/16/space false
+
+**Remote + wiring**
+
+- [ ] T010 In `S/data/remote/Dto.kt` add `KycStartBody(ciType: String, ciNumber: String, birthDate: String)` and `KycDto(kycStatus: String, hostedUrl: String? = null, declineReason: String? = null)`; in `S/data/remote/QullqiApi.kt` add `kycCurrent(): ApiResult<KycDto?>` (`GET my/kyc`, `data: null` → `Ok(null)`) and `kycStart(body): ApiResult<KycDto>` (`POST my/kyc`), both with the session bearer (no `skipSession`)
+- [ ] T011 Create `S/data/remote/RemoteKycRepository.kt` exactly per `contracts/api-mapping.md` (unknown status → `PENDING`; reason mapping R7: `data_mismatch`→DATA_MISMATCH, `document_unreadable`/`document_expired`→DOCUMENT, `identity_not_verified`/`selfie_mismatch`→IDENTITY, else OTHER; `POST` 200 without `hostedUrl` → `Unavailable`)
+- [ ] T012 [P] Tests `HT/data/remote/RemoteKycRepositoryTest.kt` with `MockBackend`: `GET` null → `Found(null)`; each status and reason mapping; `POST` body `{"ciType":"CI","ciNumber":"1234567","birthDate":"1992-04-15"}` with `Authorization: Bearer access-1`; 409 `kyc_already_verified`/`kyc_in_progress`/`ci_taken`, 403 `kyc_rejected`, 422 `fields.ciNumber` → expected results; offline → `Unavailable` and exactly 1 `POST`
+- [ ] T013 `S/AppDependencies.kt`: `kyc = RemoteKycRepository(api)` in `create`; add fields `pageOpener: ExternalPageOpener = NoPageOpener` and `today: Today`; `create(…, today: Today)`; `createInMemory` gets a fake `KycRepository` that returns `Found(null)` (tests override); update `HT/feature/TestSupport.kt` (fixed `Today { SimpleDate(2026, 11, 17) }`)
+- [ ] T014 `A/QullqiApplication.kt`: `today = Today { java.time.LocalDate.now().let { SimpleDate(it.year, it.monthValue, it.dayOfMonth) } }`
+
+**Checkpoint**: builds, tests green, migration verified, no local KYC left.
+
+## Phase 3: User Story 1 — Verify my identity end to end (P1) 🎯 MVP
+
+**Goal**: intro → document → Persona (Custom Tab) → waiting → result.
+**Independent test**: quickstart scenarios 1–3 and 6–9.
+
+- [ ] T015 [P] [US1] Create `A/CustomTabPageOpener.kt`: `class CustomTabPageOpener(private val activity: Activity) : ExternalPageOpener` using `CustomTabsIntent.Builder().setDefaultColorSchemeParams(CustomTabColorSchemeParams.Builder().setToolbarColor(0xFF161826.toInt()).build()).setShareState(CustomTabsIntent.SHARE_STATE_OFF).setUrlBarHidingEnabled(true).setShowTitle(true).build().launchUrl(activity, Uri.parse(url))` (falls back to the default browser automatically)
+- [ ] T016 [P] [US1] Create `A/KycReturnActivity.kt`: in `onCreate` start `AuthActivity` with `FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP` and extra `start = "kyc"`, then `finish()` + `noTransition(closing = true)`; ignore all intent data. Register in `androidApp/src/main/AndroidManifest.xml`: `exported="true"`, `screenOrientation="portrait"`, `theme="@style/Theme.Qullqi"` (opaque: translucent + portrait crashes on API 26), `excludeFromRecents="true"`, `noHistory="true"`, intent-filter `VIEW` + `DEFAULT` + `BROWSABLE` + `<data android:scheme="qullqi" android:host="kyc" android:path="/result" />`; `./gradlew :androidApp:verifyPortraitActivitiesDebug` must list 5 activities, all portrait
+- [ ] T017 [US1] `A/AuthActivity.kt`: inject `pageOpener = CustomTabPageOpener(this)` in the existing `dependencies.copy(…)`; override `onNewIntent` to `setIntent(it)` only (the flow reacts to resume, research R2)
+- [ ] T018 [US1] Create `S/feature/kyc/KycViewModel.kt` (`FlowViewModel<KycState, KycEffect>`; constructor `kyc: KycRepository, session: SessionRepository, opener: ExternalPageOpener, today: Today`): state per data-model.md "UI state" (`route`, `privacyAccepted`, `pending`, `documentType` = CI, `documentNumber`, `birthDigits` 0–8 digits, `busy`, `waitingPhase`, `result`); on init `current()` and route per FR-002; events `AcceptPrivacy(Boolean)`, `Continue`, `Type`, `Number`, `BirthDigits`, `Submit`, `Resumed` (from lifecycle), `CheckNow`, `ReopenProvider`, `Retry`, `Finish`, `Back`; `Submit` validates (`documentNumberValid`, `parseDigits`, `isAdultOn(today)` → "Debes ser mayor de 18 años para verificar tu identidad."), calls `start` once (`busy`, never retried), on `Started` calls `opener.open(url)` and sets `Waiting(InProvider)`; `Resumed` while `InProvider` starts polling per research R3 (immediately, then `delay(5_000)`, max 60 s); results per FR-009/FR-010/FR-011 with the exact texts of the spec and research R7; `Finish` calls `session.refreshCurrentUser()` then emits `Done`
+- [ ] T019 [US1] Create screens in `S/feature/kyc/`: `KycIntroScreen.kt` (requirements list + privacy text FR-001 + checkbox, CTA "Continuar"), `KycDocumentScreen.kt` (CI/Pasaporte segmented choice, number field, birth field with numeric keyboard and `DD/MM/AAAA` mask, CTA "Continuar a la verificación" disabled while `busy` or invalid), `KycWaitingScreen.kt` (progress + "Comprobando tu verificación…", buttons "Ya terminé" and "Volver a la verificación"), `KycResultScreen.kt` (approved / in review / rejected with reason + "Intentar de nuevo" / refused "Contacta a soporte"; CTA "Ir al inicio"); reuse the registration `StepScaffold` look (`QScreen`, `Q.colors`, `Q.type`, `QSpacing`, `Ph` icons) — no literal colors or sizes
+- [ ] T020 [US1] Create `S/feature/kyc/KycFlow.kt`: `@Composable fun KycFlow(deps: AppDependencies, onDone: () -> Unit)` with one `KycViewModel` (`viewModel { … }`), renders the screen for `state.route`, forwards `Lifecycle.Event.ON_RESUME` as `KycEvent.Resumed` (`LocalLifecycleOwner`), handles back (`BackHandler`: Document → Intro, Intro → `onDone()`), collects `Done` → `onDone()`; in `S/feature/auth/AuthFlow.kt` change the default `kycEntry` to `{ onDone -> KycFlow(deps, onDone) }` (signature unchanged); delete `S/feature/auth/KycPlaceholderScreen.kt`
+- [ ] T021 [P] [US1] Tests `HT/feature/kyc/KycViewModelTest.kt` (fake `KycRepository`, fake opener recording URLs, fixed `Today`): privacy gate; invalid number/date/under-18 blocks submit with no `start` call; `Submit` → opener called once with the URL; `Resumed` → polls; `APPROVED` → Approved; `DECLINED(DATA_MISMATCH)` → Rejected with "Los datos no coinciden con tu documento."; `PENDING` for 60 s virtual time → InReview after 13 reads; `start` offline → message, data kept, 1 call; `Finish` → `refreshCurrentUser` then `Done`
+
+**Checkpoint**: MVP — a not verified user completes verification on the device.
+
+## Phase 4: User Story 2 — Resume an unfinished verification (P2)
+
+**Independent test**: quickstart scenarios 4–5.
+
+- [ ] T022 [US2] `S/feature/kyc/KycViewModel.kt`: entry with `CREATED` → Intro shows "Tienes una verificación pendiente" + "Continuar verificación" (`ReopenProvider`: fresh `current()`, open its `pageUrl`, `Waiting(InProvider)`); polling sees `CREATED` → `NotFinished` with "No terminaste la verificación" + "Volver a la verificación"; `start` → `InProgress` → re-read and resume; entry with `PENDING` → Result(InReview); `APPROVED` → Result(Approved) "Ya verificaste tu identidad"
+- [ ] T023 [US2] `S/feature/kyc/KycIntroScreen.kt`: pending variant (title, help, CTA "Continuar verificación")
+- [ ] T024 [P] [US2] Tests in `HT/feature/kyc/KycViewModelTest.kt`: `CREATED` entry → resume uses the latest `pageUrl` from a second `current()`; polling `CREATED` → NotFinished; `InProgress` on submit → resume
+
+## Phase 5: User Story 3 — Retry after a rejection (P2)
+
+**Independent test**: quickstart scenario 6.
+
+- [ ] T025 [US3] `S/feature/kyc/KycViewModel.kt`: `Retry` → Document with empty number/date (type kept); `Refused` → Result(Refused) "Contacta a soporte" with "Ir al inicio"; `DocumentTaken` → field error "Este documento ya está asociado a otra cuenta."; entry with `DECLINED` → Intro (new attempt allowed)
+- [ ] T026 [P] [US3] Tests in `HT/feature/kyc/KycViewModelTest.kt`: retry clears fields; refused; document taken message
+
+## Phase 6: User Story 4 — Status always current (P3)
+
+- [ ] T027 [US4] Verify `A/MainActivity.kt` `onStart` already refreshes `/me` (spec 004 T033) and `KycViewModel.Finish` refreshes before `onDone`; add a test in `HT/feature/kyc/KycViewModelTest.kt` that `Finish` happens after `refreshCurrentUser` completes
+
+## Phase 7: Polish & cross-cutting
+
+- [ ] T028 [P] Grep guard: no `pageUrl`/`hostedUrl` logged or stored (`S/feature/kyc/**`, `S/data/remote/**`, `A/**`); `adb shell run-as com.codewave.qullqi ls -R` shows no images (SC-004)
+- [ ] T029 [P] Update `CLAUDE.md` §2 tree (`feature/kyc/`, `KycReturnActivity`, `CustomTabPageOpener`, `2.sqm`, `databases/2.db`, `KycAttempt.sq` removed) and §14 status (schema v3); `docs/references-views` untouched
+- [ ] T030 Full gates: `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration :shared:testAndroidHostTest`, CI command (CLAUDE.md §16.1), `./gradlew :androidApp:assembleDebug assembleRelease`
+- [ ] T031 Device walkthrough: quickstart scenarios 1–11 with the Persona sandbox (owner); record results in `specs/005-kyc-persona/quickstart.md`
+- [ ] T032 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/005-kyc-persona` → OK
+
+## Dependencies & execution order
+
+- Precondition (004 integrated) → Phase 1 (T002 before T004) → Phase 2 → US1 → US2/US3 (same ViewModel file: sequential) → US4 → Polish.
+- T015, T016 (androidApp) parallel with T018–T019 (shared).
+
+## Parallel examples
+
+- Phase 2: T008, T009, T012 in parallel after T006–T007/T010–T011 respectively.
+- US1: T015 + T016 + T021 while T018–T020 are written.
+
+## Implementation strategy
+
+1. MVP = Phases 1–3 (verify end to end on the sandbox).
+2. US2 resume → US3 retry → US4 status check.
+3. Release gate: backend C1/H1/H2 items do not block (the app absorbs them); S1/S2 from spec 004 still gate registration/recovery releases.
