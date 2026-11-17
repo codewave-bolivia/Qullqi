@@ -46,9 +46,16 @@ class MockBackend {
         fun error(code: String, details: String? = null) =
             """{"error":{"code":"$code","message":"x"${details?.let { ",\"details\":$it" } ?: ""}}}"""
         fun tokens(n: Int) = ok("""{"token":"access-$n","refreshToken":"refresh-$n","expiresIn":900}""")
-        fun me(status: String = "VERIFIED", maternal: String? = "Quispe", idKey: String = "userId") = ok(
-            """{"$idKey":"u-1","phoneNumber":"+59170000001","email":"Lucia@Example.com","firstName":"Lucía",
-               "lastNamePaternal":"Flores"${maternal?.let { ",\"lastNameMaternal\":\"$it\"" } ?: ""},
+        fun me(
+            status: String = "VERIFIED",
+            maternal: String? = "Quispe",
+            idKey: String = "userId",
+            id: String = "u-1",
+            first: String = "Lucía",
+            paternal: String = "Flores",
+        ) = ok(
+            """{"$idKey":"$id","phoneNumber":"+59170000001","email":"Lucia@Example.com","firstName":"$first",
+               "lastNamePaternal":"$paternal"${maternal?.let { ",\"lastNameMaternal\":\"$it\"" } ?: ""},
                "verificationStatus":"$status","accountStatus":"ACTIVE"}""",
         )
     }

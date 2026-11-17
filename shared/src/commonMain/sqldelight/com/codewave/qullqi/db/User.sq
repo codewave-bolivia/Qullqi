@@ -98,6 +98,8 @@ SELECT verification FROM user WHERE id = ?;
 
 -- SQLite dialect 3.18 has no ON CONFLICT DO UPDATE: insert if new, then update the cached fields.
 upsertUser {
+  -- The backend owns phone → user: drop a stale cached row that has this phone under another id.
+  DELETE FROM user WHERE phone = :phone AND id != :id;
   INSERT OR IGNORE INTO user (id, full_name, first_name, last_name_paternal, last_name_maternal, phone, email, verification, created_at)
   VALUES (:id, :full_name, :first_name, :last_name_paternal, :last_name_maternal, :phone, :email, :verification, :created_at);
   UPDATE user SET full_name = :full_name, first_name = :first_name, last_name_paternal = :last_name_paternal,

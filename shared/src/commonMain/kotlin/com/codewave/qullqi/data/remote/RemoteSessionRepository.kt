@@ -173,7 +173,8 @@ class RemoteSessionRepository(
         val status = VerificationStatus.entries.firstOrNull { it.name == me.verificationStatus } ?: VerificationStatus.NOT_VERIFIED
         q.upsertUser(
             id = me.userId,
-            full_name = "$first $paternal",
+            // user.full_name must not be blank (CHECK): the backend dev seed has empty names.
+            full_name = "$first $paternal".trim().ifEmpty { FALLBACK_NAME },
             first_name = first,
             last_name_paternal = paternal,
             last_name_maternal = me.lastNameMaternal?.trim()?.ifEmpty { null },
@@ -182,5 +183,9 @@ class RemoteSessionRepository(
             verification = status.name,
             created_at = clock.nowMillis(),
         )
+    }
+
+    private companion object {
+        const val FALLBACK_NAME = "Cliente"
     }
 }

@@ -137,4 +137,16 @@ class RemoteSessionRepositoryTest {
         env.backend.on("auth/login", 401, error("invalid_pin", """{"attemptsLeft":2}"""))
         assertEquals(LoginResult.WrongPin(2), env.session.login(u1, "0000"))
     }
+
+    /** Device crash 2026-11-17: dev seed users have empty names; a stale row may hold the phone. */
+    @Test fun blankNamesAndStalePhoneRowStillOpenSession() = runBlocking {
+        val env = RemoteEnv()
+        env.t.exec("INSERT INTO user (id, full_name, phone, email, created_at) VALUES ('old', 'Vieja', '+59170000001', 'x@example.com', 1)")
+        env.backend.on("auth/login", 200, tokens(1))
+        env.backend.on("me", 200, me(idKey = "id", id = "11111111-1111-1111-1111-111111111001", first = "", paternal = "", maternal = null))
+        assertEquals(LoginResult.Success, env.session.loginWithPhone("70000001", "1234"))
+        val user = env.session.currentUser.first()!!
+        assertEquals("Cliente", user.displayName)
+        assertEquals(1, env.t.count("SELECT count(*) FROM user"))
+    }
 }

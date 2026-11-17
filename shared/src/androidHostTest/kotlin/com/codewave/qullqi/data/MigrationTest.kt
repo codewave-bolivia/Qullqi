@@ -17,8 +17,12 @@ class MigrationTest {
     }
 
     @Test fun upsertKeepsOneRowAndAcceptsMissingMaternalName() {
-        q.upsertUser("u-1", "Ana Paz", "Ana", "Paz", null, "+59170000001", "ana@example.com", "NOT_VERIFIED", 1)
-        q.upsertUser("u-1", "Ana Paz", "Ana", "Paz", "Rojas", "+59170000001", "ana@example.com", "VERIFIED", 2)
+        fun upsert(maternal: String?, status: String, at: Long) = q.upsertUser(
+            id = "u-1", full_name = "Ana Paz", first_name = "Ana", last_name_paternal = "Paz", last_name_maternal = maternal,
+            phone = "+59170000001", email = "ana@example.com", verification = status, created_at = at,
+        )
+        upsert(null, "NOT_VERIFIED", 1)
+        upsert("Rojas", "VERIFIED", 2)
         assertEquals(1, t.count("SELECT count(*) FROM user"))
         assertEquals(1, t.count("SELECT count(*) FROM user WHERE verification = 'VERIFIED' AND last_name_maternal = 'Rojas' AND created_at = 1"))
     }
