@@ -124,6 +124,8 @@ finishes or the backend changes it.
   screen offers "Ya terminé" (check now) and "Volver a Persona".
 - Document number already used by another account: "Este documento ya está asociado a otra cuenta."
 - Under 18: "Debes ser mayor de 18 años para verificar tu identidad." before contacting the backend.
+- Camera permission denied (or "don't ask again"): the provider page does not open; the app explains
+  and offers "Permitir cámara" (FR-005b).
 - Already verified (e.g. verified on another device): the intro shows "Ya verificaste tu identidad"
   and goes to the main area.
 - Session expired while in Persona: on return the app asks for the PIN (spec 004 FR-016a) and then
@@ -155,12 +157,21 @@ finishes or the backend changes it.
 **Provider**
 
 - **FR-005**: Continuing MUST create the verification in the backend and open the provider page it
-  returns, outside the app's own screens; the app MUST NOT capture, store or upload images itself.
-- **FR-005a**: The provider page MUST open in a browser tab shown over the app (Custom Tab) with
-  Qullqi's colors; if the phone has no browser supporting it, it falls back to the default browser.
-  The tab belongs to the browser, not to the app (no app activity is added; portrait rule unaffected).
-- **FR-006**: When the provider page finishes, it returns to the app through the Qullqi return link;
-  the app MUST then show the waiting screen and check the result.
+  returns; the app MUST NOT store, inspect or upload the images itself (the provider's page does).
+- **FR-005a**: The provider page MUST open **inside the app in a full-screen web view** (portrait,
+  Nocturne background, a close button). The web view MUST: allow only the provider's pages over
+  HTTPS (any other address opens in the default browser), grant the page camera access only after
+  the user allowed the app's camera permission, keep no cookies/cache after it closes, and never
+  expose app code to the page.
+- **FR-005b**: The provider flow is **camera only** (no file upload; the provider template has no
+  upload step). The app MUST ask for the camera permission just before opening the provider page,
+  explaining why ("Para fotografiar tu documento y tomar tu selfie"). If denied, the page MUST NOT
+  open: the document step shows "Necesitamos tu cámara para verificarte" with "Permitir cámara"
+  (asks again or opens the app's system settings when "don't ask again" was chosen).
+- **FR-005c**: The web view MUST NOT offer file selection (no file chooser); only the camera is used.
+- **FR-006**: When the provider page navigates to the Qullqi return link (`qullqi://kyc/result`), the
+  web view MUST close itself and the app MUST show the waiting screen and check the result; closing
+  the web view with the close button or back does the same.
 - **FR-007**: The waiting screen MUST check the result every 5 s for up to 60 s; pending after that
   is shown as "in review" (not as an error). It MUST also offer "Ya terminé" and "Volver a la
   verificación".
@@ -216,8 +227,12 @@ finishes or the backend changes it.
 
 ### Session 2026-11-17
 
-- Q: How is the provider page opened? → A: Custom Tab (in-app browser tab over the app); fallback to
-  the default browser when unsupported (FR-005a). Requires approving the `androidx.browser` library.
+- Q: How is the provider page opened? → A: In-app web view (owner, 2026-11-17), replacing the Custom
+  Tab: the return link is intercepted inside the app, no deep-link activity, no `androidx.browser`
+  (FR-005a/b, FR-006). Needs the camera permission and a constitution amendment (Principle I lists
+  only "system browser or Custom Tab").
+- Q: Allow choosing document photos from files in the web view? → A: No. Camera only; the owner
+  removed the upload step from the provider flow (FR-005b, FR-005c).
 
 ## Assumptions
 
@@ -226,7 +241,8 @@ finishes or the backend changes it.
   C1 (`POST /my/kyc` answers `PENDING` instead of `CREATED`; the app re-reads with `GET` to route),
   C2 (no CI complement; not asked), H1 (expired provider address), H2 (attempt limit undefined;
   the app shows "Contacta a soporte" when refused).
-- The provider sandbox is used in dev; the provider's own pages handle camera permission, capture,
+- The provider sandbox is used in dev; the provider supports running inside a web view with camera
+  access granted by the host app; the provider's own pages handle capture,
   liveness and their accessibility.
 - The return link is `qullqi://kyc/result` with no parameters; the result always comes from the backend.
 - Consent text is static in M3; recording consent in the backend is pending (change request L4).
@@ -236,8 +252,9 @@ finishes or the backend changes it.
 
 - Spec 004 (session, `/me`, HTTP client, error handling) — waiting.
 - Constitution v2.1.0 Principle I: `POST /my/kyc`, `GET /my/kyc` and opening the provider page are
-  approved. New dependency `androidx.browser` (Custom Tabs) approved by the owner 2026-11-17 (Q1),
-  as the constitution's follow-up anticipated; Android-only, in `androidApp`.
+  approved; **opening it in an in-app web view requires amending Principle I** (it currently says
+  "system browser or a Custom Tab"). `androidx.browser` is no longer used. New Android permission:
+  `CAMERA` (runtime, FR-005b).
 - Shared areas likely touched (coordinate): `domain/repository/KycRepository.kt` and `domain/model/Kyc.kt`
-  (contract replaced for the provider flow), `AndroidManifest.xml` (return link), version catalog (if
-  Custom Tab).
+  (contract replaced for the provider flow), `AndroidManifest.xml` (web view activity, `CAMERA`),
+  version catalog (remove `androidx.browser`).
