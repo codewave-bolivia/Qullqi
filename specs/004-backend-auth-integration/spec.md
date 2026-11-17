@@ -200,9 +200,13 @@ status.
   device-only data; it MUST be sent at login, registration, renewal, PIN reset and logout.
 - **FR-007**: The access MUST be renewed automatically before or when it expires; concurrent
   renewals MUST be merged into one; a rejected renewal MUST end the local session (US3-3).
-- **FR-008**: Fingerprint login MUST work by unlocking the stored renewal credential with the
-  device biometric check; it MUST NOT unlock an account the backend reports as locked or consume
-  PIN attempts (spec 003 FR-017).
+- **FR-008**: Fingerprint login MUST be an app-level gate: a successful device biometric check
+  (strong or weak) lets the app use the account's stored renewal credential, which the backend
+  bounds (30 days, rotation on every use, reuse detection, bound to the device). The credential is
+  encrypted with a device key that is not tied to the biometric check (ceiling: readable on a
+  compromised/rooted device; upgrade path: biometric-bound key, research R3). Fingerprint login
+  MUST NOT unlock an account the backend reports as locked or consume PIN attempts (spec 003
+  FR-017); if the backend rejects the credential, the PIN is required.
 
 **Registration**
 
@@ -280,6 +284,9 @@ status.
 
 - Q: Keep an offline demo mode with local sample accounts? → A: No. The app always uses the
   backend; local sample data stays only for automated tests (FR-021).
+- Q: Must the fingerprint cryptographically unlock the renewal credential? → A: No. Accept research
+  R3: fingerprint is an app-level gate over a Keystore-encrypted credential bounded by the backend;
+  a biometric-bound key is a documented upgrade (FR-008).
 
 ## Assumptions
 
