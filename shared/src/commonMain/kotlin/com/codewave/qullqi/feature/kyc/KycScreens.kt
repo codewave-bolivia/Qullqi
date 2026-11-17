@@ -61,6 +61,24 @@ private fun KycScaffold(
     }
 }
 
+/** FR-005b: shown on Intro/Document when the camera was denied. */
+@Composable
+private fun CameraNeeded(state: KycState, onEvent: (KycEvent) -> Unit) {
+    if (state.cameraDenied == null) return
+    Spacer(Modifier.height(QSpacing.x16))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(QSpacing.x10)) {
+        QIcon(Ph.Warning, null, size = QSize.iconInline, tint = Q.colors.warn)
+        Text("Necesitamos tu cámara para verificarte", style = Q.type.bodySm, color = Q.colors.tx)
+    }
+    Spacer(Modifier.height(QSpacing.x4))
+    Text("Para fotografiar tu documento y tomar tu selfie.", style = Q.type.caption, color = Q.colors.tx2)
+    Spacer(Modifier.height(QSpacing.x10))
+    QSecondaryButton(
+        if (state.cameraDenied == CameraDenied.Settings) "Permitir cámara en Ajustes" else "Permitir cámara",
+        { onEvent(KycEvent.AllowCamera) },
+    )
+}
+
 @Composable
 private fun Message(text: String?) {
     if (text == null) return
@@ -113,6 +131,7 @@ fun KycIntroScreen(state: KycState, onEvent: (KycEvent) -> Unit) {
             )
         }
         Message(state.message)
+        CameraNeeded(state, onEvent)
         Spacer(Modifier.weight(1f))
         QPrimaryButton(
             if (state.pendingResume) "Continuar verificación" else "Continuar",
@@ -155,6 +174,7 @@ fun KycDocumentScreen(state: KycState, onEvent: (KycEvent) -> Unit) {
             valid = if (state.birthError != null) false else null,
         )
         Message(state.message)
+        CameraNeeded(state, onEvent)
         Spacer(Modifier.weight(1f))
         QPrimaryButton(
             if (state.busy) "Preparando…" else "Continuar a la verificación",

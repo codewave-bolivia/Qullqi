@@ -58,7 +58,7 @@ Qullqi/
 │       │   │   ├── designsystem/     # Nocturne tokens, theme, type, motion, veil, components/  [shared]
 │       │   │   ├── navigation/       # FlowNavigator, FlowHost (per-activity back stacks)       [shared]
 │       │   │   ├── feature/auth/     # AuthFlow (AuthActivity): start/, login/ (+ by phone), register/, recover/; kycEntry → feature/kyc
-│       │   │   ├── feature/kyc/      # M3 identity verification (spec 005): KycFlow, KycViewModel, screens (Persona via Custom Tab)
+│       │   │   ├── feature/kyc/      # M3 identity verification (spec 005): KycFlow, KycViewModel, screens (Persona in an in-app WebView)
 │       │   │   ├── feature/main/     # MainFlow (MainActivity): M4 content slot, UnlockScreen, placeholder
 │       │   │   ├── Greeting.kt
 │       │   │   ├── GreetingUtil.kt
@@ -76,7 +76,8 @@ Qullqi/
 │       ├── commonTest/kotlin/com/codewave/qullqi/SharedCommonTest.kt
 │       ├── androidMain/kotlin/com/codewave/qullqi/
 │       │   ├── Platform.android.kt
-│       │   └── data/                 # AndroidDatabaseFactory, KeystoreTokenStore, Pbkdf2PinHasher (tests)
+│       │   ├── data/                 # AndroidDatabaseFactory, KeystoreTokenStore, Pbkdf2PinHasher (tests)
+│       │   └── feature/kyc/          # ProviderWebScreen (Compose frame around the WebView)
 │       ├── androidHostTest/kotlin/com/codewave/qullqi/
 │       │   ├── SharedLogicAndroidHostTest.kt
 │       │   ├── data/                 # data-layer tests (in-memory SQLite)
@@ -95,8 +96,8 @@ Qullqi/
 │       ├── kotlin/com/codewave/qullqi/
 │       │   ├── QullqiApplication.kt  # builds AppDependencies once per process
 │       │   ├── AuthActivity.kt       # launcher: system launch screen + AuthFlow
-│       │   ├── KycReturnActivity.kt  # qullqi://kyc/result trampoline: closes the Custom Tab, never bypasses login
-│       │   ├── CustomTabPageOpener.kt # opens the Persona page (androidx.browser)
+│       │   ├── KycWebViewActivity.kt # Persona page in a WebView (not exported; camera only; constitution v2.2.0)
+│       │   ├── AndroidProviderPage.kt # CAMERA permission, then KycWebViewActivity
 │       │   ├── MainActivity.kt       # MainFlow (M4) + AppLock on onStop/onStart
 │       │   └── AndroidBiometricAuthenticator.kt
 │       └── res/                      # ic_qullqi + adaptive icon, values/themes.xml (Theme.Qullqi[.Starting]), colors.xml

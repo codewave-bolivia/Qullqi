@@ -22,8 +22,8 @@ import com.codewave.qullqi.domain.security.NoBiometrics
 import com.codewave.qullqi.domain.security.PinHasher
 import com.codewave.qullqi.domain.session.AppLock
 import com.codewave.qullqi.domain.system.Clock
-import com.codewave.qullqi.domain.system.ExternalPageOpener
-import com.codewave.qullqi.domain.system.NoPageOpener
+import com.codewave.qullqi.domain.system.ProviderPage
+import com.codewave.qullqi.domain.system.NoProviderPage
 import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.domain.system.IdGenerator
 import com.codewave.qullqi.domain.system.OtpCodeGenerator
@@ -42,8 +42,8 @@ data class AppDependencies(
     val debugReset: LocalDataReset?,
     /** Today's date on the device (spec 005 age check). */
     val today: Today,
-    /** Opens the identity provider's page; AuthActivity injects the Custom Tab one (spec 005). */
-    val pageOpener: ExternalPageOpener = NoPageOpener,
+    /** Opens the identity provider page (camera permission + WebView on Android, spec 005). */
+    val providerPage: ProviderPage = NoProviderPage,
 ) {
     val currentUser: CurrentUserSource get() = session
 

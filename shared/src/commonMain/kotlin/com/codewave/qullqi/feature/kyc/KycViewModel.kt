@@ -12,7 +12,8 @@ import com.codewave.qullqi.domain.repository.KycRead
 import com.codewave.qullqi.domain.repository.KycRepository
 import com.codewave.qullqi.domain.repository.KycStart
 import com.codewave.qullqi.domain.repository.SessionRepository
-import com.codewave.qullqi.domain.system.ExternalPageOpener
+import com.codewave.qullqi.domain.system.PageOpen
+import com.codewave.qullqi.domain.system.ProviderPage
 import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.feature.FlowViewModel
 import com.codewave.qullqi.feature.auth.AuthMessages
@@ -23,6 +24,9 @@ import kotlinx.coroutines.launch
 enum class KycScreen { Loading, Intro, Document, Waiting, Result }
 
 enum class WaitPhase { InProvider, Checking, NotFinished, Offline }
+
+/** Camera permission denied (FR-005b): ask again, or only the system settings can grant it. */
+enum class CameraDenied { Ask, Settings }
 
 sealed interface KycOutcome {
     data class Approved(val already: Boolean) : KycOutcome
@@ -46,6 +50,7 @@ data class KycState(
     val message: String? = null,
     val phase: WaitPhase = WaitPhase.InProvider,
     val outcome: KycOutcome? = null,
+    val cameraDenied: CameraDenied? = null,
 ) {
     val documentReady: Boolean get() =
         documentNumberValid(documentNumber) && birthDigits.length == KycViewModel.BIRTH_DIGITS && !busy
@@ -64,6 +69,8 @@ sealed interface KycEvent {
     data object ReopenProvider : KycEvent
     data object Retry : KycEvent
     data object Finish : KycEvent
+    /** "Permitir cámara" after a denial. */
+    data object AllowCamera : KycEvent
 }
 
 sealed interface KycEffect {
@@ -79,13 +86,16 @@ sealed interface KycEffect {
 class KycViewModel(
     private val kyc: KycRepository,
     private val session: SessionRepository,
-    private val opener: ExternalPageOpener,
+    private val providerPage: ProviderPage,
     private val today: Today,
     private val pollEveryMillis: Long = POLL_EVERY_MS,
     private val pollForMillis: Long = POLL_FOR_MS,
 ) : FlowViewModel<KycState, KycEffect>(KycState()) {
 
     private var polling: Job? = null
+
+    /** Provider page waiting for the camera permission; memory only, never stored or logged. */
+    private var pendingUrl: String? = null
 
     init {
         viewModelScope.launch { load() }
@@ -111,6 +121,11 @@ class KycViewModel(
             KycEvent.Retry -> {
                 setState { copy(documentNumber = "", birthDigits = "", numberError = null, birthError = null, message = null) }
                 go(KycScreen.Document)
+            }
+            KycEvent.AllowCamera -> when (current.cameraDenied) {
+                CameraDenied.Settings -> providerPage.openCameraSettings()
+                CameraDenied.Ask -> pendingUrl?.let(::openProvider)
+                null -> Unit
             }
             KycEvent.Finish -> viewModelScope.launch {
                 setState { copy(busy = true) }
@@ -198,11 +213,22 @@ class KycViewModel(
         }
     }
 
+    /** FR-005b: the page opens only with the camera allowed; otherwise stay and explain. */
     private fun openProvider(url: String) {
         polling?.cancel()
-        setState { copy(screen = KycScreen.Waiting, phase = WaitPhase.InProvider, message = null) }
-        emit(KycEffect.Go(KycScreen.Waiting))
-        opener.open(url)
+        pendingUrl = url
+        viewModelScope.launch {
+            when (val r = providerPage.open(url)) {
+                PageOpen.Opened -> {
+                    pendingUrl = null
+                    setState { copy(screen = KycScreen.Waiting, phase = WaitPhase.InProvider, message = null, cameraDenied = null) }
+                    emit(KycEffect.Go(KycScreen.Waiting))
+                }
+                is PageOpen.CameraDenied -> setState {
+                    copy(cameraDenied = if (r.permanent) CameraDenied.Settings else CameraDenied.Ask)
+                }
+            }
+        }
     }
 
     /** Research R3: read now, then every 5 s for up to 60 s; pending at the end = in review. */

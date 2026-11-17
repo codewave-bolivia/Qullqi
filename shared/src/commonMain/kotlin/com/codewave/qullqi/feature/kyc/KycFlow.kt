@@ -19,7 +19,7 @@ import com.codewave.qullqi.navigation.FlowNavigator
  */
 @Composable
 fun KycFlow(deps: AppDependencies, onDone: () -> Unit) {
-    val vm = viewModel { KycViewModel(deps.kyc, deps.session, deps.pageOpener, deps.today) }
+    val vm = viewModel { KycViewModel(deps.kyc, deps.session, deps.providerPage, deps.today) }
     val navigator = remember { FlowNavigator(KycScreen.Intro) }
     val state by vm.state.collectAsState()
 

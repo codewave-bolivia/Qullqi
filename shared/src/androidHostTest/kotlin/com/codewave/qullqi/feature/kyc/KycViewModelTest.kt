@@ -9,7 +9,8 @@ import com.codewave.qullqi.domain.repository.KycField
 import com.codewave.qullqi.domain.repository.KycRead
 import com.codewave.qullqi.domain.repository.KycStart
 import com.codewave.qullqi.domain.repository.SessionRepository
-import com.codewave.qullqi.domain.system.ExternalPageOpener
+import com.codewave.qullqi.domain.system.PageOpen
+import com.codewave.qullqi.domain.system.ProviderPage
 import com.codewave.qullqi.feature.FakeKycRepository
 import com.codewave.qullqi.feature.MainDispatcherTest
 import com.codewave.qullqi.feature.TEST_TODAY
@@ -30,9 +31,15 @@ import kotlin.test.assertTrue
 /** Spec 005: routing, validation, provider hand-off, polling and results. */
 class KycViewModelTest : MainDispatcherTest() {
 
-    private class Opener : ExternalPageOpener {
+    /** Records opened URLs; `results` scripts the camera permission outcome (last one repeats). */
+    private class Opener(val results: MutableList<PageOpen> = mutableListOf(PageOpen.Opened)) : ProviderPage {
         val urls = mutableListOf<String>()
-        override fun open(url: String) { urls += url }
+        var settingsOpened = 0
+        override suspend fun open(url: String): PageOpen {
+            urls += url
+            return if (results.size > 1) results.removeAt(0) else results.first()
+        }
+        override fun openCameraSettings() { settingsOpened++ }
     }
 
     private class Setup(val vm: KycViewModel, val kyc: FakeKycRepository, val opener: Opener)
@@ -44,10 +51,11 @@ class KycViewModelTest : MainDispatcherTest() {
         reads: MutableList<KycRead> = mutableListOf(KycRead.Found(null)),
         start: KycStart = KycStart.Started("https://provider.test/inq_1"),
         session: SessionRepository? = null,
+        pages: MutableList<PageOpen> = mutableListOf(PageOpen.Opened),
     ): Setup {
         val env = testEnv(dispatcher)
         val kyc = FakeKycRepository(reads, start)
-        val opener = Opener()
+        val opener = Opener(pages)
         val vm = KycViewModel(kyc, session ?: env.deps.session, opener, TEST_TODAY)
         runCurrent()
         return Setup(vm, kyc, opener)
@@ -206,5 +214,31 @@ class KycViewModelTest : MainDispatcherTest() {
         val effects = mutableListOf<KycEffect>()
         while (effects.lastOrNull() != KycEffect.Done) effects += s.vm.effects.first()
         assertEquals(listOf("refresh"), order)
+    }
+
+    @Test fun cameraDeniedKeepsTheUserAndRetriesWithTheSameUrl() = runTest(dispatcher) {
+        val s = setup(pages = mutableListOf(PageOpen.CameraDenied(permanent = false), PageOpen.Opened))
+        s.vm.fill()
+        s.vm.onEvent(KycEvent.Submit)
+        runCurrent()
+        assertEquals(KycScreen.Document, s.vm.state.value.screen)
+        assertEquals(CameraDenied.Ask, s.vm.state.value.cameraDenied)
+        s.vm.onEvent(KycEvent.AllowCamera)
+        runCurrent()
+        assertEquals(listOf("https://provider.test/inq_1", "https://provider.test/inq_1"), s.opener.urls)
+        assertEquals(KycScreen.Waiting, s.vm.state.value.screen)
+        assertNull(s.vm.state.value.cameraDenied)
+        assertEquals(1, s.kyc.starts.size) // the verification is not created twice
+    }
+
+    @Test fun cameraDeniedForeverSendsToSettings() = runTest(dispatcher) {
+        val s = setup(pages = mutableListOf(PageOpen.CameraDenied(permanent = true)))
+        s.vm.fill()
+        s.vm.onEvent(KycEvent.Submit)
+        runCurrent()
+        assertEquals(CameraDenied.Settings, s.vm.state.value.cameraDenied)
+        s.vm.onEvent(KycEvent.AllowCamera)
+        assertEquals(1, s.opener.settingsOpened)
+        assertEquals(1, s.opener.urls.size)
     }
 }

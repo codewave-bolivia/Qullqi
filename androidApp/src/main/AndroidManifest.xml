@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Identity verification (spec 005): the provider page takes document photos and a selfie. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- TEMPORARY (constitution v2.1.0): set usesCleartextTraffic to false + https release URL
          before the first master release (spec 004, T055). -->
@@ -30,24 +33,13 @@
         </activity>
 
         <!-- Main area (M4). Only reachable from AuthActivity after authentication. -->
-        <!-- Identity provider redirect (spec 005): closes the Custom Tab and returns to AuthActivity.
-             Opaque theme: translucent + fixed orientation crashes on API 26. -->
+        <!-- Identity provider page in a WebView (spec 005, constitution v2.2.0). Not exported. -->
         <activity
-            android:name=".KycReturnActivity"
-            android:exported="true"
-            android:excludeFromRecents="true"
-            android:noHistory="true"
+            android:name=".KycWebViewActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Qullqi">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="qullqi" android:host="kyc" android:path="/result" />
-            </intent-filter>
-        </activity>
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.Qullqi" />
 
         <activity
             android:name=".MainActivity"
