@@ -1,20 +1,17 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.1 → 2.1.0 (MINOR: time-boxed exception added to Principle I transport rule)
+- Version change: 2.1.0 → 2.2.0 (MINOR: Principle I M3 scope expanded with the in-app web view
+  option and its mandatory safeguards)
 - Modified principles:
-  - I. Backend-Authoritative Data: "release builds HTTPS only; cleartext only in debug" →
-    HTTPS mandatory for production releases; cleartext allowed in debug and `develop`
-    pre-release builds until the first release promoted to `master`, where the release build
-    must disable cleartext and use https (exception expires automatically)
+  - I. Backend-Authoritative Data: provider page may also open in an in-app web view, limited to
+    the provider's HTTPS origin, return link intercepted in-app, camera via runtime permission,
+    no file access / JS bridge, no persisted cookies/cache, address never logged
 - Added sections: none
 - Removed sections: none
-- Reason: owner decision 2026-11-17 (spec 004 clarify, C1): no production TLS backend yet; the
-  develop pre-release APK must reach a test backend over http.
-- Previous amendments on this branch (not yet integrated): 2.0.0 Principle I backend-authoritative
-  + Ktor; 2.0.1 tests may live in androidHostTest.
+- Reason: owner decision 2026-11-17 (spec 005 clarify): Persona opens in a WebView, camera only.
 - Follow-up TODOs:
-  - ✅ CLAUDE.md §14 remote rules updated to the exception.
-  - Spec 004: FR-002 and tasks updated (cleartext in both build types + release-readiness check).
+  - Spec 005 plan/research/tasks: replace Custom Tab + KycReturnActivity with the web view.
+  - Version catalog: remove `androidx.browser` once the web view lands (spec 005).
 -->
 
 # Qullqi Constitution
@@ -32,7 +29,12 @@ only presents data and collects input.
   - M2 access and registration: `POST /auth/request-otp`, `/auth/verify-otp`, `/auth/register`,
     `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/pin/reset`.
   - M3 identity verification: `POST /my/kyc`, `GET /my/kyc`, and opening the Persona `hostedUrl`
-    returned by the backend in the system browser or a Custom Tab.
+    returned by the backend in the system browser, a Custom Tab or an **in-app web view**. An
+    in-app web view MUST: load only the provider's origin over HTTPS (any other address opens in
+    the system browser), intercept the app's return link instead of exporting a deep-link
+    activity, get camera access only through the app's runtime permission, allow no file access
+    or JavaScript bridge to app code, keep no cookies/cache after closing, and never log the
+    page address. The provider page is the only third-party web content the app may embed.
   - M4 (partial): `GET /me` only, to feed `CurrentUserSource`. Any other M4 endpoint (balance,
     transactions, transfers, payments) belongs to the M4 owner and needs its own approval.
 - The backend is the single source of truth for sessions, PIN attempts and lock, verification
@@ -247,4 +249,4 @@ divergent implementations.
 - Compliance: every plan includes a Constitution Check; every review verifies Principles III–V
   and the quality gates. Unjustified complexity or new dependencies are grounds for rejection.
 
-**Version**: 2.1.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
+**Version**: 2.2.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
