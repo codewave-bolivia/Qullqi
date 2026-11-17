@@ -81,10 +81,37 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [X] T028 [P] Grep guard: no `pageUrl`/`hostedUrl` logged or stored (`S/feature/kyc/**`, `S/data/remote/**`, `A/**`); `adb shell run-as com.codewave.qullqi ls -R` shows no images (SC-004)
 - [X] T029 [P] Update `CLAUDE.md` §2 tree (`feature/kyc/`, `KycReturnActivity`, `CustomTabPageOpener`, `2.sqm`, `databases/2.db`, `KycAttempt.sq` removed) and §14 status (schema v3); `docs/references-views` untouched
 - [X] T030 Full gates: `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration :shared:testAndroidHostTest`, CI command (CLAUDE.md §16.1), `./gradlew :androidApp:assembleDebug assembleRelease`
-- [ ] T031 Device walkthrough: quickstart scenarios 1–13 with the Persona sandbox (owner); measure "Verificar" → provider page (SC-001 < 1 min, ≤ 3 screens); record results in `specs/005-kyc-persona/quickstart.md`
+- [ ] T031 Device walkthrough: quickstart scenarios 1–15 with the Persona sandbox (owner); measure "Verificar" → provider page (SC-001 < 1 min, ≤ 3 screens); record results in `specs/005-kyc-persona/quickstart.md`
 - [ ] T032 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/005-kyc-persona` → OK
 
+## Phase 8: Migration to an in-app WebView (rev. 2026-11-17, supersedes T001, T015–T017)
+
+**Decision**: spec Clarifications 2026-11-17 (WebView, camera only), constitution v2.2.0, research R1/R2.
+T001/T015/T016/T017 (Custom Tab, `KycReturnActivity`, `androidx.browser`) were built and are now
+replaced. **Independent test**: quickstart scenarios 2–4, 12, 14, 15.
+
+**Contract (shared — coordinate)**
+
+- [ ] T033 [US1] Replace `shared/src/commonMain/kotlin/com/codewave/qullqi/domain/system/ExternalPageOpener.kt` with `shared/src/commonMain/kotlin/com/codewave/qullqi/domain/system/ProviderPage.kt`: `interface ProviderPage { suspend fun open(url: String): PageOpen; fun openCameraSettings() }`, `sealed interface PageOpen { data object Opened : PageOpen; data class CameraDenied(val permanent: Boolean) : PageOpen }`, `object NoProviderPage : ProviderPage` (returns `Opened`, no-op settings) and keep `fun interface Today`; in `shared/src/commonMain/kotlin/com/codewave/qullqi/AppDependencies.kt` rename `pageOpener: ExternalPageOpener = NoPageOpener` → `providerPage: ProviderPage = NoProviderPage`
+- [ ] T034 [US1] `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycViewModel.kt`: constructor takes `ProviderPage`; `openProvider(url)` launches `providerPage.open(url)` → `Opened` → `Waiting(InProvider)` (navigate **before** opening, as today); `CameraDenied(permanent)` → stay on Document (or Intro when resuming) with `cameraDenied = Ask|Settings` and remember the URL in memory only; new event `AllowCamera`: `Settings` → `providerPage.openCameraSettings()`, `Ask` → retry `open(lastUrl)`; clear `cameraDenied` on success. Add `cameraDenied: CameraDenied? = null` (`enum class CameraDenied { Ask, Settings }`) to `KycState`
+- [ ] T035 [US1] `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycScreens.kt`: when `state.cameraDenied != null` show on Document/Intro the block "Necesitamos tu cámara para verificarte" (help "Para fotografiar tu documento y tomar tu selfie.") with `QPrimaryButton("Permitir cámara")` → `KycEvent.AllowCamera`; `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycFlow.kt` passes `deps.providerPage`
+
+**Android**
+
+- [ ] T036 [US1] Delete `androidApp/src/main/kotlin/com/codewave/qullqi/CustomTabPageOpener.kt`, `androidApp/src/main/kotlin/com/codewave/qullqi/KycReturnActivity.kt` and its `<activity>` (exported deep-link filter) in `androidApp/src/main/AndroidManifest.xml`; remove `androidx-browser` / `browser` from `gradle/libs.versions.toml` and `implementation(libs.androidx.browser)` from `androidApp/build.gradle.kts`
+- [ ] T037 [US1] Create `androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt` (`ComponentActivity`): if `savedInstanceState != null` → `finish()` (no page restored); read `EXTRA_URL`; Compose `QullqiTheme` screen = top bar (`Q.colors.bg`, `Ph.X` close → `finish()`, title "Verificación de identidad") + `AndroidView(WebView)`; `BackHandler` → `goBack()` if possible else `finish()`. WebView per research R1: `javaScriptEnabled`, `domStorageEnabled`, `mediaPlaybackRequiresUserGesture = false`, `allowFileAccess = false`, `allowContentAccess = false`, no `addJavascriptInterface`; `WebViewClient.shouldOverrideUrlLoading`: `qullqi://kyc/result` → `finish()`; `https` and host == start host or ends with `.withpersona.com` → load; else `startActivity(Intent(ACTION_VIEW, uri))` and do not load; `onReceivedSslError` → `handler.cancel()`; `WebChromeClient.onPermissionRequest`: grant only `PermissionRequest.RESOURCE_VIDEO_CAPTURE` for an allowed origin when `CAMERA` is granted, else `deny()`; `onShowFileChooser` → `false`; `onDestroy`: `CookieManager.getInstance().removeAllCookies(null)`, `WebStorage.getInstance().deleteAllData()`, `clearCache(true)`, `destroy()`; never log the URL
+- [ ] T038 [US1] `androidApp/src/main/AndroidManifest.xml`: `<uses-permission android:name="android.permission.CAMERA" />`, `<uses-feature android:name="android.hardware.camera" android:required="false" />`, `<activity android:name=".KycWebViewActivity" android:exported="false" android:screenOrientation="portrait" android:theme="@style/Theme.Qullqi" android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />`; `./gradlew :androidApp:verifyPortraitActivitiesDebug` → 5 activities, all portrait
+- [ ] T039 [US1] Create `androidApp/src/main/kotlin/com/codewave/qullqi/AndroidProviderPage.kt`: `class AndroidProviderPage(activity: ComponentActivity) : ProviderPage` registering `ActivityResultContracts.RequestPermission()` in its constructor (must be built in `AuthActivity.onCreate` before `STARTED`); `open(url)`: granted → start `KycWebViewActivity` with `EXTRA_URL` → `Opened`; else request and await a `CompletableDeferred<Boolean>`; denied → `CameraDenied(permanent = !shouldShowRequestPermissionRationale(CAMERA))`; `openCameraSettings()` → `Settings.ACTION_APPLICATION_DETAILS_SETTINGS` with `package:` URI. In `androidApp/src/main/kotlin/com/codewave/qullqi/AuthActivity.kt` replace `pageOpener = CustomTabPageOpener(this)` with `providerPage = AndroidProviderPage(this)` (created in `onCreate`) and remove the `onNewIntent` override
+
+**Tests**
+
+- [ ] T040 [P] [US1] `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/kyc/KycViewModelTest.kt`: fake `ProviderPage` (records URLs, scripted `PageOpen`); `CameraDenied(false)` → stays on Document with `cameraDenied = Ask`, no Waiting; `AllowCamera` → `open` again with the same URL → `Opened` → Waiting; `CameraDenied(true)` → `Settings` and `AllowCamera` calls `openCameraSettings`; existing tests migrated to the fake
+- [ ] T041 Full gates: `./gradlew :shared:testAndroidHostTest`, CI command (CLAUDE.md §16.1), `:androidApp:assembleDebug assembleRelease` (portrait guard), grep: no `addJavascriptInterface`, no `setWebContentsDebuggingEnabled(true)`, no URL logging in `androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt`
+- [ ] T042 Update `CLAUDE.md` §2 tree (`KycWebViewActivity.kt`, `AndroidProviderPage.kt`; remove `KycReturnActivity.kt`, `CustomTabPageOpener.kt`) and mark T001/T015/T016/T017 as superseded in this file
+
 ## Dependencies & execution order
+
+- **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.
 
 - Precondition (004 integrated) → Phase 1 (T002 before T004) → Phase 2 → US1 → US2/US3 (same ViewModel file: sequential) → US4 → Polish.
 - T015, T016 (androidApp) parallel with T018–T019 (shared).
