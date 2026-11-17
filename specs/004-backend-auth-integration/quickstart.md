@@ -39,5 +39,5 @@
 
 Release builds use `qullqi.api.url.release` (default `https://api.qullqi.invalid/…`): the develop
 pre-release APK shows the connection message until a production URL exists.
-PIN recovery must not reach a release before backend item S2 is fixed
-(`docs/backend-requirements/endpoints-change-request.md`).
+PIN recovery must not reach a release before backend item S2 is fixed, and registration not before
+S1 is fixed (`docs/backend-requirements/endpoints-change-request.md`).

@@ -16,6 +16,9 @@
 
 ## Context
 
+> Governance: requires constitution v2.1.0 (branch `docs/000-constitution-backend`, stacked under
+> this branch; pending approval by both developers).
+
 Spec 003 delivered access and registration (M2) against local sample data. The Qullqi backend now
 exists (`BackendQullpi`, reference `docs/integration-android/endpoints.md`) and constitution
 v2.0.0 makes it the authority for sessions, PIN attempts, account lock, verification status and
@@ -190,7 +193,11 @@ status.
   pre-release builds MAY connect over unencrypted HTTP (constitution v2.1.0 temporary exception);
   the production release MUST connect only over encrypted connections.
 - **FR-003**: Every backend error MUST be shown as a Spanish (Bolivia, "tú") message per
-  UI_GUIDELINES §7; connection failures MUST NOT consume attempts or lose entered data.
+  UI_GUIDELINES §7: no connection → "Sin conexión. Intenta de nuevo."; server error or unknown
+  error code → "Algo salió mal. Intenta de nuevo."; known errors keep the spec 003 texts. Failures
+  MUST NOT consume attempts or lose entered data, and no technical detail is shown.
+- **FR-003a**: While a backend call is in progress the screen MUST show progress and its action
+  (button, keypad, code boxes) MUST NOT accept a second submission.
 - **FR-004**: One-time actions (create account, reset PIN) MUST NOT be retried automatically.
 
 **Credentials and device**
@@ -231,6 +238,9 @@ status.
   is unlocked and login works with the new PIN.
 - **FR-016**: Logout MUST end the session in the backend for this device (when reachable) and
   always delete the local credentials.
+- **FR-016a**: A session ended by a rejected renewal (not by the user's logout) MUST take the user
+  from the main area to login for that account exactly once, with "Tu sesión expiró. Ingresa tu
+  PIN."; a user-initiated logout MUST NOT trigger this path.
 
 **Current user**
 
@@ -258,7 +268,9 @@ status.
 - **Account on this device**: user id, display name, masked phone, biometrics preference, last login
   (extends spec 003 `account_preference` and stored users).
 - **Current user**: id, first name, paternal surname, maternal surname, phone, email, verification
-  status (`NOT_VERIFIED`, `UNDER_REVIEW`, `VERIFIED`), account status (`ACTIVE`, `LOCKED`).
+  status (`NOT_VERIFIED`, `UNDER_REVIEW`, `VERIFIED`). The backend's account status (`ACTIVE`,
+  `LOCKED`) is not part of the M4 contract; it is reflected only as the locked state of the account
+  on the login screen.
 - **Registration draft**: phone, confirmed-phone proof (kept only in memory), first name, paternal
   surname, maternal surname, email, terms, PIN.
 
@@ -298,7 +310,9 @@ status.
 - The backend API is the one documented in `BackendQullpi/docs/integration-android/endpoints.md`
   (spec 006 level). Its open items (`docs/backend-requirements/endpoints-change-request.md` rev. 2:
   S1 OTP generator and parallel attempts, S2 code purpose not stored, S3 terms not stored) are
-  backend work; **PIN recovery (US5) must not reach a release until S2 is fixed**.
+  backend work; **PIN recovery (US5) must not reach a release until S2 is fixed, and registration
+  (US2) must not reach a release until S1 is fixed** (without attempt limits a code for a number the
+  user does not own can be guessed).
 - The backend responds 200 to code requests for already-registered numbers without sending SMS;
   registration then reports "already registered" (409).
 - Access lasts 15 minutes and renewal 30 days with rotation, as documented.
@@ -314,7 +328,8 @@ status.
 - Constitution v2.0.0 (branch `docs/000-constitution-backend`, pending approval by both developers).
 - Spec 003 screens and contracts (`specs/003-access-registration/contracts/`): flows and activities
   unchanged.
-- Shared areas touched (coordinate, §9): `domain/model/User.kt` (current user fields),
-  `domain/repository/RegistrationRepository.kt` (`RegistrationForm` name fields), SQLDelight schema
+- Shared areas touched (coordinate, §9): `domain/repository/RegistrationRepository.kt`
+  (`RegistrationForm` name fields), `domain/repository/SessionRepository.kt` (new methods and
+  results); `domain/model/User.kt` is **not** changed (M4 contract kept). SQLDelight schema
   (device identifier, stored accounts), version catalog (HTTP client).
 - M3 (identity verification) builds on this spec's session and current user.

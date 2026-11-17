@@ -13,6 +13,7 @@ interface SessionRepository : CurrentUserSource {
     suspend fun loginWithBiometrics(userId: UserId): LoginResult           // now: refresh
     suspend fun refreshCurrentUser()                                       // NEW: GET /me, silent on Unavailable
     suspend fun logout()                                                   // remote logout + local clear
+    val sessionExpired: Flow<UserId>                                       // NEW: emits only when a renewal is rejected (FR-016a); never on logout()
 }
 
 sealed interface LoginResult {
