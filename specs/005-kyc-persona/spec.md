@@ -157,6 +157,9 @@ finishes or the backend changes it.
 
 - **FR-005**: Continuing MUST create the verification in the backend and open the provider page it
   returns, outside the app's own screens; the app MUST NOT capture, store or upload images itself.
+- **FR-005a**: The provider page MUST open in a browser tab shown over the app (Custom Tab) with
+  Qullqi's colors; if the phone has no browser supporting it, it falls back to the default browser.
+  The tab belongs to the browser, not to the app (no app activity is added; portrait rule unaffected).
 - **FR-006**: When the provider page finishes, it returns to the app through the Qullqi return link;
   the app MUST then show the waiting screen and check the result.
 - **FR-007**: The waiting screen MUST check the result every 5 s for up to 60 s; pending after that
@@ -195,9 +198,7 @@ finishes or the backend changes it.
   · `DECLINED`), provider page address (only while `CREATED`), decline reason code, timestamps.
   Lives in the backend; the app keeps no copy beyond the screen state.
 - **Document data (draft)**: type, number, birth date; in memory only until sent.
-- **Privacy acceptance**: shown and accepted per verification; [NEEDS CLARIFICATION: open the
-  provider page in an in-app browser tab (Custom Tab, needs a new library) or in the phone's default
-  browser (no library, leaves the app)?]
+- **Privacy acceptance**: shown and accepted per verification (not stored in M3).
 
 ## Success Criteria *(mandatory)*
 
@@ -211,6 +212,13 @@ finishes or the backend changes it.
   while the verification is unfinished.
 - **SC-004**: 0 document images or selfies are stored by the app (inspection of app data).
 - **SC-005**: After approval, the main area shows "Verificado" without logging in again.
+
+## Clarifications
+
+### Session 2026-11-17
+
+- Q: How is the provider page opened? → A: Custom Tab (in-app browser tab over the app); fallback to
+  the default browser when unsupported (FR-005a). Requires approving the `androidx.browser` library.
 
 ## Assumptions
 
@@ -229,7 +237,8 @@ finishes or the backend changes it.
 
 - Spec 004 (session, `/me`, HTTP client, error handling) — waiting.
 - Constitution v2.1.0 Principle I: `POST /my/kyc`, `GET /my/kyc` and opening the provider page are
-  approved; a Custom Tab library would be a new dependency to approve (see clarification).
+  approved. New dependency `androidx.browser` (Custom Tabs) approved by the owner 2026-11-17 (Q1),
+  as the constitution's follow-up anticipated; Android-only, in `androidApp`.
 - Shared areas likely touched (coordinate): `domain/repository/KycRepository.kt` and `domain/model/Kyc.kt`
   (contract replaced for the provider flow), `AndroidManifest.xml` (return link), version catalog (if
   Custom Tab).

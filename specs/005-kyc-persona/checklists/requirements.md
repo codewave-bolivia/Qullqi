@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -33,4 +33,4 @@
 
 - Endpoint names, the return link and existing slot names appear only in Context/Assumptions/
   Dependencies as references to existing project contracts (as in specs 003/004).
-- Open: how the provider page is opened (Q1).
+- Q1 resolved 2026-11-17: Custom Tab with default-browser fallback (FR-005a).
