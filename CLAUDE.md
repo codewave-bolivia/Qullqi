@@ -638,8 +638,10 @@ Kotlin lists.
 
 > Remote rules (constitution, Technical Constraints): DTOs and error mapping stay in `data/`;
 > access/refresh tokens only in platform secure storage (Android Keystore), never in SQLDelight,
-> logs or plain preferences; PINs and OTP codes are never stored or logged; HTTPS only in release
-> (cleartext only in debug for a local backend); base URL from build configuration; remote tests
+> logs or plain preferences; PINs and OTP codes are never stored or logged; HTTPS mandatory for
+> production releases — temporary exception: cleartext allowed in debug and `develop` pre-release
+> builds until the first release promoted to `master`, when the release build must disable
+> cleartext and use `https://` (constitution v2.1.0); base URL from build configuration; remote tests
 > use Ktor `MockEngine`. Endpoints outside the approved scope (e.g. M4 balance/transactions) need
 > a new amendment.
 
