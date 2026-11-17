@@ -4,11 +4,11 @@
 
 **Created**: 2026-11-17
 
-**Status**: Draft
+**Status**: In Progress
 
 **Owner**: krypton612
 
-**Depends on**: 004-backend-auth-integration waiting
+**Depends on**: 004-backend-auth-integration waiting (integrated)
 
 **Contract**: none
 
@@ -37,8 +37,7 @@ opening Persona, returning to the app, waiting for the result, result screens (a
 **Out of scope**: money operations and the `kycGate` sheet (M4), any in-app camera/liveness capture,
 editing legal names, manual review tools, iOS/Desktop (Builder).
 
-**Implementation waits for spec 004 to be integrated** (session, current user, HTTP client); this
-branch only holds the specification until then (CLAUDE.md §15.3, parent without approved contract).
+Spec 004 is integrated (PR #14); implementation proceeds on this branch.
 
 ## User Scenarios & Testing *(mandatory)*
 
