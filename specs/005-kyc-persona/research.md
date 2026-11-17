@@ -12,7 +12,7 @@
   - `javaScriptEnabled = true`, `domStorageEnabled = true` (the provider needs them);
     `mediaPlaybackRequiresUserGesture = false`; `allowFileAccess = false`,
     `allowContentAccess = false`; **no `addJavascriptInterface`**; `setWebContentsDebuggingEnabled`
-    never enabled.
+    only in debuggable builds (diagnosis via chrome://inspect), never in release.
   - `WebViewClient.shouldOverrideUrlLoading`: `qullqi://kyc/result` → `finish()`; `https` and host =
     the start URL's host or `*.withpersona.com` → load; anything else → `Intent.ACTION_VIEW` in the
     system browser, not loaded in the app. `onReceivedSslError` → cancel.

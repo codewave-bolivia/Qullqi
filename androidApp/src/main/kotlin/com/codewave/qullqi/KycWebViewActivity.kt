@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.http.SslError
@@ -56,6 +57,8 @@ class KycWebViewActivity : ComponentActivity() {
 
     @SuppressLint("SetJavaScriptEnabled") // the provider's page needs JavaScript; no JS bridge is added
     private fun buildWebView(context: Context, startHost: String?) = WebView(context).apply {
+        // Debug builds only: inspect the provider page from chrome://inspect (never in release).
+        WebView.setWebContentsDebuggingEnabled(applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.mediaPlaybackRequiresUserGesture = false
