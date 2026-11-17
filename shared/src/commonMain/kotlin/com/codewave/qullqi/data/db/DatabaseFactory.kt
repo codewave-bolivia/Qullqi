@@ -17,7 +17,7 @@ object DatabaseFactory {
     }
 }
 
-/** The generated schema plus the deterministic sample data, created together (CLAUDE.md §14.3). */
+/** Schema plus deterministic sample data. Tests only: the app never ships sample accounts (spec 004, FR-021). */
 object SeededSchema : SqlSchema<QueryResult.Value<Unit>> by QullqiDatabase.Schema {
     override fun create(driver: SqlDriver): QueryResult.Value<Unit> {
         QullqiDatabase.Schema.create(driver)

@@ -87,6 +87,7 @@ class RegistrationRepositoryTest {
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.EMAIL)), reg.register(form(email = "no-at-sign")))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.TERMS)), reg.register(form(terms = " ")))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), reg.register(form(name = "  ")))
+        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), reg.register(form(name = "x".repeat(101))))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.PIN)), reg.register(form(pin = "12a4", confirm = "12a4")))
     }
 

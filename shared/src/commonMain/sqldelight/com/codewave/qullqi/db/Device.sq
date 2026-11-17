@@ -1,0 +1,12 @@
+-- One row per installation: the device identifier sent to the backend (spec 004, FR-006).
+
+CREATE TABLE device (
+  slot INTEGER NOT NULL PRIMARY KEY CHECK (slot = 1),
+  device_id TEXT NOT NULL
+);
+
+ensureDevice:
+INSERT OR IGNORE INTO device (slot, device_id) VALUES (1, ?);
+
+deviceId:
+SELECT device_id FROM device WHERE slot = 1;

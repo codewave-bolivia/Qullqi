@@ -1,5 +1,6 @@
 package com.codewave.qullqi.feature.auth.login
 
+import com.codewave.qullqi.feature.auth.AuthMessages
 import androidx.lifecycle.viewModelScope
 import com.codewave.qullqi.designsystem.QMotion
 import com.codewave.qullqi.domain.model.StoredUser
@@ -26,10 +27,12 @@ sealed interface LoginStatus {
     data object Locked : LoginStatus
 }
 
-data class AccountRow(val id: UserId, val name: String, val initials: String, val maskedPhone: String, val locked: Boolean)
+data class AccountRow(val id: UserId, val name: String, val initials: String, val maskedPhone: String, val locked: Boolean, val phone: String = "")
 
 data class LoginState(
     val account: AccountRow? = null,
+    /** Login for an account not stored on this device: "+591XXXXXXXX" (spec 004, FR-014). */
+    val phone: String? = null,
     val firstName: String = "",
     /** How many PIN digits are entered. The digits themselves never enter the state (FR-025). */
     val filled: Int = 0,
@@ -61,7 +64,8 @@ sealed interface LoginEffect {
     data object Unlocked : LoginEffect
     data object ToRegistration : LoginEffect
     data object ToWelcome : LoginEffect
-    data class ToRecover(val userId: UserId) : LoginEffect
+    data object ToLoginPhone : LoginEffect
+    data class ToRecover(val phone: String) : LoginEffect
 }
 
 class LoginViewModel(
@@ -72,12 +76,24 @@ class LoginViewModel(
     private val biometrics: BiometricAuthenticator,
     private val appLock: AppLock,
     private val enteringMillis: Long = QMotion.ENTERING_MS.toLong(),
+    private val requestedPhone: String? = null,
 ) : FlowViewModel<LoginState, LoginEffect>(LoginState()) {
 
     private val pin = StringBuilder()
 
+    /** Hidden after a rejected fingerprint renewal until the next PIN login (FR-008). */
+    private var biometricsExpired = false
+
     init {
-        viewModelScope.launch { load(requestedUser ?: preferences.mostRecentUser()) }
+        viewModelScope.launch {
+            val cached = requestedPhone?.let { p -> session.storedUsers().first().firstOrNull { it.phone == p }?.id }
+            when {
+                requestedPhone != null && cached == null -> setState {
+                    copy(account = null, phone = requestedPhone, firstName = "", status = LoginStatus.Idle, message = null)
+                }
+                else -> load(cached ?: requestedUser ?: preferences.mostRecentUser())
+            }
+        }
     }
 
     fun onEvent(event: LoginEvent) {
@@ -97,15 +113,16 @@ class LoginViewModel(
                 setState { copy(showAccounts = false) }
                 load(event.userId)
             }
+            // "Agregar cuenta": an existing account from another device logs in by phone (spec 004).
             LoginEvent.AddAccount -> {
                 setState { copy(showAccounts = false) }
-                emit(LoginEffect.ToRegistration)
+                emit(LoginEffect.ToLoginPhone)
             }
             LoginEvent.GoToWelcome -> {
                 setState { copy(showAccounts = false) }
                 emit(LoginEffect.ToWelcome)
             }
-            LoginEvent.Recover -> current.account?.let { emit(LoginEffect.ToRecover(it.id)) }
+            LoginEvent.Recover -> (current.account?.phone ?: current.phone)?.let { emit(LoginEffect.ToRecover(it)) }
             is LoginEvent.EnableBiometrics -> enableBiometrics(event.enable)
         }
     }
@@ -115,7 +132,7 @@ class LoginViewModel(
         val users = session.storedUsers().first()
         val user = users.firstOrNull { it.id == userId } ?: users.firstOrNull() ?: return
         val locked = user.locked
-        val bioKey = !locked && biometrics.isAvailable() && preferences.preference(user.id).biometricsEnabled
+        val bioKey = !locked && !biometricsExpired && biometrics.isAvailable() && preferences.preference(user.id).biometricsEnabled
         setState {
             copy(
                 account = row(user),
@@ -138,13 +155,21 @@ class LoginViewModel(
     }
 
     private fun check() {
-        val id = current.account?.id ?: return
+        val id = current.account?.id
+        val phone = current.phone
+        if (id == null && phone == null) return
         val entered = pin.toString()
         clearPin()
         setState { copy(status = LoginStatus.Checking) }
         viewModelScope.launch {
-            when (val r = session.login(id, entered)) {
-                LoginResult.Success -> succeed(id)
+            val result = if (id != null) session.login(id, entered) else session.loginWithPhone(phone!!, entered)
+            when (val r = result) {
+                LoginResult.Success -> {
+                    biometricsExpired = false
+                    val userId = id ?: session.currentUser.first()?.id
+                    if (userId == null) setState { copy(filled = 0, status = LoginStatus.Idle, message = AuthMessages.UNAVAILABLE) }
+                    else succeed(userId)
+                }
                 is LoginResult.WrongPin -> setState {
                     copy(
                         filled = 0,
@@ -156,7 +181,9 @@ class LoginViewModel(
                 LoginResult.Locked -> setState {
                     copy(filled = 0, status = LoginStatus.Locked, message = LOCKED, shakeCount = shakeCount + 1, biometricKeyVisible = false)
                 }
-                LoginResult.UnknownUser -> setState { copy(filled = 0, status = LoginStatus.Idle) }
+                LoginResult.UnknownUser -> setState { copy(filled = 0, status = LoginStatus.Idle, message = UNKNOWN, shakeCount = shakeCount + 1) }
+                LoginResult.Unavailable, LoginResult.SessionExpired ->
+                    setState { copy(filled = 0, status = LoginStatus.Idle, message = AuthMessages.UNAVAILABLE) }
             }
         }
     }
@@ -171,6 +198,11 @@ class LoginViewModel(
                 BiometricResult.Success -> when (session.loginWithBiometrics(id)) {
                     LoginResult.Success -> succeed(id, offerBiometrics = false)
                     LoginResult.Locked -> setState { copy(status = LoginStatus.Locked, message = LOCKED, biometricKeyVisible = false) }
+                    LoginResult.SessionExpired -> {
+                        biometricsExpired = true
+                        setState { copy(message = AuthMessages.PIN_REQUIRED, biometricKeyVisible = false) }
+                    }
+                    LoginResult.Unavailable -> setState { copy(message = AuthMessages.UNAVAILABLE) }
                     else -> Unit
                 }
                 BiometricResult.Failed -> setState { copy(message = "No reconocimos tu huella. Usa tu PIN.") }
@@ -223,6 +255,7 @@ class LoginViewModel(
         const val PIN_LENGTH = 4
         const val LOCKED = "Bloqueamos el acceso por seguridad. Recupera tu PIN."
         const val ENTERING = "Ingresando…"
+        const val UNKNOWN = "Número o PIN incorrecto."
 
         fun row(u: StoredUser) = AccountRow(
             id = u.id,
@@ -230,6 +263,7 @@ class LoginViewModel(
             initials = u.displayName.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() },
             maskedPhone = maskPhone(u.phone),
             locked = u.locked,
+            phone = u.phone,
         )
 
         /** "+59170000001" → "+591 7••• ••01" */

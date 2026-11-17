@@ -9,7 +9,11 @@ CREATE TABLE user (
     CHECK (verification IN ('NOT_VERIFIED', 'UNDER_REVIEW', 'VERIFIED')),
   is_new INTEGER NOT NULL DEFAULT 1 CHECK (is_new IN (0, 1)),
   pin_attempts_left INTEGER NOT NULL DEFAULT 3 CHECK (pin_attempts_left BETWEEN 0 AND 3),
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  -- Schema v2 (spec 004, 1.sqm): name parts from the backend; null for rows created before v2.
+  first_name TEXT,
+  last_name_paternal TEXT,
+  last_name_maternal TEXT
 );
 
 CREATE TABLE credential (
@@ -70,7 +74,8 @@ UPDATE user SET is_new = 0 WHERE id = ?;
 -- Registration and PIN reset (US2)
 
 insertUser:
-INSERT INTO user (id, full_name, phone, email, created_at) VALUES (?, ?, ?, ?, ?);
+INSERT INTO user (id, full_name, first_name, last_name_paternal, last_name_maternal, phone, email, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 insertCredential:
 INSERT INTO credential (user_id, pin_hash, pin_salt, iterations, updated_at) VALUES (?, ?, ?, ?, ?);
@@ -88,3 +93,25 @@ SELECT id FROM user WHERE phone = ?;
 
 userVerification:
 SELECT verification FROM user WHERE id = ?;
+
+-- Backend cache (spec 004)
+
+-- SQLite dialect 3.18 has no ON CONFLICT DO UPDATE: insert if new, then update the cached fields.
+upsertUser {
+  -- The backend owns phone → user: drop a stale cached row that has this phone under another id.
+  DELETE FROM user WHERE phone = :phone AND id != :id;
+  INSERT OR IGNORE INTO user (id, full_name, first_name, last_name_paternal, last_name_maternal, phone, email, verification, created_at)
+  VALUES (:id, :full_name, :first_name, :last_name_paternal, :last_name_maternal, :phone, :email, :verification, :created_at);
+  UPDATE user SET full_name = :full_name, first_name = :first_name, last_name_paternal = :last_name_paternal,
+    last_name_maternal = :last_name_maternal, phone = :phone, email = :email, verification = :verification
+  WHERE id = :id;
+}
+
+setAttemptsLeft:
+UPDATE user SET pin_attempts_left = ? WHERE id = ?;
+
+userByPhone:
+SELECT id FROM user WHERE phone = ?;
+
+phoneOf:
+SELECT phone FROM user WHERE id = ?;

@@ -650,10 +650,15 @@ Kotlin lists.
 > (`AndroidDatabaseFactory`, `Pbkdf2PinHasher`); the iOS and Desktop implementations are pending
 > from the Builder. They are injected, not `expect`ed, so their absence does not break compilation.
 >
-> **Sample credentials** (synthetic seed): PIN `1234` for every sample user, SMS code `123456`,
-> KYC outcome by the last digit of the document number: `0` → rejected, `5` → under review,
-> anything else → approved. `LocalDataReset.reset(withSamples = false)` gives an empty device; in
-> debug builds, long-press the splash wordmark to reset data with or without samples.
+> **Sample credentials** (synthetic seed, **automated tests only** since spec 004): PIN `1234` for
+> every sample user, SMS code `123456`, KYC outcome by the last digit of the document number: `0` →
+> rejected, `5` → under review, anything else → approved. The app never installs the seed; it uses
+> the backend (dev profile: same phones `+5917000000N`, PIN `1234`, code `123456`). In debug
+> builds, long-press the splash wordmark → "Reiniciar datos" clears device data and credentials.
+>
+> Spec 004: schema v2 (`1.sqm`: name columns, `device` table); `databases/1.db` is the v1 snapshot
+> checked by `:shared:verifyCommonMainQullqiDatabaseMigration`. Backend address per build:
+> `qullqi.api.url.debug` / `qullqi.api.url.release` Gradle properties (`androidApp` BuildConfig).
 >
 > Spec 003 added `account_preference` (biometrics enabled/prompted, last login). From spec 003 on,
 > installed builds create the database: any further schema change needs a `.sqm` migration or an

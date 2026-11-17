@@ -13,6 +13,7 @@ import com.codewave.qullqi.feature.auth.login.AccountsSheet
 import com.codewave.qullqi.feature.auth.login.EnableBiometricsSheet
 import com.codewave.qullqi.feature.auth.login.LoginEffect
 import com.codewave.qullqi.feature.auth.login.LoginMode
+import com.codewave.qullqi.feature.auth.login.LoginPhoneScreen
 import com.codewave.qullqi.feature.auth.login.LoginScreen
 import com.codewave.qullqi.feature.auth.login.LoginViewModel
 import com.codewave.qullqi.feature.auth.register.CodeStep
@@ -53,13 +54,16 @@ sealed interface AuthStart {
 sealed interface AuthRoute {
     data object Splash : AuthRoute
     data object Welcome : AuthRoute
-    data class Login(val userId: UserId?) : AuthRoute
+    /** [userId] = account stored on this device; [phone] = account not stored here (spec 004, FR-014). */
+    data class Login(val userId: UserId? = null, val phone: String? = null) : AuthRoute
+    /** "Ya tengo cuenta" without stored accounts, or "¿Ya tienes cuenta?" from the code step. */
+    data class LoginPhone(val prefill: String? = null) : AuthRoute
     data object RegPhone : AuthRoute
     data object RegCode : AuthRoute
     data object RegInfo : AuthRoute
     data object RegPin : AuthRoute
     data object RegDone : AuthRoute
-    data class RecoverPin(val userId: UserId) : AuthRoute
+    data class RecoverPin(val phone: String) : AuthRoute
     data object KycIntro : AuthRoute
 }
 
@@ -78,8 +82,8 @@ class AuthActions(
     /** Starts a new registration with a fresh draft (FR-014: the draft lives only inside the flow). */
     val startRegistration: () -> Unit,
     val registrationId: () -> Int,
-    /** Starts PIN recovery for an account with a fresh ViewModel. */
-    val startRecover: (UserId) -> Unit,
+    /** Starts PIN recovery for a phone with a fresh ViewModel. */
+    val startRecover: (String) -> Unit,
     val recoverId: () -> Int,
 )
 
@@ -118,7 +122,7 @@ fun AuthFlow(
             generation = { generation },
             startRegistration = { registrationId++; navigator.push(AuthRoute.RegPhone) },
             registrationId = { registrationId },
-            startRecover = { id -> recoverId++; navigator.push(AuthRoute.RecoverPin(id)) },
+            startRecover = { phone -> recoverId++; navigator.push(AuthRoute.RecoverPin(phone)) },
             recoverId = { recoverId },
         )
     }
@@ -139,6 +143,9 @@ private fun AuthRouteContent(
     when (route) {
         AuthRoute.Splash, AuthRoute.Welcome -> StartRoute(route, deps, actions)
         is AuthRoute.Login -> LoginRoute(route, deps, actions)
+        is AuthRoute.LoginPhone -> LoginPhoneScreen(route.prefill, onBack = { actions.navigator.back() }) { phone ->
+            actions.navigator.push(AuthRoute.Login(phone = phone))
+        }
         AuthRoute.RegPhone, AuthRoute.RegCode, AuthRoute.RegInfo, AuthRoute.RegPin, AuthRoute.RegDone ->
             RegistrationRoute(route, deps, actions)
         is AuthRoute.RecoverPin -> RecoverRoute(route, deps, actions)
@@ -157,8 +164,8 @@ private fun StartRoute(route: AuthRoute, deps: AppDependencies, actions: AuthAct
                     if (route == AuthRoute.Splash) actions.navigator.replace(AuthRoute.Login(e.userId))
                     else actions.navigator.push(AuthRoute.Login(e.userId))
                 StartEffect.ToWelcome -> actions.navigator.replace(AuthRoute.Welcome)
+                StartEffect.ToLoginPhone -> actions.navigator.push(AuthRoute.LoginPhone())
                 StartEffect.ToRegistration -> actions.startRegistration()
-                is StartEffect.Toast -> actions.toast.show(e.text)
             }
         }
     }
@@ -167,8 +174,11 @@ private fun StartRoute(route: AuthRoute, deps: AppDependencies, actions: AuthAct
 
 @Composable
 private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: AuthActions) {
-    val vm = viewModel(key = "login-${route.userId?.value}-${actions.generation()}") {
-        LoginViewModel(route.userId, LoginMode.Login, deps.session, deps.preferences, deps.biometrics, deps.appLock)
+    val vm = viewModel(key = "login-${route.userId?.value}-${route.phone}-${actions.generation()}") {
+        LoginViewModel(
+            route.userId, LoginMode.Login, deps.session, deps.preferences, deps.biometrics, deps.appLock,
+            requestedPhone = route.phone,
+        )
     }
     LaunchedEffect(vm) {
         vm.effects.collect { e ->
@@ -177,7 +187,8 @@ private fun LoginRoute(route: AuthRoute.Login, deps: AppDependencies, actions: A
                 LoginEffect.ToRegistration -> actions.startRegistration()
                 // Welcome becomes the root again: "Crear cuenta" / "Ya tengo cuenta".
                 LoginEffect.ToWelcome -> actions.navigator.resetTo(AuthRoute.Welcome)
-                is LoginEffect.ToRecover -> actions.startRecover(e.userId)
+                is LoginEffect.ToRecover -> actions.startRecover(e.phone)
+                LoginEffect.ToLoginPhone -> actions.navigator.push(AuthRoute.LoginPhone())
                 LoginEffect.Unlocked -> Unit
             }
         }
@@ -205,6 +216,7 @@ private fun RegistrationRoute(route: AuthRoute, deps: AppDependencies, actions: 
                 // Account created: the steps can no longer be revisited.
                 RegEffect.ToDone -> actions.navigator.resetTo(AuthRoute.RegDone)
                 is RegEffect.ToLogin -> actions.navigator.resetTo(AuthRoute.Login(e.userId))
+                is RegEffect.ToLoginPhone -> actions.navigator.push(AuthRoute.LoginPhone(e.phone))
                 is RegEffect.Toast -> actions.toast.show(e.text)
             }
         }
@@ -226,15 +238,15 @@ private fun RegistrationRoute(route: AuthRoute, deps: AppDependencies, actions: 
 
 @Composable
 private fun RecoverRoute(route: AuthRoute.RecoverPin, deps: AppDependencies, actions: AuthActions) {
-    val vm = viewModel(key = "recover-${route.userId.value}-${actions.recoverId()}") {
-        RecoverPinViewModel(route.userId, deps.registration, deps.session)
+    val vm = viewModel(key = "recover-${route.phone}-${actions.recoverId()}") {
+        RecoverPinViewModel(route.phone, deps.registration)
     }
     LaunchedEffect(vm) {
         vm.effects.collect { e ->
             when (e) {
                 is RecoverEffect.Toast -> actions.toast.show(e.text)
                 // Fresh login for the account, with attempts reset (FR-015).
-                is RecoverEffect.ToLogin -> actions.navigator.resetTo(AuthRoute.Login(e.userId))
+                is RecoverEffect.ToLogin -> actions.navigator.resetTo(AuthRoute.Login(phone = e.phone))
             }
         }
     }

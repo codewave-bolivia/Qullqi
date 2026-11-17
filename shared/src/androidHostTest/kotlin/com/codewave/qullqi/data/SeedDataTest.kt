@@ -7,7 +7,8 @@ import kotlin.test.assertTrue
 
 class SeedDataTest {
     private val t = testDatabase()
-    private val reset = LocalDataReset(t.db)
+    private val tokens = com.codewave.qullqi.data.remote.FakeTokenStore()
+    private val reset = LocalDataReset(t.db, tokens)
     private val tables = listOf("user", "credential", "current_session", "terms_acceptance", "phone_confirmation", "kyc_attempt")
 
     /** Every row of every table as text, in a stable order. */
@@ -52,14 +53,19 @@ class SeedDataTest {
         val first = dump()
         repeat(10) {
             t.exec("INSERT INTO current_session (slot, user_id, opened_at) VALUES (1, 'usr-new', 1)")
-            reset.reset(withSamples = true)
+            t.db.seedQueries.deleteAll()
+            t.db.seedQueries.insertSamples()
             assertEquals(first, dump())
         }
     }
 
     @Test fun emptyDevice() {
-        reset.reset(withSamples = false)
+        tokens.values["usr-verified"] = "rt"
+        t.exec("INSERT INTO device (slot, device_id) VALUES (1, 'dev-1')")
+        reset.reset()
         assertEquals(0, t.count("SELECT count(*) FROM user"))
+        assertEquals(0, t.count("SELECT count(*) FROM device"))
+        assertTrue(tokens.values.isEmpty())
         assertEquals(0, t.count("SELECT count(*) FROM kyc_attempt"))
     }
 

@@ -1,5 +1,6 @@
 package com.codewave.qullqi.feature.auth.register
 
+import com.codewave.qullqi.feature.auth.AuthMessages
 import androidx.lifecycle.viewModelScope
 import com.codewave.qullqi.data.SqlRegistrationRepository
 import com.codewave.qullqi.domain.model.UserId
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** Terms version accepted at registration (static placeholder text in M2). */
-const val TERMS_VERSION = "2026-01"
+const val TERMS_VERSION = "2026-11"
 
 data class RegState(
     // 1/4 phone
@@ -32,7 +33,8 @@ data class RegState(
     val codeShake: Int = 0,
     val resendSeconds: Int = 0,
     // 3/4 info
-    val fullName: String = "",
+    /** Name shown in the app; legal names come from identity verification (spec 004, FR-009). */
+    val displayName: String = "",
     val email: String = "",
     val emailValid: Boolean? = null,
     val emailHelp: String? = null,
@@ -46,7 +48,8 @@ data class RegState(
     // done
     val createdName: String? = null,
 ) {
-    val infoValid: Boolean get() = fullName.isNotBlank() && emailValid == true && termsAccepted
+    val infoValid: Boolean get() =
+        displayName.trim().length in 1..RegistrationViewModel.NAME_MAX && emailValid == true && termsAccepted
 }
 
 sealed interface RegEvent {
@@ -57,6 +60,8 @@ sealed interface RegEvent {
     data class PasteCode(val value: String) : RegEvent
     data object Resend : RegEvent
     data class Name(val value: String) : RegEvent
+    /** Code step: "¿Ya tienes cuenta? Inicia sesión" (FR-011). */
+    data object LoginInstead : RegEvent
     data class Email(val value: String) : RegEvent
     data class Terms(val accepted: Boolean) : RegEvent
     data object Continue : RegEvent
@@ -70,6 +75,7 @@ sealed interface RegEffect {
     data object ToPin : RegEffect
     data object ToDone : RegEffect
     data class ToLogin(val userId: UserId) : RegEffect
+    data class ToLoginPhone(val phone: String) : RegEffect
     data class Toast(val text: String) : RegEffect
 }
 
@@ -96,7 +102,8 @@ class RegistrationViewModel(
             RegEvent.CodeDelete -> setState { copy(code = code.dropLast(1)) }
             is RegEvent.PasteCode -> setCode(event.value.filter(Char::isDigit).take(CODE_LENGTH))
             RegEvent.Resend -> resend()
-            is RegEvent.Name -> setState { copy(fullName = event.value) }
+            is RegEvent.Name -> setState { copy(displayName = event.value.take(NAME_MAX)) }
+            RegEvent.LoginInstead -> emit(RegEffect.ToLoginPhone("+591${current.phone}"))
             is RegEvent.Email -> email(event.value)
             is RegEvent.Terms -> setState { copy(termsAccepted = event.accepted) }
             RegEvent.Continue -> if (current.infoValid) startPin()
@@ -136,6 +143,11 @@ class RegistrationViewModel(
                     setState { copy(sending = false, phoneValid = false, phoneHelp = PHONE_RULE) }
                     return@launch
                 }
+                CodeRequestResult.Unavailable -> {
+                    setState { copy(sending = false) }
+                    emit(RegEffect.Toast(AuthMessages.UNAVAILABLE))
+                    return@launch
+                }
             }
             setState { copy(sending = false, code = "", codeMessage = null) }
             emit(RegEffect.ToCode)
@@ -145,10 +157,15 @@ class RegistrationViewModel(
     private fun resend() {
         if (current.resendSeconds > 0) return
         viewModelScope.launch {
-            if (registration.requestCode(current.phone) == CodeRequestResult.Sent) {
-                startCountdown(RESEND_SECONDS)
-                setState { copy(code = "", codeMessage = null) }
-                emit(RegEffect.Toast("Te enviamos un nuevo código"))
+            when (val r = registration.requestCode(current.phone)) {
+                CodeRequestResult.Sent -> {
+                    startCountdown(RESEND_SECONDS)
+                    setState { copy(code = "", codeMessage = null) }
+                    emit(RegEffect.Toast("Te enviamos un nuevo código"))
+                }
+                is CodeRequestResult.TooSoon -> startCountdown(((r.waitMillis + 999) / 1000).toInt())
+                CodeRequestResult.Unavailable -> emit(RegEffect.Toast(AuthMessages.UNAVAILABLE))
+                CodeRequestResult.InvalidPhone -> Unit
             }
         }
     }
@@ -176,6 +193,7 @@ class RegistrationViewModel(
                 CodeConfirmResult.Expired, CodeConfirmResult.NoCode -> setState {
                     copy(code = "", codeShake = codeShake + 1, codeMessage = "El código venció. Pide uno nuevo.")
                 }
+                CodeConfirmResult.Unavailable -> setState { copy(code = "", codeMessage = AuthMessages.UNAVAILABLE) }
             }
         }
     }
@@ -223,17 +241,29 @@ class RegistrationViewModel(
         firstPin.setLength(0)
         setState { copy(creating = true) }
         viewModelScope.launch {
-            val form = RegistrationForm(s.phone, s.fullName.trim(), s.email, TERMS_VERSION, chosen, chosen)
+            val form = RegistrationForm(
+                phone = s.phone,
+                displayName = s.displayName.trim(),
+                email = s.email,
+                termsVersion = TERMS_VERSION,
+                pin = chosen,
+                pinConfirmation = chosen,
+            )
             when (val r = registration.register(form)) {
                 is RegistrationResult.Created -> {
                     preferences.recordLogin(r.userId)
                     appLock.unlock()
-                    setState { copy(creating = false, createdName = fullName.trim().substringBefore(' ')) }
+                    setState { copy(creating = false, createdName = displayName.trim().substringBefore(' ')) }
                     emit(RegEffect.ToDone)
                 }
                 RegistrationResult.PhoneAlreadyRegistered -> {
                     setState { copy(creating = false) }
-                    session.storedUsers().first().firstOrNull { it.phone == "+591${s.phone}" }?.let { emit(RegEffect.ToLogin(it.id)) }
+                    emit(RegEffect.Toast("Ya tienes una cuenta con este número. Ingresa con tu PIN."))
+                    val cached = session.storedUsers().first().firstOrNull { it.phone == "+591${s.phone}" }
+                    emit(if (cached != null) RegEffect.ToLogin(cached.id) else RegEffect.ToLoginPhone("+591${s.phone}"))
+                }
+                RegistrationResult.Unavailable -> setState {
+                    copy(creating = false, pinStep = 0, pinFilled = 0, pinMessage = AuthMessages.UNAVAILABLE)
                 }
                 RegistrationResult.PhoneNotConfirmed -> {
                     setState { copy(creating = false, pinStep = 0, pinFilled = 0) }
@@ -253,6 +283,7 @@ class RegistrationViewModel(
     }
 
     companion object {
+        const val NAME_MAX = 100
         const val PHONE_LENGTH = 8
         const val CODE_LENGTH = 6
         const val PIN_LENGTH = 4

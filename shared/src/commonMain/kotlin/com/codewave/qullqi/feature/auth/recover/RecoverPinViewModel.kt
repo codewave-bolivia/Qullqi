@@ -1,5 +1,7 @@
 package com.codewave.qullqi.feature.auth.recover
 
+import com.codewave.qullqi.domain.repository.CodePurpose
+import com.codewave.qullqi.feature.auth.AuthMessages
 import androidx.lifecycle.viewModelScope
 import com.codewave.qullqi.domain.model.UserId
 import com.codewave.qullqi.domain.repository.CodeConfirmResult
@@ -35,27 +37,25 @@ sealed interface RecoverEvent {
 
 sealed interface RecoverEffect {
     data class Toast(val text: String) : RecoverEffect
-    data class ToLogin(val userId: UserId) : RecoverEffect
+    /** Login for the recovered phone (cached account or login by phone). */
+    data class ToLogin(val phone: String) : RecoverEffect
 }
 
-/** PIN recovery (US4, FR-015): confirm the account's phone with an SMS code, then set a new PIN twice. */
+/**
+ * PIN recovery (spec 003 FR-015, spec 004 US5): confirm the phone with an SMS code, then set a new
+ * PIN twice. Works by phone so accounts not stored on the device can recover too.
+ */
 class RecoverPinViewModel(
-    private val userId: UserId,
+    private val phone: String,
     private val registration: RegistrationRepository,
-    private val session: SessionRepository,
-) : FlowViewModel<RecoverState, RecoverEffect>(RecoverState()) {
+) : FlowViewModel<RecoverState, RecoverEffect>(RecoverState(maskedPhone = LoginViewModel.maskPhone(phone))) {
 
-    private var phone = ""
     private val newPin = StringBuilder()
     private val pin = StringBuilder()
     private var countdown: Job? = null
 
     init {
-        viewModelScope.launch {
-            phone = session.storedUsers().first().firstOrNull { it.id == userId }?.phone.orEmpty()
-            setState { copy(maskedPhone = LoginViewModel.maskPhone(phone)) }
-            requestCode()
-        }
+        viewModelScope.launch { requestCode() }
     }
 
     fun onEvent(event: RecoverEvent) {
@@ -73,10 +73,11 @@ class RecoverPinViewModel(
     }
 
     private suspend fun requestCode() {
-        when (val r = registration.requestCode(phone)) {
+        when (val r = registration.requestCode(phone, CodePurpose.PIN_RESET)) {
             CodeRequestResult.Sent -> startCountdown(RESEND_SECONDS)
             is CodeRequestResult.TooSoon -> startCountdown(((r.waitMillis + 999) / 1000).toInt())
             CodeRequestResult.InvalidPhone -> Unit
+            CodeRequestResult.Unavailable -> setState { copy(message = AuthMessages.UNAVAILABLE) }
         }
     }
 
@@ -98,7 +99,7 @@ class RecoverPinViewModel(
         if (code.length < CODE_LENGTH) return
         setState { copy(busy = true) }
         viewModelScope.launch {
-            when (val r = registration.confirmCode(phone, code)) {
+            when (val r = registration.confirmCode(phone, code, CodePurpose.PIN_RESET)) {
                 CodeConfirmResult.Confirmed -> setState { copy(busy = false, step = RecoverStep.NewPin, code = "") }
                 is CodeConfirmResult.Wrong -> setState {
                     copy(busy = false, code = "", shake = shake + 1, message = "Código incorrecto. Te quedan ${r.triesLeft} intento${if (r.triesLeft == 1) "" else "s"}.")
@@ -106,6 +107,7 @@ class RecoverPinViewModel(
                 CodeConfirmResult.Expired, CodeConfirmResult.NoCode -> setState {
                     copy(busy = false, code = "", shake = shake + 1, message = "El código venció. Pide uno nuevo.")
                 }
+                CodeConfirmResult.Unavailable -> setState { copy(busy = false, code = "", message = AuthMessages.UNAVAILABLE) }
             }
         }
     }
@@ -135,13 +137,16 @@ class RecoverPinViewModel(
             when (registration.resetPin(phone, chosen)) {
                 PinResetResult.Success -> {
                     emit(RecoverEffect.Toast("PIN actualizado"))
-                    emit(RecoverEffect.ToLogin(userId))
+                    emit(RecoverEffect.ToLogin(phone))
                 }
                 PinResetResult.PhoneNotConfirmed -> setState {
                     copy(busy = false, step = RecoverStep.Code, pinFilled = 0, message = "El código venció. Pide uno nuevo.")
                 }
                 PinResetResult.InvalidPin, PinResetResult.UnknownPhone -> setState {
                     copy(busy = false, step = RecoverStep.NewPin, pinFilled = 0, shake = shake + 1)
+                }
+                PinResetResult.Unavailable -> setState {
+                    copy(busy = false, step = RecoverStep.NewPin, pinFilled = 0, message = AuthMessages.UNAVAILABLE)
                 }
             }
         }

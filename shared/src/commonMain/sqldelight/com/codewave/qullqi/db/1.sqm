@@ -1,0 +1,14 @@
+-- Schema v1 (spec 002/003) → v2 (spec 004): name parts, device identifier.
+-- Local accounts of v1 builds are sample/local-only and do not exist in the backend: removed.
+
+ALTER TABLE user ADD COLUMN first_name TEXT;
+ALTER TABLE user ADD COLUMN last_name_paternal TEXT;
+ALTER TABLE user ADD COLUMN last_name_maternal TEXT;
+
+CREATE TABLE device (
+  slot INTEGER NOT NULL PRIMARY KEY CHECK (slot = 1),
+  device_id TEXT NOT NULL
+);
+
+DELETE FROM phone_confirmation;
+DELETE FROM user;

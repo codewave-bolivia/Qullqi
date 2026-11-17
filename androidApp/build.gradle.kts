@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
@@ -38,7 +39,15 @@ android {
         }
     }
     buildTypes {
+        // Backend base URL per build (spec 004, research R6). Override in ~/.gradle/gradle.properties,
+        // e.g. qullqi.api.url.debug=http://<lan-ip>:8080/api/v1/ for a physical device.
+        debug {
+            val url = providers.gradleProperty("qullqi.api.url.debug").getOrElse("http://10.0.2.2:8080/api/v1/")
+            buildConfigField("String", "API_BASE_URL", "\"$url\"")
+        }
         release {
+            val url = providers.gradleProperty("qullqi.api.url.release").getOrElse("https://api.qullqi.invalid/api/v1/")
+            buildConfigField("String", "API_BASE_URL", "\"$url\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -52,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 // Every activity in the final app — ours and those added by libraries — must be locked to

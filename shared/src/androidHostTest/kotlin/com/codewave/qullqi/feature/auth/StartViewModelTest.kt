@@ -42,13 +42,13 @@ class StartViewModelTest : MainDispatcherTest() {
         assertEquals(StartEffect.ToWelcome, vm.effects.first())
     }
 
-    @Test fun haveAccountOnEmptyDeviceShowsMessage() = runTest(dispatcher) {
+    @Test fun haveAccountOnEmptyDeviceAsksForPhone() = runTest(dispatcher) {
         val (_, vm) = vm(withSamples = false, splash = 0)
         advanceUntilIdle()
         vm.effects.first() // ToWelcome
         vm.onEvent(StartEvent.HaveAccount)
         advanceUntilIdle()
-        assertEquals(StartEffect.Toast("No hay cuentas en este dispositivo. Crea una para empezar."), vm.effects.first())
+        assertEquals(StartEffect.ToLoginPhone, vm.effects.first())
     }
 
     @Test fun createAccountStartsRegistration() = runTest(dispatcher) {

@@ -44,11 +44,13 @@ fun InfoStep(state: RegState, onEvent: (RegEvent) -> Unit, onBack: () -> Unit) {
     var termsSheet by remember { mutableStateOf(false) }
     Box {
         StepScaffold(3, "Cuéntanos sobre ti", "Usaremos tu correo para comprobantes y avisos de seguridad.", onBack) {
+            // Display name only: legal names come from identity verification (spec 004, FR-009).
             QTextField(
-                value = state.fullName,
+                value = state.displayName,
                 onValueChange = { onEvent(RegEvent.Name(it)) },
-                label = "Nombre y apellido",
-                valid = if (state.fullName.isEmpty()) null else state.fullName.isNotBlank(),
+                label = "¿Cómo te llamamos?",
+                help = "Así te saludaremos en la app.",
+                valid = if (state.displayName.isEmpty()) null else state.displayName.isNotBlank(),
             )
             Spacer(Modifier.height(QSpacing.x16))
             QTextField(

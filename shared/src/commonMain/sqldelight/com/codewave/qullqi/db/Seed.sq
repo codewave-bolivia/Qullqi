@@ -52,4 +52,5 @@ deleteAll {
   DELETE FROM terms_acceptance;
   DELETE FROM credential;
   DELETE FROM user;
+  DELETE FROM device;
 }

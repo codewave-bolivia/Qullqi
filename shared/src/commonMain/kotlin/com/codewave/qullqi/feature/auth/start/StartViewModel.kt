@@ -23,7 +23,8 @@ sealed interface StartEffect {
     data class ToLogin(val userId: UserId) : StartEffect
     data object ToWelcome : StartEffect
     data object ToRegistration : StartEffect
-    data class Toast(val text: String) : StartEffect
+    /** No account on this device: log in an existing backend account by phone (spec 004). */
+    data object ToLoginPhone : StartEffect
 }
 
 /** Splash and welcome (US1, FR-001/FR-002): waits for the splash time and the most recent account. */
@@ -47,12 +48,8 @@ class StartViewModel(
             StartEvent.CreateAccount -> emit(StartEffect.ToRegistration)
             StartEvent.HaveAccount -> viewModelScope.launch {
                 val id = preferences.mostRecentUser()
-                emit(if (id != null) StartEffect.ToLogin(id) else StartEffect.Toast(NO_ACCOUNTS))
+                emit(if (id != null) StartEffect.ToLogin(id) else StartEffect.ToLoginPhone)
             }
         }
-    }
-
-    companion object {
-        const val NO_ACCOUNTS = "No hay cuentas en este dispositivo. Crea una para empezar."
     }
 }

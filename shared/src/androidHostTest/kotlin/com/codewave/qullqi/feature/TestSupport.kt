@@ -50,14 +50,13 @@ fun testEnv(io: TestDispatcher, withSamples: Boolean = true): TestEnv {
     val t = testDatabase(withSamples)
     val clock = FakeClock()
     val bio = FakeBiometricAuthenticator()
-    val deps = AppDependencies.create(
+    val deps = AppDependencies.createInMemory(
         db = t.db,
         hasher = Pbkdf2PinHasher(),
         clock = clock,
         ids = FakeIdGenerator(),
         otp = SampleOtpCodeGenerator,
         io = io,
-        debug = false,
         biometrics = bio,
     )
     return TestEnv(t, deps, clock, bio)
