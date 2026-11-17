@@ -8,6 +8,9 @@
   `suspend fun open(url): PageOpen` — `AuthActivity` first requests `CAMERA` at runtime
   (`ActivityResultContracts.RequestPermission`, registered in `onCreate`, awaited with a
   `CompletableDeferred`), then starts the activity with the URL as an extra.
+- **Persona WebView flow**: the loaded URL gets `is-webview=true` (added by the app when the
+  backend's `hostedUrl` lacks it), as Persona's Android WebView quickstart requires; without it the
+  hosted page assumes a full browser.
 - **WebView safeguards** (constitution v2.2.0 Principle I):
   - `javaScriptEnabled = true`, `domStorageEnabled = true` (the provider needs them);
     `mediaPlaybackRequiresUserGesture = false`; `allowFileAccess = false`,

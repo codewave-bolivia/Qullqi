@@ -44,13 +44,19 @@ class KycWebViewActivity : ComponentActivity() {
             return
         }
         val startHost = Uri.parse(url).host
+        // Persona's WebView flow must be activated explicitly (docs: quickstart-android-webview):
+        // without `is-webview=true` the hosted page assumes a full browser and may render blank.
+        val pageUrl = Uri.parse(url).let { uri ->
+            if (uri.getQueryParameter("is-webview") != null) url
+            else uri.buildUpon().appendQueryParameter("is-webview", "true").build().toString()
+        }
         setContent {
             BackHandler {
                 val view = webView
                 if (view != null && view.canGoBack()) view.goBack() else finish()
             }
             ProviderWebScreen(onClose = { finish() }) { context ->
-                buildWebView(context, startHost).also { webView = it; it.loadUrl(url) }
+                buildWebView(context, startHost).also { webView = it; it.loadUrl(pageUrl) }
             }
         }
     }
