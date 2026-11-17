@@ -220,9 +220,9 @@ status.
 
 **Registration**
 
-- **FR-009**: Registration step 3 MUST ask for first name (1–60 characters, required), paternal
-  surname (1–60, required), maternal surname (0–60, optional), email and terms; "Continuar" enabled
-  only when the required fields are valid.
+- **FR-009**: Registration step 3 MUST ask for a display name (trimmed 1–100 characters, required),
+  email and terms; "Continuar" enabled only when they are valid. Legal first name and surnames are
+  NOT asked: they come from the identity verification (Persona → backend webhook, M3).
 - **FR-010**: The terms version accepted MUST be sent with the registration.
 - **FR-011**: After the code step, the code screen MUST show "¿Ya tienes cuenta? Inicia sesión"
   as a way out, because the backend does not reveal whether a number is registered.
@@ -268,12 +268,12 @@ status.
 - **Device identifier**: one per installation; device-only data.
 - **Account on this device**: user id, display name, masked phone, biometrics preference, last login
   (extends spec 003 `account_preference` and stored users).
-- **Current user**: id, first name, paternal surname, maternal surname, phone, email, verification
-  status (`NOT_VERIFIED`, `UNDER_REVIEW`, `VERIFIED`). The backend's account status (`ACTIVE`,
+- **Current user**: id, display name (shown in the app), legal first name and surnames (null until
+  identity verification is approved), phone, email, verification status (`NOT_VERIFIED`, `UNDER_REVIEW`, `VERIFIED`). The backend's account status (`ACTIVE`,
   `LOCKED`) is not part of the M4 contract; it is reflected only as the locked state of the account
   on the login screen.
-- **Registration draft**: phone, confirmed-phone proof (kept only in memory), first name, paternal
-  surname, maternal surname, email, terms, PIN.
+- **Registration draft**: phone, confirmed-phone proof (kept only in memory), display name, email,
+  terms, PIN.
 
 ## Success Criteria *(mandatory)*
 
@@ -305,6 +305,9 @@ status.
 - Q: Allow unencrypted HTTP in release builds too? → A: Yes, temporarily: cleartext in debug and
   release until the first release promoted to `master`; then the release build disables cleartext
   and uses https (constitution v2.1.0, FR-002).
+- Q: Ask first name and surnames at registration? → A: No (owner, 2026-11-17). Only a display name;
+  Persona fills the legal names through the backend webhook when KYC is approved (FR-009). Backend
+  already accepts `displayName` and returns null legal names until then.
 
 ## Assumptions
 

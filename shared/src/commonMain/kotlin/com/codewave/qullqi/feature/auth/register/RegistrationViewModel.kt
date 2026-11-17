@@ -33,10 +33,8 @@ data class RegState(
     val codeShake: Int = 0,
     val resendSeconds: Int = 0,
     // 3/4 info
-    val firstName: String = "",
-    val lastNamePaternal: String = "",
-    /** Optional (spec 004, FR-009). */
-    val lastNameMaternal: String = "",
+    /** Name shown in the app; legal names come from identity verification (spec 004, FR-009). */
+    val displayName: String = "",
     val email: String = "",
     val emailValid: Boolean? = null,
     val emailHelp: String? = null,
@@ -51,8 +49,7 @@ data class RegState(
     val createdName: String? = null,
 ) {
     val infoValid: Boolean get() =
-        firstName.trim().length in 1..RegistrationViewModel.NAME_MAX && lastNamePaternal.trim().length in 1..RegistrationViewModel.NAME_MAX &&
-            lastNameMaternal.trim().length <= RegistrationViewModel.NAME_MAX && emailValid == true && termsAccepted
+        displayName.trim().length in 1..RegistrationViewModel.NAME_MAX && emailValid == true && termsAccepted
 }
 
 sealed interface RegEvent {
@@ -62,9 +59,7 @@ sealed interface RegEvent {
     data object CodeDelete : RegEvent
     data class PasteCode(val value: String) : RegEvent
     data object Resend : RegEvent
-    data class FirstName(val value: String) : RegEvent
-    data class LastNamePaternal(val value: String) : RegEvent
-    data class LastNameMaternal(val value: String) : RegEvent
+    data class Name(val value: String) : RegEvent
     /** Code step: "¿Ya tienes cuenta? Inicia sesión" (FR-011). */
     data object LoginInstead : RegEvent
     data class Email(val value: String) : RegEvent
@@ -107,9 +102,7 @@ class RegistrationViewModel(
             RegEvent.CodeDelete -> setState { copy(code = code.dropLast(1)) }
             is RegEvent.PasteCode -> setCode(event.value.filter(Char::isDigit).take(CODE_LENGTH))
             RegEvent.Resend -> resend()
-            is RegEvent.FirstName -> setState { copy(firstName = event.value.take(NAME_MAX)) }
-            is RegEvent.LastNamePaternal -> setState { copy(lastNamePaternal = event.value.take(NAME_MAX)) }
-            is RegEvent.LastNameMaternal -> setState { copy(lastNameMaternal = event.value.take(NAME_MAX)) }
+            is RegEvent.Name -> setState { copy(displayName = event.value.take(NAME_MAX)) }
             RegEvent.LoginInstead -> emit(RegEffect.ToLoginPhone("+591${current.phone}"))
             is RegEvent.Email -> email(event.value)
             is RegEvent.Terms -> setState { copy(termsAccepted = event.accepted) }
@@ -250,9 +243,7 @@ class RegistrationViewModel(
         viewModelScope.launch {
             val form = RegistrationForm(
                 phone = s.phone,
-                firstName = s.firstName.trim(),
-                lastNamePaternal = s.lastNamePaternal.trim(),
-                lastNameMaternal = s.lastNameMaternal.trim().ifEmpty { null },
+                displayName = s.displayName.trim(),
                 email = s.email,
                 termsVersion = TERMS_VERSION,
                 pin = chosen,
@@ -262,7 +253,7 @@ class RegistrationViewModel(
                 is RegistrationResult.Created -> {
                     preferences.recordLogin(r.userId)
                     appLock.unlock()
-                    setState { copy(creating = false, createdName = firstName.trim().substringBefore(' ')) }
+                    setState { copy(creating = false, createdName = displayName.trim().substringBefore(' ')) }
                     emit(RegEffect.ToDone)
                 }
                 RegistrationResult.PhoneAlreadyRegistered -> {
@@ -292,7 +283,7 @@ class RegistrationViewModel(
     }
 
     companion object {
-        const val NAME_MAX = 60
+        const val NAME_MAX = 100
         const val PHONE_LENGTH = 8
         const val CODE_LENGTH = 6
         const val PIN_LENGTH = 4

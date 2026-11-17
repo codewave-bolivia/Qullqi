@@ -44,25 +44,13 @@ fun InfoStep(state: RegState, onEvent: (RegEvent) -> Unit, onBack: () -> Unit) {
     var termsSheet by remember { mutableStateOf(false) }
     Box {
         StepScaffold(3, "Cuéntanos sobre ti", "Usaremos tu correo para comprobantes y avisos de seguridad.", onBack) {
-            // Name parts as the backend stores them (spec 004, FR-009); maternal surname is optional.
+            // Display name only: legal names come from identity verification (spec 004, FR-009).
             QTextField(
-                value = state.firstName,
-                onValueChange = { onEvent(RegEvent.FirstName(it)) },
-                label = "Nombre",
-                valid = if (state.firstName.isEmpty()) null else state.firstName.isNotBlank(),
-            )
-            Spacer(Modifier.height(QSpacing.x16))
-            QTextField(
-                value = state.lastNamePaternal,
-                onValueChange = { onEvent(RegEvent.LastNamePaternal(it)) },
-                label = "Apellido paterno",
-                valid = if (state.lastNamePaternal.isEmpty()) null else state.lastNamePaternal.isNotBlank(),
-            )
-            Spacer(Modifier.height(QSpacing.x16))
-            QTextField(
-                value = state.lastNameMaternal,
-                onValueChange = { onEvent(RegEvent.LastNameMaternal(it)) },
-                label = "Apellido materno (opcional)",
+                value = state.displayName,
+                onValueChange = { onEvent(RegEvent.Name(it)) },
+                label = "¿Cómo te llamamos?",
+                help = "Así te saludaremos en la app.",
+                valid = if (state.displayName.isEmpty()) null else state.displayName.isNotBlank(),
             )
             Spacer(Modifier.height(QSpacing.x16))
             QTextField(

@@ -188,13 +188,15 @@ class RemoteSessionRepository(
      * local constraints (a violation would crash the app or be skipped silently by INSERT OR IGNORE).
      */
     private fun cacheUser(me: MeDto, phoneHint: String?) {
-        val first = me.firstName.trim()
-        val paternal = me.lastNamePaternal.trim()
+        val first = me.firstName?.trim()?.ifEmpty { null }
+        val paternal = me.lastNamePaternal?.trim()?.ifEmpty { null }
         val status = VerificationStatus.entries.firstOrNull { it.name == me.verificationStatus } ?: VerificationStatus.NOT_VERIFIED
+        // user.full_name must not be blank (CHECK): display name → legal names → fallback.
+        val shown = me.displayName?.trim()?.ifEmpty { null }
+            ?: listOfNotNull(first, paternal).joinToString(" ").ifEmpty { FALLBACK_NAME }
         q.upsertUser(
             id = me.userId,
-            // user.full_name must not be blank (CHECK): the backend dev seed has empty names.
-            full_name = "$first $paternal".trim().ifEmpty { FALLBACK_NAME },
+            full_name = shown,
             first_name = first,
             last_name_paternal = paternal,
             last_name_maternal = me.lastNameMaternal?.trim()?.ifEmpty { null },

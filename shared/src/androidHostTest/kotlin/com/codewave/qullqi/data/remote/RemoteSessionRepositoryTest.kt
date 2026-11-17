@@ -174,4 +174,18 @@ class RemoteSessionRepositoryTest {
         assertEquals(LoginResult.Unavailable, env2.session.loginWithBiometrics(UserId("u-9"))) // no phone hint
         assertNull(env2.session.currentUser.first())
     }
+
+    /** Backend f102c1d: `displayName` always present, legal names null until KYC (spec 004 Phase 12). */
+    @Test fun displayNameWinsAndNullLegalNamesLogIn() = runBlocking {
+        val env = RemoteEnv()
+        env.backend.on("auth/login", 200, tokens(1))
+        env.backend.on("me", 200, me(idKey = "id", displayName = "Luci", first = null, paternal = null, maternal = null))
+        assertEquals(LoginResult.Success, env.session.loginWithPhone("70000001", "1234"))
+        assertEquals("Luci", env.session.currentUser.first()!!.displayName)
+        assertEquals(1, env.t.count("SELECT count(*) FROM user WHERE first_name IS NULL AND last_name_paternal IS NULL"))
+        // Older payload without displayName: legal names, then the fallback.
+        env.backend.on("me", 200, me(first = null, paternal = null, maternal = null))
+        env.session.refreshCurrentUser()
+        assertEquals("Cliente", env.session.currentUser.first()!!.displayName)
+    }
 }

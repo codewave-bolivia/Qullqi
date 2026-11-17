@@ -46,18 +46,23 @@ class MockBackend {
         fun error(code: String, details: String? = null) =
             """{"error":{"code":"$code","message":"x"${details?.let { ",\"details\":$it" } ?: ""}}}"""
         fun tokens(n: Int) = ok("""{"token":"access-$n","refreshToken":"refresh-$n","expiresIn":900}""")
+        /** `/me` as the backend sends it today: `displayName` always; legal names only after KYC. */
         fun me(
             status: String = "VERIFIED",
             maternal: String? = "Quispe",
             idKey: String = "userId",
             id: String = "u-1",
-            first: String = "Lucía",
-            paternal: String = "Flores",
-        ) = ok(
-            """{"$idKey":"$id","phoneNumber":"+59170000001","email":"Lucia@Example.com","firstName":"$first",
-               "lastNamePaternal":"$paternal"${maternal?.let { ",\"lastNameMaternal\":\"$it\"" } ?: ""},
-               "verificationStatus":"$status","accountStatus":"ACTIVE"}""",
-        )
+            first: String? = "Lucía",
+            paternal: String? = "Flores",
+            displayName: String? = null,
+        ): String {
+            fun field(name: String, v: String?) = v?.let { ",\"$name\":\"$it\"" } ?: ",\"$name\":null"
+            return ok(
+                """{"$idKey":"$id","phoneNumber":"+59170000001","email":"Lucia@Example.com"""" +
+                    field("displayName", displayName) + field("firstName", first) + field("lastNamePaternal", paternal) +
+                    field("lastNameMaternal", maternal) + ""","verificationStatus":"$status","accountStatus":"ACTIVE"}""",
+            )
+        }
     }
 }
 

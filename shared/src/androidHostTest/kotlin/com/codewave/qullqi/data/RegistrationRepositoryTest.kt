@@ -31,13 +31,12 @@ class RegistrationRepositoryTest {
 
     private fun form(
         phone: String = "71234567",
-        name: String = "Persona",
-        paternal: String = "Prueba",
+        name: String = "Persona Prueba",
         email: String = "  Persona@Example.COM ",
         terms: String = "2026-01",
         pin: String = "4321",
         confirm: String = "4321",
-    ) = RegistrationForm(phone, name, paternal, null, email, terms, pin, confirm)
+    ) = RegistrationForm(phone, name, email, terms, pin, confirm)
 
     private val code = SampleOtpCodeGenerator.CODE
 
@@ -87,9 +86,8 @@ class RegistrationRepositoryTest {
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.PIN_MISMATCH)), reg.register(form(confirm = "9999")))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.EMAIL)), reg.register(form(email = "no-at-sign")))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.TERMS)), reg.register(form(terms = " ")))
-        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.FIRST_NAME)), reg.register(form(name = "  ")))
-        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.LAST_NAME_PATERNAL)), reg.register(form(paternal = "")))
-        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.FIRST_NAME)), reg.register(form(name = "x".repeat(61))))
+        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), reg.register(form(name = "  ")))
+        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), reg.register(form(name = "x".repeat(101))))
         assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.PIN)), reg.register(form(pin = "12a4", confirm = "12a4")))
     }
 

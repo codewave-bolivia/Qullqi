@@ -14,10 +14,8 @@ interface RegistrationRepository {
 data class RegistrationForm(
     /** "7XXXXXXX", "6XXXXXXX" or "+591…" */
     val phone: String,
-    val firstName: String,
-    val lastNamePaternal: String,
-    /** Optional; null or blank = none. */
-    val lastNameMaternal: String?,
+    /** Name shown in the app; legal names come later from identity verification (spec 004, FR-009). */
+    val displayName: String,
     val email: String,
     val termsVersion: String,
     val pin: String,
@@ -42,7 +40,7 @@ sealed interface CodeConfirmResult {
     data object Unavailable : CodeConfirmResult
 }
 
-enum class RegistrationField { FIRST_NAME, LAST_NAME_PATERNAL, LAST_NAME_MATERNAL, EMAIL, TERMS, PIN, PIN_MISMATCH }
+enum class RegistrationField { NAME, EMAIL, TERMS, PIN, PIN_MISMATCH }
 
 sealed interface RegistrationResult {
     data class Created(val userId: UserId) : RegistrationResult

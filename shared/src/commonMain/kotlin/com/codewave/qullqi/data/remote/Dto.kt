@@ -30,9 +30,7 @@ internal val QullqiJson = Json {
 
 @Serializable
 internal data class RegisterBody(
-    val firstName: String,
-    val lastNamePaternal: String,
-    val lastNameMaternal: String? = null,
+    val displayName: String,
     val email: String,
     val pin: String,
     val deviceId: String,
@@ -56,8 +54,11 @@ internal data class MeDto(
     @JsonNames("userId", "id") val userId: String,
     val phoneNumber: String,
     val email: String,
-    val firstName: String,
-    val lastNamePaternal: String,
+    /** Always present since backend f102c1d; older backends omit it. */
+    val displayName: String? = null,
+    /** Legal names: null until identity verification is approved (filled by Persona). */
+    val firstName: String? = null,
+    val lastNamePaternal: String? = null,
     val lastNameMaternal: String? = null,
     val verificationStatus: String,
     val accountStatus: String? = null,

@@ -7,7 +7,7 @@
 | Column | Type | Rules |
 |---|---|---|
 | id | TEXT PK | backend user UUID (`GET /me` `userId`) |
-| full_name | TEXT NOT NULL | display name = `first_name + ' ' + last_name_paternal` (FR-018) |
+| full_name | TEXT NOT NULL | display name: `/me.displayName`, else legal names, else "Cliente" (FR-018) |
 | phone | TEXT NOT NULL UNIQUE | `+591[67]XXXXXXX` (existing CHECK) |
 | email | TEXT NOT NULL | lowercase |
 | verification | TEXT NOT NULL | `NOT_VERIFIED · UNDER_REVIEW · VERIFIED` (existing CHECK) |
@@ -64,12 +64,9 @@ Seed (`Seed.sq insertSamples`) is no longer run on install; only `SeededSchema` 
 
 | Field | Rules |
 |---|---|
-| firstName | required, trimmed 1–60 |
-| lastNamePaternal | required, trimmed 1–60 |
-| lastNameMaternal | optional, trimmed 0–60 |
-| (removed) fullName | — |
+| displayName | required, trimmed 1–100 (FR-009); legal names come from KYC |
 
-`infoValid = firstName valid ∧ lastNamePaternal valid ∧ (lastNameMaternal ≤ 60) ∧ email valid ∧ terms`.
+`infoValid = displayName valid ∧ email valid ∧ terms`.
 `register → PhoneNotConfirmed` ⇒ step = CODE, other fields kept (FR-012).
 
 ### Login target (`LoginViewModel`)

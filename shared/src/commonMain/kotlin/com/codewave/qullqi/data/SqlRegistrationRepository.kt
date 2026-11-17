@@ -85,10 +85,7 @@ class SqlRegistrationRepository(
                 ?: return@transactionWithResult RegistrationResult.PhoneNotConfirmed
 
             val id = ids.newId()
-            val first = form.firstName.trim()
-            val paternal = form.lastNamePaternal.trim()
-            val maternal = form.lastNameMaternal?.trim()?.ifEmpty { null }
-            users.insertUser(id, "$first $paternal", first, paternal, maternal, phone, email, now)
+            users.insertUser(id, form.displayName.trim(), null, null, null, phone, email, now)
             val pin = hasher.hash(form.pin)
             users.insertCredential(id, pin.hashB64, pin.saltB64, pin.iterations.toLong(), now)
             users.insertTerms(id, form.termsVersion.trim(), now)
@@ -121,14 +118,12 @@ class SqlRegistrationRepository(
     }
 
     companion object {
-        const val NAME_MAX = 60
+        /** Display name length (spec 004, FR-009; backend `displayName` 1–100). */
+        const val NAME_MAX = 100
 
-        /** Name rules shared with the registration screen (spec 004, FR-009). */
-        fun nameErrors(form: RegistrationForm): Set<RegistrationField> = buildSet {
-            if (form.firstName.trim().length !in 1..NAME_MAX) add(RegistrationField.FIRST_NAME)
-            if (form.lastNamePaternal.trim().length !in 1..NAME_MAX) add(RegistrationField.LAST_NAME_PATERNAL)
-            if ((form.lastNameMaternal?.trim()?.length ?: 0) > NAME_MAX) add(RegistrationField.LAST_NAME_MATERNAL)
-        }
+        /** Name rule shared with the registration screen and the remote repository. */
+        fun nameErrors(form: RegistrationForm): Set<RegistrationField> =
+            if (form.displayName.trim().length in 1..NAME_MAX) emptySet() else setOf(RegistrationField.NAME)
 
         const val RESEND_WINDOW_MS = 30_000L
         const val CODE_VALIDITY_MS = 5 * 60_000L

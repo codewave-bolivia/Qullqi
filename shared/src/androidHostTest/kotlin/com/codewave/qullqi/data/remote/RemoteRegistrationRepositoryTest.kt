@@ -21,7 +21,7 @@ import kotlin.test.assertTrue
 
 /** contracts/api-mapping.md rows: request/verify code, register, PIN reset (spec 004 US2, US5). */
 class RemoteRegistrationRepositoryTest {
-    private val form = RegistrationForm("70000001", "Lucía", "Flores", " ", "lucia@example.com", "2026-11", "1234", "1234")
+    private val form = RegistrationForm("70000001", " Lucía F ", "lucia@example.com", "2026-11", "1234", "1234")
 
     private fun RemoteEnv.confirmed(purpose: CodePurpose = CodePurpose.REGISTER) = runBlocking {
         backend.on("auth/verify-otp", 200, ok("""{"phoneVerifiedToken":"phone-token"}"""))
@@ -58,8 +58,8 @@ class RemoteRegistrationRepositoryTest {
         assertEquals(RegistrationResult.Created(UserId("u-1")), env.registration.register(form))
         val call = env.backend.requests.first { it.path == "auth/register" }
         assertEquals("Bearer phone-token", call.auth)
-        assertTrue(call.body.contains("\"firstName\":\"Lucía\"") && call.body.contains("\"lastNamePaternal\":\"Flores\""))
-        assertFalse(call.body.contains("lastNameMaternal")) // blank maternal surname is omitted
+        assertTrue(call.body.contains("\"displayName\":\"Lucía F\"")) // trimmed
+        assertFalse(call.body.contains("firstName") || call.body.contains("lastName")) // legal names come from KYC
         assertTrue(call.body.contains("\"termsVersion\":\"2026-11\"") && call.body.contains("\"deviceId\""))
         assertEquals("refresh-1", env.tokens.refreshToken(UserId("u-1")))
         // The phone proof is used once.
@@ -69,12 +69,12 @@ class RemoteRegistrationRepositoryTest {
     @Test fun registerErrors() = runBlocking {
         val env = RemoteEnv()
         assertEquals(RegistrationResult.PhoneNotConfirmed, env.registration.register(form)) // no proof yet
-        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.LAST_NAME_PATERNAL)), env.registration.register(form.copy(lastNamePaternal = "")))
+        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), env.registration.register(form.copy(displayName = " ")))
         env.confirmed()
         env.backend.on("auth/register", 409, error("phone_registered"))
         assertEquals(RegistrationResult.PhoneAlreadyRegistered, env.registration.register(form))
-        env.backend.on("auth/register", 422, error("validation_failed", """{"fields":{"firstName":"blank"}}"""))
-        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.FIRST_NAME)), env.registration.register(form))
+        env.backend.on("auth/register", 422, error("validation_failed", """{"fields":{"displayName":"blank"}}"""))
+        assertEquals(RegistrationResult.Invalid(setOf(RegistrationField.NAME)), env.registration.register(form))
         env.backend.on("auth/register", 401, error("unauthorized"))
         assertEquals(RegistrationResult.PhoneNotConfirmed, env.registration.register(form))
     }

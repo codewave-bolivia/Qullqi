@@ -60,9 +60,7 @@ class RemoteRegistrationRepository(
         if (invalid.isNotEmpty()) return RegistrationResult.Invalid(invalid)
         val proof = proofs[phone to CodePurpose.REGISTER] ?: return RegistrationResult.PhoneNotConfirmed
         val body = RegisterBody(
-            firstName = form.firstName.trim(),
-            lastNamePaternal = form.lastNamePaternal.trim(),
-            lastNameMaternal = form.lastNameMaternal?.trim()?.ifEmpty { null },
+            displayName = form.displayName.trim(),
             email = form.email.trim().lowercase(),
             pin = form.pin,
             deviceId = deviceId(),
@@ -131,9 +129,7 @@ class RemoteRegistrationRepository(
         val PIN = Regex("^\\d{4}$")
         val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
         val FIELD_MAP = mapOf(
-            "firstName" to RegistrationField.FIRST_NAME,
-            "lastNamePaternal" to RegistrationField.LAST_NAME_PATERNAL,
-            "lastNameMaternal" to RegistrationField.LAST_NAME_MATERNAL,
+            "displayName" to RegistrationField.NAME,
             "email" to RegistrationField.EMAIL,
             "pin" to RegistrationField.PIN,
         )

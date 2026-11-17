@@ -107,8 +107,7 @@ class RegistrationViewModelTest : MainDispatcherTest() {
 
     @Test fun infoValidation() = runTest(dispatcher) {
         val (_, vm) = setup()
-        vm.onEvent(RegEvent.FirstName("Persona"))
-        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
+        vm.onEvent(RegEvent.Name("Persona Prueba"))
         vm.onEvent(RegEvent.Email("no-arroba"))
         assertFalse(vm.state.value.emailValid ?: true)
         assertEquals("Revisa el formato del correo.", vm.state.value.emailHelp)
@@ -123,8 +122,7 @@ class RegistrationViewModelTest : MainDispatcherTest() {
         toCodeStep(vm)
         code(vm, SampleOtpCodeGenerator.CODE)
         assertEquals(RegEffect.ToInfo, vm.effects.first())
-        vm.onEvent(RegEvent.FirstName("Persona"))
-        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
+        vm.onEvent(RegEvent.Name("Persona Prueba"))
         vm.onEvent(RegEvent.Email(" Persona@Example.com "))
         vm.onEvent(RegEvent.Terms(true))
         vm.onEvent(RegEvent.Continue)
@@ -150,17 +148,16 @@ class RegistrationViewModelTest : MainDispatcherTest() {
     @Test fun backKeepsDraft() = runTest(dispatcher) {
         val (_, vm) = setup()
         vm.onEvent(RegEvent.Phone("71234567"))
-        vm.onEvent(RegEvent.FirstName("Persona"))
+        vm.onEvent(RegEvent.Name("Persona"))
         // Navigating back does not touch the ViewModel: values stay.
         assertEquals("71234567", vm.state.value.phone)
-        assertEquals("Persona", vm.state.value.firstName)
+        assertEquals("Persona", vm.state.value.displayName)
         assertNull(vm.state.value.createdName)
     }
 
     /** Fills steps 3 and 4 with valid data. */
     private suspend fun TestScope.infoAndPin(vm: RegistrationViewModel) {
-        vm.onEvent(RegEvent.FirstName("Persona"))
-        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
+        vm.onEvent(RegEvent.Name("Persona Prueba"))
         vm.onEvent(RegEvent.Email("persona@example.com"))
         vm.onEvent(RegEvent.Terms(true))
         vm.onEvent(RegEvent.Continue)
@@ -170,17 +167,16 @@ class RegistrationViewModelTest : MainDispatcherTest() {
         advanceUntilIdle()
     }
 
-    @Test fun nameFieldsValidation() = runTest(dispatcher) {
+    @Test fun displayNameValidation() = runTest(dispatcher) {
         val (_, vm) = setup()
         vm.onEvent(RegEvent.Email("persona@example.com"))
         vm.onEvent(RegEvent.Terms(true))
-        vm.onEvent(RegEvent.FirstName("Persona"))
-        assertFalse(vm.state.value.infoValid) // paternal surname required
-        vm.onEvent(RegEvent.LastNamePaternal("Prueba"))
-        assertTrue(vm.state.value.infoValid) // maternal surname optional
-        vm.onEvent(RegEvent.LastNameMaternal("x".repeat(70)))
-        assertEquals(60, vm.state.value.lastNameMaternal.length) // capped at 60
-        vm.onEvent(RegEvent.FirstName("   "))
+        assertFalse(vm.state.value.infoValid) // display name required
+        vm.onEvent(RegEvent.Name("Persona"))
+        assertTrue(vm.state.value.infoValid) // one field only: legal names come from KYC
+        vm.onEvent(RegEvent.Name("x".repeat(120)))
+        assertEquals(100, vm.state.value.displayName.length) // capped at 100
+        vm.onEvent(RegEvent.Name("   "))
         assertFalse(vm.state.value.infoValid)
     }
 
@@ -196,8 +192,7 @@ class RegistrationViewModelTest : MainDispatcherTest() {
         infoAndPin(vm)
         assertEquals(RegEffect.Toast("Tu código venció. Confirma tu número otra vez."), vm.effects.first())
         assertEquals(RegEffect.ToCode, vm.effects.first())
-        assertEquals("Persona", vm.state.value.firstName)
-        assertEquals("Prueba", vm.state.value.lastNamePaternal)
+        assertEquals("Persona Prueba", vm.state.value.displayName)
     }
 
     @Test fun unavailableKeepsDataAndAllowsRetry() = runTest(dispatcher) {
@@ -214,7 +209,7 @@ class RegistrationViewModelTest : MainDispatcherTest() {
         assertEquals(1, calls) // never retried automatically (FR-004)
         assertEquals(AuthMessages.UNAVAILABLE, vm.state.value.pinMessage)
         assertFalse(vm.state.value.creating)
-        assertEquals("Persona", vm.state.value.firstName)
+        assertEquals("Persona Prueba", vm.state.value.displayName)
     }
 
     @Test fun loginInsteadFromCodeStep() = runTest(dispatcher) {
