@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -55,6 +56,12 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.ktor.client.auth)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.serialization.kotlinxJson)
+            implementation(libs.kotlinx.serialization.json)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -62,6 +69,7 @@ kotlin {
         getByName("androidHostTest").dependencies {
             implementation(libs.sqldelight.sqliteDriver)
             implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
             implementation(libs.kotlin.test)
         }
         getByName("androidDeviceTest").dependencies {
@@ -78,6 +86,8 @@ sqldelight {
     databases {
         create("QullqiDatabase") {
             packageName.set("com.codewave.qullqi.db")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            verifyMigrations.set(true)
         }
     }
 }
