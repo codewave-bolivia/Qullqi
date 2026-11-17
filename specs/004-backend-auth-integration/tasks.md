@@ -154,6 +154,30 @@ throwing APIs without validation.
 - [X] T065 [US2] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteRegistrationRepository.kt`: `wrong_code` with `tries_left <= 0` → `Expired` (never "Te quedan 0 intentos")
 - [X] T066 Tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepositoryTest.kt`: `attemptsLeft: 4` → `WrongPin(4)` with cache 3; `-1` → `Locked`; `/me` with a non-Bolivian phone uses the login phone, and without a hint is `Unavailable` with no session
 
+## Phase 12: Registration sends one display name; legal names come from KYC (2026-11-17)
+
+**Decision (owner)**: step 3 "Cuéntanos sobre ti" asks only for a **display name**; first name and
+surnames are removed from the app, because Persona (KYC, M3) fills the legal names through the
+backend webhook.
+**Backend (already changed, `BackendQullpi` `f102c1d`/`830814e`)**: `POST /auth/register` requires
+`displayName` (1–100 chars); `firstName`, `lastNamePaternal`, `lastNameMaternal` optional.
+`GET /me` adds `displayName` (always present) and returns the legal names as **null** until KYC is
+approved.
+**Risk now**: `MeDto.firstName`/`lastNamePaternal` are non-null in the app → every `/me` of a user
+without KYC fails to decode → login shows "No pudimos conectarnos". T072 fixes it.
+**Independent test**: register a new number with "Persona Prueba" as name → "Cuenta creada", main
+area greets "Persona"; login with `+59170000001` still works.
+
+- [ ] T067 [US2] Spec docs: in `specs/004-backend-auth-integration/spec.md` replace FR-009 with "Registration step 3 MUST ask for a display name (trimmed 1–100 characters, required), email and terms; legal first name and surnames are NOT asked: they come from the identity verification (Persona → backend webhook, M3)"; add a Clarifications bullet (2026-11-17) with the owner's decision; update the "Registration draft" and "Current user" key entities; in `specs/004-backend-auth-integration/data-model.md` replace the three registration fields with `displayName` and note that the `user` name columns hold the legal names from `/me` (nullable until KYC); in `specs/004-backend-auth-integration/contracts/api-mapping.md` change the `register` body to `{displayName, email, pin, deviceId, termsVersion}` and the `/me` mapping to `full_name = displayName`
+- [ ] T068 [US2] Shared contract `shared/src/commonMain/kotlin/com/codewave/qullqi/domain/repository/RegistrationRepository.kt`: `RegistrationForm` fields `firstName`, `lastNamePaternal`, `lastNameMaternal` → one `displayName: String`; `RegistrationField` `FIRST_NAME, LAST_NAME_PATERNAL, LAST_NAME_MATERNAL` → `NAME` (keep `EMAIL, TERMS, PIN, PIN_MISMATCH`)
+- [ ] T069 [US2] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/SqlRegistrationRepository.kt`: `nameErrors` → `NAME` when `displayName.trim().length !in 1..100` (`NAME_MAX = 100`); insert `full_name = displayName.trim()` and null name columns
+- [ ] T070 [US2] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt` + `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteRegistrationRepository.kt`: `RegisterBody(displayName, email, pin, deviceId, termsVersion)` (drop the three name fields); 422 `fields.displayName` → `NAME`, remove the old `FIELD_MAP` entries for the split names
+- [ ] T071 [US2] `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/register/RegistrationViewModel.kt` + `shared/src/commonMain/kotlin/com/codewave/qullqi/feature/auth/register/InfoStep.kt`: state `displayName` (replace `firstName`/`lastNamePaternal`/`lastNameMaternal` and their events with `RegEvent.Name`), capped at 100 chars, `infoValid = displayName.trim().length in 1..100 ∧ email valid ∧ terms`; one `QTextField` label "¿Cómo te llamamos?" (help: "Así te saludaremos en la app."); `createdName = displayName.trim().substringBefore(' ')`
+- [ ] T072 [US1] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt` + `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepository.kt`: `MeDto` gets `displayName: String? = null` and `firstName`, `lastNamePaternal` become `String? = null`; cache `full_name = displayName?.trim()` → else `"$firstName $lastNamePaternal".trim()` → else `"Cliente"`; store the legal names (nullable) in `first_name`, `last_name_paternal`, `last_name_maternal`; `CurrentUser.displayName` (M4 contract) unchanged
+- [ ] T073 Tests: update `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/MockBackend.kt` (`me()` with `displayName` and null legal names by default), `RemoteRegistrationRepositoryTest.kt` (body has `displayName`, no split names; 422 → `NAME`), `RemoteSessionRepositoryTest.kt` (`/me` with null legal names logs in and shows the display name; no `displayName` → legal names → "Cliente"), `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/RegistrationRepositoryTest.kt` and `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/auth/RegistrationViewModelTest.kt` (single field, 101 chars rejected)
+- [ ] T074 [P] `docs/backend-requirements/endpoints-change-request.md` (branch `docs/003-backend-requirements`): mark C4's split-name request as superseded by the display-name decision (legal names from KYC)
+- [ ] T075 Run `./gradlew :shared:testAndroidHostTest :androidApp:assembleDebug`, install on the device and re-check quickstart scenarios 2 and 6
+
 ## Release readiness (not part of this feature's integration — run before the first `master` release)
 
 - [ ] T055 Before the first promotion to `master` (constitution v2.1.0): set `android:usesCleartextTraffic="false"` in `androidApp/src/main/AndroidManifest.xml` (optionally `"true"` only in `androidApp/src/debug/AndroidManifest.xml`), set `qullqi.api.url.release` to the production `https://` URL, and confirm `./gradlew :androidApp:assembleRelease` + device login over HTTPS
