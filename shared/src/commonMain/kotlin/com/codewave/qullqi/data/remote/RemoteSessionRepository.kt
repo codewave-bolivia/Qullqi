@@ -62,7 +62,7 @@ class RemoteSessionRepository(
             is ApiResult.Ok -> if (establish(r.value) != null) LoginResult.Success else LoginResult.Unavailable
             is ApiResult.Fail -> when (r.status) {
                 401 -> {
-                    val left = r.details.int("attempts_left") ?: 0
+                    val left = r.details.int("attempts_left", "attemptsLeft") ?: 0
                     cachedId(normalized)?.let { setAttempts(it, left) }
                     if (left == 0) LoginResult.Locked else LoginResult.WrongPin(left)
                 }

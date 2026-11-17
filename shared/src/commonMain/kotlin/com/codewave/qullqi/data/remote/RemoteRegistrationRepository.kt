@@ -29,7 +29,7 @@ class RemoteRegistrationRepository(
         return when (val r = api.requestOtp(RequestOtpBody(normalized, purpose.wire))) {
             is ApiResult.Ok -> CodeRequestResult.Sent
             is ApiResult.Fail -> when (r.status) {
-                429 -> CodeRequestResult.TooSoon((r.details.int("retry_after_seconds") ?: 30) * 1000L)
+                429 -> CodeRequestResult.TooSoon((r.details.int("retry_after_seconds", "retryAfterSeconds") ?: 30) * 1000L)
                 422 -> CodeRequestResult.InvalidPhone
                 else -> CodeRequestResult.Unavailable
             }
@@ -45,7 +45,7 @@ class RemoteRegistrationRepository(
                 CodeConfirmResult.Confirmed
             }
             is ApiResult.Fail -> when (r.status) {
-                400 -> CodeConfirmResult.Wrong(r.details.int("tries_left") ?: 0)
+                400 -> CodeConfirmResult.Wrong(r.details.int("tries_left", "triesLeft") ?: 0)
                 410 -> CodeConfirmResult.Expired
                 404, 422 -> CodeConfirmResult.NoCode
                 else -> CodeConfirmResult.Unavailable

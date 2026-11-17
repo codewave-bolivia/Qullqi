@@ -126,4 +126,15 @@ class RemoteSessionRepositoryTest {
         env.session.refreshCurrentUser()
         assertEquals("Lucía Flores", env.session.currentUser.first()!!.displayName)
     }
+
+    /** Backend code vs its doc (spec 004 Phase 10): `/me` sends `id`, `invalid_pin` sends `attemptsLeft`. */
+    @Test fun toleratesBackendSpellings() = runBlocking {
+        val env = RemoteEnv()
+        env.backend.on("auth/login", 200, tokens(1))
+        env.backend.on("me", 200, me(idKey = "id"))
+        assertEquals(LoginResult.Success, env.session.loginWithPhone("70000001", "1234"))
+        assertEquals(u1, env.session.currentUser.first()!!.id)
+        env.backend.on("auth/login", 401, error("invalid_pin", """{"attemptsLeft":2}"""))
+        assertEquals(LoginResult.WrongPin(2), env.session.login(u1, "0000"))
+    }
 }

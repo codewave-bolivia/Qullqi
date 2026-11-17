@@ -1,6 +1,8 @@
 package com.codewave.qullqi.data.remote
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.intOrNull
@@ -47,9 +49,11 @@ internal data class RegisterBody(
 
 @Serializable internal data class TokensDto(val token: String, val refreshToken: String, val expiresIn: Int = 900)
 
+/** `/me` body. The backend sends `id` while its doc says `userId`: both are accepted (spec 004, T056). */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 internal data class MeDto(
-    val userId: String,
+    @JsonNames("userId", "id") val userId: String,
     val phoneNumber: String,
     val email: String,
     val firstName: String,
@@ -59,5 +63,9 @@ internal data class MeDto(
     val accountStatus: String? = null,
 )
 
-/** Integer from an error's `details`, e.g. `attempts_left`, `tries_left`, `retry_after_seconds`. */
-internal fun JsonObject?.int(key: String): Int? = this?.get(key)?.jsonPrimitive?.intOrNull
+/**
+ * Integer from an error's `details`: the first of [keys] present. The backend mixes spellings
+ * (`attemptsLeft` vs documented `attempts_left`), so callers pass both (spec 004, T057).
+ */
+internal fun JsonObject?.int(vararg keys: String): Int? =
+    keys.firstNotNullOfOrNull { this?.get(it)?.jsonPrimitive?.intOrNull }
