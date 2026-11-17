@@ -75,10 +75,12 @@
 - **Decision**: `androidApp` `buildConfigField("String", "API_BASE_URL", …)` from Gradle
   properties: `qullqi.api.url.debug` (default `http://10.0.2.2:8080/api/v1/`, emulator) and
   `qullqi.api.url.release` (default `https://api.qullqi.invalid/api/v1/` until production exists:
-  the CD pre-release then shows the connection message, never cleartext). Physical device in debug:
+  the CD pre-release then shows the connection message; set the property to a test backend, `http://` allowed until the first `master` release). Physical device in debug:
   set `qullqi.api.url.debug=http://<lan-ip>:8080/api/v1/` in `~/.gradle/gradle.properties`.
-- Cleartext: `androidApp/src/debug/AndroidManifest.xml` with
-  `android:usesCleartextTraffic="true"`; main manifest gains `INTERNET` permission.
+- Cleartext: `android:usesCleartextTraffic="true"` on `<application>` in the **main** manifest
+  (debug and release), per constitution v2.1.0's temporary exception; main manifest gains
+  `INTERNET` permission. Before the first `master` release: set it to `false` and use an `https://`
+  release URL (task T055).
 - Timeouts: connect 10 s, request 15 s. No `HttpRequestRetry` plugin (FR-004).
 
 ## R7. Error mapping

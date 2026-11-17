@@ -15,7 +15,7 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [ ] T002 In `shared/build.gradle.kts`: apply `kotlinSerialization`; `commonMain` deps `ktor-client-core`, `ktor-client-contentNegotiation`, `ktor-client-auth`, `ktor-serialization-kotlinxJson`, `kotlinx-serialization-json`; `androidHostTest` dep `ktor-client-mock`; sqldelight block: `schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))`
 - [ ] T003 Generate the v1 schema snapshot **before any `.sq` edit**: `./gradlew :shared:generateCommonMainQullqiDatabaseSchema`; confirm `shared/src/commonMain/sqldelight/databases/1.db` exists and commit it; then add `verifyMigrations.set(true)` to the sqldelight block in `shared/build.gradle.kts`
 - [ ] T004 In `androidApp/build.gradle.kts`: dependency `implementation(libs.ktor.client.okhttp)`; `buildFeatures { buildConfig = true }`; in `buildTypes` `debug { buildConfigField("String", "API_BASE_URL", "\"${providers.gradleProperty("qullqi.api.url.debug").getOrElse("http://10.0.2.2:8080/api/v1/")}\"") }` and `release { buildConfigField(... "qullqi.api.url.release" default "https://api.qullqi.invalid/api/v1/") }`
-- [ ] T005 [P] Add `<uses-permission android:name="android.permission.INTERNET" />` to `androidApp/src/main/AndroidManifest.xml`; create `androidApp/src/debug/AndroidManifest.xml` with `<application android:usesCleartextTraffic="true" />` (debug only, FR-002)
+- [ ] T005 [P] In `androidApp/src/main/AndroidManifest.xml`: add `<uses-permission android:name="android.permission.INTERNET" />` and `android:usesCleartextTraffic="true"` on `<application>` with the XML comment `<!-- TEMPORARY (constitution v2.1.0): set to false + https release URL before the first master release (T055) -->` (applies to debug and release, FR-002)
 - [ ] T006 Run `./gradlew :shared:compileAndroidMain :androidApp:compileDebugKotlin` and `./gradlew :shared:testAndroidHostTest` — must stay green (baseline before code changes)
 
 ## Phase 2: Foundational (blocks every story)
@@ -118,6 +118,10 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [ ] T052 Full gates: `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration :shared:testAndroidHostTest`, CI command from CLAUDE.md §16.1, `./gradlew :androidApp:assembleDebug assembleRelease` (portrait guard both)
 - [ ] T053 Device walkthrough: quickstart scenarios 1–13 against the local dev backend on the physical device; record results in `specs/004-backend-auth-integration/quickstart.md` (owner)
 - [ ] T054 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/004-backend-auth-integration` prints OK
+
+## Release readiness (not part of this feature's integration — run before the first `master` release)
+
+- [ ] T055 Before the first promotion to `master` (constitution v2.1.0): set `android:usesCleartextTraffic="false"` in `androidApp/src/main/AndroidManifest.xml` (optionally `"true"` only in `androidApp/src/debug/AndroidManifest.xml`), set `qullqi.api.url.release` to the production `https://` URL, and confirm `./gradlew :androidApp:assembleRelease` + device login over HTTPS
 
 ## Dependencies & execution order
 

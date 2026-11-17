@@ -185,8 +185,10 @@ status.
 - **FR-001**: Access, registration, PIN recovery, logout and the current user MUST be served by
   the backend; the device MUST NOT decide whether a PIN or code is correct, the attempts left, the
   lock state or the verification status.
-- **FR-002**: Release builds MUST connect only over encrypted connections; the backend address MUST
-  depend on the build (local backend in debug, production address in release).
+- **FR-002**: The backend address MUST depend on the build (local backend in debug, configured
+  address in release). Until the first release promoted to `master`, debug and `develop`
+  pre-release builds MAY connect over unencrypted HTTP (constitution v2.1.0 temporary exception);
+  the production release MUST connect only over encrypted connections.
 - **FR-003**: Every backend error MUST be shown as a Spanish (Bolivia, "tú") message per
   UI_GUIDELINES §7; connection failures MUST NOT consume attempts or lose entered data.
 - **FR-004**: One-time actions (create account, reset PIN) MUST NOT be retried automatically.
@@ -287,6 +289,9 @@ status.
 - Q: Must the fingerprint cryptographically unlock the renewal credential? → A: No. Accept research
   R3: fingerprint is an app-level gate over a Keystore-encrypted credential bounded by the backend;
   a biometric-bound key is a documented upgrade (FR-008).
+- Q: Allow unencrypted HTTP in release builds too? → A: Yes, temporarily: cleartext in debug and
+  release until the first release promoted to `master`; then the release build disables cleartext
+  and uses https (constitution v2.1.0, FR-002).
 
 ## Assumptions
 

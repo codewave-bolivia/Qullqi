@@ -40,7 +40,7 @@ storage (Builder) — they keep showing "no disponible"
 
 | Principle | Check | Result |
 |---|---|---|
-| I. Backend-authoritative | Endpoints used: `request-otp`, `verify-otp`, `register`, `login`, `refresh`, `logout`, `pin/reset`, `GET /me` — all inside the approved scope. No KYC, balance or transaction calls. Backend decides PIN/lock/status; device only displays. Tokens: access in memory, renewal credential encrypted with a Keystore key; PIN/OTP never stored or logged. Release HTTPS only; cleartext only in the debug manifest. Base URL from build config. DTOs and error mapping stay in `data/remote/`. Error mapping: [contracts/api-mapping.md](contracts/api-mapping.md). | ✅ |
+| I. Backend-authoritative | Endpoints used: `request-otp`, `verify-otp`, `register`, `login`, `refresh`, `logout`, `pin/reset`, `GET /me` — all inside the approved scope. No KYC, balance or transaction calls. Backend decides PIN/lock/status; device only displays. Tokens: access in memory, renewal credential encrypted with a Keystore key; PIN/OTP never stored or logged. Cleartext allowed in debug and release until the first `master` release (constitution v2.1.0 exception); release-readiness check T055. Base URL from build config. DTOs and error mapping stay in `data/remote/`. Error mapping: [contracts/api-mapping.md](contracts/api-mapping.md). | ✅ |
 | II. MVVM | ViewModels unchanged in shape; they receive new result cases (`Unavailable`, `SessionExpired`) and new events (three name fields, login by phone). No repository calls from Composables. | ✅ |
 | III. KMP portability | Remote repositories, DTOs, client setup and `TokenStore` interface in `commonMain`; engine injected from `androidApp`; Keystore implementation in `shared/androidMain`. No Android types in `commonMain`. | ✅ |
 | IV. Builder boundaries | No changes in `iosApp/`, `desktopApp/`, `iosMain`, `jvmMain`, `iosTest`, `jvmTest`. iOS/Desktop keep `App()` → "no disponible". Darwin/Java engines and iOS/Desktop `TokenStore` deferred to the Builder. | ✅ |
@@ -104,8 +104,7 @@ shared/src/androidMain/kotlin/com/codewave/qullqi/data/
 shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/   # MockEngine tests
 androidApp/
 ├── build.gradle.kts                            # buildConfig API_BASE_URL, ktor-client-okhttp
-├── src/main/AndroidManifest.xml                # INTERNET permission
-├── src/debug/AndroidManifest.xml               # usesCleartextTraffic=true (debug only)
+├── src/main/AndroidManifest.xml                # INTERNET permission, usesCleartextTraffic=true (temporary, v2.1.0)
 └── src/main/kotlin/com/codewave/qullqi/{QullqiApplication,MainActivity}.kt
 ```
 
