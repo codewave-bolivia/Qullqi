@@ -149,4 +149,29 @@ class RemoteSessionRepositoryTest {
         assertEquals("Cliente", user.displayName)
         assertEquals(1, env.t.count("SELECT count(*) FROM user"))
     }
+
+    /** Device crash 2026-11-17: the backend allows 5 attempts; the 0–3 cache column must not throw. */
+    @Test fun backendAttemptsAboveCacheRangeDoNotCrash() = runBlocking {
+        val env = loggedIn()
+        env.backend.on("auth/login", 401, error("invalid_pin", """{"attemptsLeft":4}"""))
+        assertEquals(LoginResult.WrongPin(4), env.session.login(u1, "0000")) // UI shows the backend's number
+        assertEquals(3, env.t.count("SELECT pin_attempts_left FROM user WHERE id = 'u-1'"))
+        env.backend.on("auth/login", 401, error("invalid_pin", """{"attemptsLeft":-1}"""))
+        assertEquals(LoginResult.Locked, env.session.login(u1, "0000"))
+    }
+
+    /** A /me the cache cannot store (bad phone) reports Unavailable instead of crashing on the FK. */
+    @Test fun uncacheableUserIsUnavailableNotCrash() = runBlocking {
+        val env = RemoteEnv()
+        env.backend.on("auth/login", 200, tokens(1))
+        env.backend.on("me", 200, MockBackend.ok("""{"id":"u-9","phoneNumber":"+15550000","email":"a@b.co","firstName":"A","lastNamePaternal":"B","verificationStatus":"VERIFIED"}"""))
+        // Login phone is valid: it is used as the cache phone instead.
+        assertEquals(LoginResult.Success, env.session.loginWithPhone("70000001", "1234"))
+        val env2 = RemoteEnv()
+        env2.backend.on("me", 200, MockBackend.ok("""{"id":"u-9","phoneNumber":"+15550000","email":"a@b.co","firstName":"A","lastNamePaternal":"B","verificationStatus":"VERIFIED"}"""))
+        env2.tokens.saveRefreshToken(UserId("u-9"), "rt")
+        env2.backend.on("auth/refresh", 200, tokens(2))
+        assertEquals(LoginResult.Unavailable, env2.session.loginWithBiometrics(UserId("u-9"))) // no phone hint
+        assertNull(env2.session.currentUser.first())
+    }
 }

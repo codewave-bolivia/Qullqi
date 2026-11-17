@@ -45,7 +45,7 @@ class RemoteRegistrationRepository(
                 CodeConfirmResult.Confirmed
             }
             is ApiResult.Fail -> when (r.status) {
-                400 -> CodeConfirmResult.Wrong(r.details.int("tries_left", "triesLeft") ?: 0)
+                400 -> (r.details.int("tries_left", "triesLeft") ?: 0).let { if (it > 0) CodeConfirmResult.Wrong(it) else CodeConfirmResult.Expired }
                 410 -> CodeConfirmResult.Expired
                 404, 422 -> CodeConfirmResult.NoCode
                 else -> CodeConfirmResult.Unavailable
@@ -71,7 +71,7 @@ class RemoteRegistrationRepository(
         return when (val r = api.register(proof, body)) {
             is ApiResult.Ok -> {
                 proofs.remove(phone to CodePurpose.REGISTER)
-                session.establish(r.value)?.let { RegistrationResult.Created(it) } ?: RegistrationResult.Unavailable
+                session.establish(r.value, phone)?.let { RegistrationResult.Created(it) } ?: RegistrationResult.Unavailable
             }
             is ApiResult.Fail -> when (r.status) {
                 401 -> {

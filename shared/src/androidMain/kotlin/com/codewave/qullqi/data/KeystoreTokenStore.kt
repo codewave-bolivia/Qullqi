@@ -40,11 +40,16 @@ class KeystoreTokenStore(context: Context) : TokenStore {
     }
 
     override fun saveRefreshToken(userId: UserId, token: String) {
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey())
-        val data = cipher.doFinal(token.toByteArray(Charsets.UTF_8))
-        val value = Base64.encodeToString(cipher.iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(data, Base64.NO_WRAP)
-        prefs.edit().putString(key(userId), value).apply()
+        try {
+            val cipher = Cipher.getInstance(TRANSFORMATION)
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey())
+            val data = cipher.doFinal(token.toByteArray(Charsets.UTF_8))
+            val value = Base64.encodeToString(cipher.iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(data, Base64.NO_WRAP)
+            prefs.edit().putString(key(userId), value).apply()
+        } catch (e: Exception) {
+            // Keystore unavailable: keep nothing rather than crash; the next cold start asks for the PIN.
+            clear(userId)
+        }
     }
 
     override fun clear(userId: UserId) {

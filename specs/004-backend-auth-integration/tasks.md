@@ -139,6 +139,21 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [X] T059 Add both mismatches to `docs/backend-requirements/endpoints-change-request.md` (branch `docs/003-backend-requirements`) as "C0 · Contract drift": ask the backend to return `userId` in `MeResponse` (or fix the doc) and to use `attempts_left` like the other `details` keys (or fix the doc); the app tolerates both meanwhile
 - [ ] T060 Re-run `./gradlew :shared:testAndroidHostTest` and quickstart scenarios 2–3 on the device
 
+## Phase 11: Crash on wrong PIN — backend values written unchecked into the local cache (2026-11-17)
+
+**Cause (app)**: `invalid_pin` sends `attemptsLeft: 4` (the backend allows 5 attempts); the app wrote it
+into `user.pin_attempts_left` (`CHECK BETWEEN 0 AND 3`) on the main thread → `SQLiteConstraintException`
+crash. Same class of bug as the previous FK crash: backend data reaching CHECK/FK-constrained columns or
+throwing APIs without validation.
+**Independent test**: wrong PIN on device shows "Te quedan N intentos." with the backend's N, no crash.
+
+- [X] T061 [US1] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepository.kt`: `setAttempts` clamps to the cache range `coerceIn(0, 3)` (UI keeps the backend number from `WrongPin(n)`); `attemptsLeft <= 0` → `Locked`
+- [X] T062 [US1] Same file: every local write (`setAttempts`, cache user + open session, `closeSession`, logout) goes through `local { }` (IO dispatcher, exceptions → null); `establish` caches inside one transaction **before** saving the refresh token and returns null → `Unavailable` instead of crashing
+- [X] T063 [US1] Same file: `/me` phone normalized to `+591[67]XXXXXXX`; if it cannot be stored, the login/registration phone (`phoneHint`) is used; otherwise the operation is `Unavailable`
+- [X] T064 [US3] `shared/src/androidMain/kotlin/com/codewave/qullqi/data/KeystoreTokenStore.kt`: `saveRefreshToken` catches Keystore/cipher failures (credential dropped, PIN required next time) instead of crashing
+- [X] T065 [US2] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteRegistrationRepository.kt`: `wrong_code` with `tries_left <= 0` → `Expired` (never "Te quedan 0 intentos")
+- [X] T066 Tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepositoryTest.kt`: `attemptsLeft: 4` → `WrongPin(4)` with cache 3; `-1` → `Locked`; `/me` with a non-Bolivian phone uses the login phone, and without a hint is `Unavailable` with no session
+
 ## Release readiness (not part of this feature's integration — run before the first `master` release)
 
 - [ ] T055 Before the first promotion to `master` (constitution v2.1.0): set `android:usesCleartextTraffic="false"` in `androidApp/src/main/AndroidManifest.xml` (optionally `"true"` only in `androidApp/src/debug/AndroidManifest.xml`), set `qullqi.api.url.release` to the production `https://` URL, and confirm `./gradlew :androidApp:assembleRelease` + device login over HTTPS
