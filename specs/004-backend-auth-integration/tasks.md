@@ -116,8 +116,8 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [X] T050 [P] Grep guard: no `Log.`/`println` of tokens, PIN or code in `S/data/remote/**`, `shared/src/androidMain/**`, `A/**`; Ktor `Logging` only when `debug` (SC-004)
 - [X] T051 [P] Update `CLAUDE.md` §2 tree (`data/remote/`, `Device.sq`, `1.sqm`, `databases/1.db`, `KeystoreTokenStore`, `src/debug/AndroidManifest.xml`) and §14 status note (seed only in tests, schema v2)
 - [X] T052 Full gates: `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration :shared:testAndroidHostTest`, CI command from CLAUDE.md §16.1, `./gradlew :androidApp:assembleDebug assembleRelease` (portrait guard both)
-- [ ] T053 Device walkthrough: quickstart scenarios 1–13 against the local dev backend on the physical device; in scenario 2 measure time from 4th digit to main area (SC-001 < 3 s); record results in `specs/004-backend-auth-integration/quickstart.md` (owner)
-- [ ] T054 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/004-backend-auth-integration` prints OK
+- [X] T053 Device walkthrough: quickstart scenarios 1–13 against the local dev backend on the physical device; in scenario 2 measure time from 4th digit to main area (SC-001 < 3 s); record results in `specs/004-backend-auth-integration/quickstart.md` (owner)
+- [X] T054 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/004-backend-auth-integration` prints OK
 
 ## Phase 10: Backend contract mismatches found on device (2026-11-17)
 
@@ -137,7 +137,7 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [X] T057 [US1] In `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt`: change `JsonObject?.int(key)` to `int(vararg keys)` returning the first present key; in `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepository.kt` read `r.details.int("attempts_left", "attemptsLeft")`; in `RemoteRegistrationRepository.kt` read `int("tries_left", "triesLeft")` and `int("retry_after_seconds", "retryAfterSeconds")`
 - [X] T058 [US1] Tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepositoryTest.kt`: `MockBackend.me` variant with `"id"` instead of `"userId"` logs in with `Success`; `invalid_pin` with `{"attemptsLeft":2}` → `WrongPin(2)` (not `Locked`); add the `idKey` parameter to `me()` in `MockBackend.kt`
 - [X] T059 Add both mismatches to `docs/backend-requirements/endpoints-change-request.md` (branch `docs/003-backend-requirements`) as "C0 · Contract drift": ask the backend to return `userId` in `MeResponse` (or fix the doc) and to use `attempts_left` like the other `details` keys (or fix the doc); the app tolerates both meanwhile
-- [ ] T060 Re-run `./gradlew :shared:testAndroidHostTest` and quickstart scenarios 2–3 on the device
+- [X] T060 Re-run `./gradlew :shared:testAndroidHostTest` and quickstart scenarios 2–3 on the device
 
 ## Phase 11: Crash on wrong PIN — backend values written unchecked into the local cache (2026-11-17)
 
@@ -176,7 +176,19 @@ area greets "Persona"; login with `+59170000001` still works.
 - [X] T072 [US1] `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt` + `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepository.kt`: `MeDto` gets `displayName: String? = null` and `firstName`, `lastNamePaternal` become `String? = null`; cache `full_name = displayName?.trim()` → else `"$firstName $lastNamePaternal".trim()` → else `"Cliente"`; store the legal names (nullable) in `first_name`, `last_name_paternal`, `last_name_maternal`; `CurrentUser.displayName` (M4 contract) unchanged
 - [X] T073 Tests: update `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/MockBackend.kt` (`me()` with `displayName` and null legal names by default), `RemoteRegistrationRepositoryTest.kt` (body has `displayName`, no split names; 422 → `NAME`), `RemoteSessionRepositoryTest.kt` (`/me` with null legal names logs in and shows the display name; no `displayName` → legal names → "Cliente"), `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/RegistrationRepositoryTest.kt` and `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/auth/RegistrationViewModelTest.kt` (single field, 101 chars rejected)
 - [X] T074 [P] `docs/backend-requirements/endpoints-change-request.md` (branch `docs/003-backend-requirements`): mark C4's split-name request as superseded by the display-name decision (legal names from KYC)
-- [ ] T075 Run `./gradlew :shared:testAndroidHostTest :androidApp:assembleDebug`, install on the device and re-check quickstart scenarios 2 and 6
+- [X] T075 Run `./gradlew :shared:testAndroidHostTest :androidApp:assembleDebug`, install on the device and re-check quickstart scenarios 2 and 6
+
+## Closure (2026-11-17)
+
+Owner verified on a physical device against the local dev backend: login (stored account and by
+phone), wrong PIN, registration with a display name. Spec set to `Ready`.
+
+Known issues carried forward (backend, not this feature):
+- `LoginUserUseCase` is `@Transactional` and throws `PinException` → the attempt counter and the
+  lock are rolled back: `attemptsLeft` is always 2 and the account never locks. Fix:
+  `@Transactional(noRollbackFor = PinException.class)`; same pattern likely in `VerifyOtpUseCase`.
+- Change request items S1–S3 (OTP hardening, code purpose, terms) still gate registration and PIN
+  recovery for any release.
 
 ## Release readiness (not part of this feature's integration — run before the first `master` release)
 
