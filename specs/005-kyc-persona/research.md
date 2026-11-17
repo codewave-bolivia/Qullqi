@@ -19,8 +19,11 @@
   opened** (lifecycle of AuthActivity), whether the user finished (redirect) or closed the tab.
   The redirect `qullqi://kyc/result` targets `KycReturnActivity`, a no-UI trampoline that starts
   `AuthActivity` with `FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP` (closes the tab, reuses
-  the existing AuthActivity) and finishes. If no AuthActivity exists (process death), AuthActivity
-  starts at `AuthStart.Kyc` and FR-002 routing reads the status.
+  the existing AuthActivity) and finishes. **It passes no start extra**: if no AuthActivity exists
+  (process death, or another app firing the link) the new one starts at the splash → login (spec 003
+  FR-002a); the user re-enters KYC from "Verificar" and FR-002 routing resumes it.
+- **Scheme hijacking**: another app could register `qullqi://`; the link carries no data, so the
+  only effect is that our tab may stay open (the user closes it; resume still triggers the check).
 - **Trampoline theme**: opaque `Theme.Qullqi` + `screenOrientation="portrait"` (translucent +
   fixed orientation crashes on API 26), `excludeFromRecents`, `noHistory`, `exported="true"`, one
   `intent-filter` (`VIEW`, `DEFAULT`, `BROWSABLE`, `qullqi://kyc/result`). It carries no data and

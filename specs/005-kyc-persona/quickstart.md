@@ -29,3 +29,5 @@
 | 9 | Airplane mode on "Continuar a la verificación" | Connection message, data kept, nothing created |
 | 10 | `adb shell run-as com.codewave.qullqi ls -R` | No images, no page address stored (SC-004) |
 | 11 | Upgrade from a spec 004 build | Opens fine; `kyc_attempt` gone |
+| 12 | App closed (force stop) → `adb shell am start -a android.intent.action.VIEW -d qullqi://kyc/result` | Splash → login; KYC never opens without login (security, T016) |
+| 13 | Revoke the session in the backend while in Persona, return | "Tu sesión expiró. Ingresa tu PIN." → login for that account (T021a) |
