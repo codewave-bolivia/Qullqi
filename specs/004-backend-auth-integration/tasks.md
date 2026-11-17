@@ -119,6 +119,26 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [ ] T053 Device walkthrough: quickstart scenarios 1–13 against the local dev backend on the physical device; in scenario 2 measure time from 4th digit to main area (SC-001 < 3 s); record results in `specs/004-backend-auth-integration/quickstart.md` (owner)
 - [ ] T054 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/004-backend-auth-integration` prints OK
 
+## Phase 10: Backend contract mismatches found on device (2026-11-17)
+
+**Cause**: the backend code differs from its own `docs/integration-android/endpoints.md`:
+- `GET /me` returns the id as **`id`** (`MeResponse(UUID id, …)`), the doc says `userId` → login fails with
+  `JsonConvertException: Field 'userId' is required … at path: $.data`, shown as "No pudimos conectarnos".
+- `invalid_pin` details use **`attemptsLeft`** (`PinException`: `Map.of("attemptsLeft", …)`), the doc says
+  `attempts_left` → the app would read 0 and show a wrong PIN as **Locked**.
+- Checked and matching: `tries_left`, `retry_after_seconds`, `fields`, request bodies, `TokenResponse`,
+  `VerificationStatus`/`UserStatus` enums.
+
+**Goal**: the app accepts both spellings (tolerant reader) and the backend is asked to align code and doc.
+**Independent test**: login on device with `+59170000001` / `1234` reaches the main area; a wrong PIN shows
+"Te quedan 2 intentos." (quickstart scenarios 2–3).
+
+- [ ] T056 [US1] In `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt`: annotate `MeDto.userId` with `@JsonNames("userId", "id")` (`@OptIn(ExperimentalSerializationApi::class)`) so `/me` decodes with the backend's `id` and the documented `userId`
+- [ ] T057 [US1] In `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/Dto.kt`: change `JsonObject?.int(key)` to `int(vararg keys)` returning the first present key; in `shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepository.kt` read `r.details.int("attempts_left", "attemptsLeft")`; in `RemoteRegistrationRepository.kt` read `int("tries_left", "triesLeft")` and `int("retry_after_seconds", "retryAfterSeconds")`
+- [ ] T058 [US1] Tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/data/remote/RemoteSessionRepositoryTest.kt`: `MockBackend.me` variant with `"id"` instead of `"userId"` logs in with `Success`; `invalid_pin` with `{"attemptsLeft":2}` → `WrongPin(2)` (not `Locked`); add the `idKey` parameter to `me()` in `MockBackend.kt`
+- [ ] T059 Add both mismatches to `docs/backend-requirements/endpoints-change-request.md` (branch `docs/003-backend-requirements`) as "C0 · Contract drift": ask the backend to return `userId` in `MeResponse` (or fix the doc) and to use `attempts_left` like the other `details` keys (or fix the doc); the app tolerates both meanwhile
+- [ ] T060 Re-run `./gradlew :shared:testAndroidHostTest` and quickstart scenarios 2–3 on the device
+
 ## Release readiness (not part of this feature's integration — run before the first `master` release)
 
 - [ ] T055 Before the first promotion to `master` (constitution v2.1.0): set `android:usesCleartextTraffic="false"` in `androidApp/src/main/AndroidManifest.xml` (optionally `"true"` only in `androidApp/src/debug/AndroidManifest.xml`), set `qullqi.api.url.release` to the production `https://` URL, and confirm `./gradlew :androidApp:assembleRelease` + device login over HTTPS
