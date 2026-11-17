@@ -37,6 +37,7 @@ backend; `user.verification` is refreshed through `/me` (spec 004).
 | documentNumber | `^[A-Za-z0-9]{5,15}$` |
 | birthDigits | 0–8 digits shown `DD/MM/AAAA`; valid date ∧ adult |
 | busy | true while a call runs; actions disabled (spec 004 FR-003a) |
+| cameraDenied | `null` · `Ask` · `Settings` (permanent): Document shows "Necesitamos tu cámara para verificarte" + "Permitir cámara" (FR-005b) |
 | waitingPhase | `InProvider` (tab open) · `Checking(elapsedS)` · `NotFinished` · `Offline` |
 | result | `Approved · InReview · Rejected(reason) · Refused(support)` |
 

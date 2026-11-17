@@ -31,10 +31,14 @@ enum class KycField { NUMBER, BIRTH_DATE, TYPE }
 Platform services (`domain/system`):
 
 ```kotlin
-fun interface ExternalPageOpener { fun open(url: String) }   // Android: Custom Tab
+interface ProviderPage {                                    // Android: CAMERA permission + KycWebViewActivity
+    suspend fun open(url: String): PageOpen
+    fun openCameraSettings()
+}
+sealed interface PageOpen { data object Opened : PageOpen; data class CameraDenied(val permanent: Boolean) : PageOpen }
 fun interface Today { fun date(): SimpleDate }                 // Android: LocalDate.now()
 ```
 
-`AppDependencies` gains `kyc: KycRepository` (remote), `pageOpener: ExternalPageOpener`
-(AuthActivity injects the Custom Tab one with `copy(...)`, like biometrics) and `today: Today`.
+`AppDependencies` gains `kyc: KycRepository` (remote), `providerPage: ProviderPage`
+(AuthActivity injects `AndroidProviderPage` with `copy(...)`, like biometrics) and `today: Today`.
 `AuthFlow` signature unchanged; its default `kycEntry` becomes `{ onDone -> KycFlow(deps, onDone) }`.

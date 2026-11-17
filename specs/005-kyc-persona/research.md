@@ -1,34 +1,41 @@
 # Research: Identity Verification with Persona (M3)
 
-## R1. Opening the provider page
+## R1. Opening the provider page — in-app WebView (rev. 2026-11-17, supersedes Custom Tab)
 
-- **Decision**: `androidx.browser` `CustomTabsIntent` (toolbar color `#161826`, share and
-  bookmarks hidden, `setUrlBarHidingEnabled(true)`), behind
-  `interface ExternalPageOpener { fun open(url: String) }` in `commonMain`; `CustomTabPageOpener`
-  in `androidApp`. Without a Custom Tabs browser, `CustomTabsIntent.launchUrl` falls back to the
-  default browser (FR-005a).
-- **Version**: latest stable `androidx.browser` at task T001 (no alpha/beta).
-- **Portrait guard**: the tab is the browser's activity, not in the merged manifest; the guard is
-  unaffected.
-- **Alternatives**: default browser (`LocalUriHandler`) — leaves the app; WebView — camera/file
-  permissions by hand, discouraged by the provider.
+- **Decision**: `KycWebViewActivity` (androidApp, `exported="false"`, portrait, `Theme.Qullqi`)
+  hosting an Android `WebView` inside a Compose screen (Nocturne top bar with a close button).
+  Opened through `ProviderPage` (`commonMain` interface, see contracts/kyc-repository.md):
+  `suspend fun open(url): PageOpen` — `AuthActivity` first requests `CAMERA` at runtime
+  (`ActivityResultContracts.RequestPermission`, registered in `onCreate`, awaited with a
+  `CompletableDeferred`), then starts the activity with the URL as an extra.
+- **WebView safeguards** (constitution v2.2.0 Principle I):
+  - `javaScriptEnabled = true`, `domStorageEnabled = true` (the provider needs them);
+    `mediaPlaybackRequiresUserGesture = false`; `allowFileAccess = false`,
+    `allowContentAccess = false`; **no `addJavascriptInterface`**; `setWebContentsDebuggingEnabled`
+    never enabled.
+  - `WebViewClient.shouldOverrideUrlLoading`: `qullqi://kyc/result` → `finish()`; `https` and host =
+    the start URL's host or `*.withpersona.com` → load; anything else → `Intent.ACTION_VIEW` in the
+    system browser, not loaded in the app. `onReceivedSslError` → cancel.
+  - `WebChromeClient.onPermissionRequest`: grant only `RESOURCE_VIDEO_CAPTURE`, only for an allowed
+    origin, only when the app holds `CAMERA`; deny everything else. `onShowFileChooser` → `false`
+    (camera only, FR-005c).
+  - On destroy: `CookieManager.removeAllCookies`, `WebStorage.deleteAllData`, `clearCache(true)`,
+    `destroy()`. The URL is never logged; the extra is dropped on recreation: if
+    `savedInstanceState != null` the activity finishes (no page restored after process death).
+- **Camera permission** (FR-005b): denied → `PageOpen.CameraDenied(permanent)` (permanent when
+  `shouldShowRequestPermissionRationale` is false after a denial); the page is not opened.
+  `ProviderPage.openCameraSettings()` opens `Settings.ACTION_APPLICATION_DETAILS_SETTINGS`.
+  Manifest: `<uses-permission android:name="android.permission.CAMERA"/>` and
+  `<uses-feature android:name="android.hardware.camera" android:required="false"/>`.
+- **Removed**: `androidx.browser`, `CustomTabPageOpener`, `KycReturnActivity` and its exported
+  deep-link filter (no public entry point any more).
+- **Alternatives**: Custom Tab (previous decision; owner switched to WebView), system browser.
 
 ## R2. Detecting the return
 
-- **Decision**: the Waiting screen starts polling on the **first ON_RESUME after the tab was
-  opened** (lifecycle of AuthActivity), whether the user finished (redirect) or closed the tab.
-  The redirect `qullqi://kyc/result` targets `KycReturnActivity`, a no-UI trampoline that starts
-  `AuthActivity` with `FLAG_ACTIVITY_CLEAR_TOP | FLAG_ACTIVITY_SINGLE_TOP` (closes the tab, reuses
-  the existing AuthActivity) and finishes. **It passes no start extra**: if no AuthActivity exists
-  (process death, or another app firing the link) the new one starts at the splash → login (spec 003
-  FR-002a); the user re-enters KYC from "Verificar" and FR-002 routing resumes it.
-- **Scheme hijacking**: another app could register `qullqi://`; the link carries no data, so the
-  only effect is that our tab may stay open (the user closes it; resume still triggers the check).
-- **Trampoline theme**: opaque `Theme.Qullqi` + `screenOrientation="portrait"` (translucent +
-  fixed orientation crashes on API 26), `excludeFromRecents`, `noHistory`, `exported="true"`, one
-  `intent-filter` (`VIEW`, `DEFAULT`, `BROWSABLE`, `qullqi://kyc/result`). It carries no data and
-  never trusts parameters.
-- **Rationale**: resume covers both "finished" and "closed early"; the link only improves UX.
+- The WebView intercepts `qullqi://kyc/result` and finishes; the close button and back (when the page
+  cannot go back) also finish it. In every case `AuthActivity` resumes → the KYC flow polls (same
+  resume-based detection as before, R3). No deep link reaches the app from outside.
 
 ## R3. Polling (FR-007)
 
