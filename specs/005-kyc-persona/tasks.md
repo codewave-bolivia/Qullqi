@@ -12,9 +12,9 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 
 ## Phase 1: Setup (shared build files — coordinate)
 
-- [ ] T001 Look up the latest **stable** `androidx.browser:browser` on Google Maven (no alpha/beta/RC); add `browser = "<version>"` and `androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }` to `gradle/libs.versions.toml`; add `implementation(libs.androidx.browser)` to `androidApp/build.gradle.kts`
-- [ ] T002 Generate the v2 schema snapshot **before editing any `.sq`**: `./gradlew :shared:generateCommonMainQullqiDatabaseSchema` → commit `shared/src/commonMain/sqldelight/databases/2.db`
-- [ ] T003 Baseline: `./gradlew :shared:testAndroidHostTest :androidApp:compileDebugKotlin` green
+- [X] T001 Look up the latest **stable** `androidx.browser:browser` on Google Maven (no alpha/beta/RC); add `browser = "<version>"` and `androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }` to `gradle/libs.versions.toml`; add `implementation(libs.androidx.browser)` to `androidApp/build.gradle.kts`
+- [X] T002 Generate the v2 schema snapshot **before editing any `.sq`**: `./gradlew :shared:generateCommonMainQullqiDatabaseSchema` → commit `shared/src/commonMain/sqldelight/databases/2.db`
+- [X] T003 Baseline: `./gradlew :shared:testAndroidHostTest :androidApp:compileDebugKotlin` green
 
 ## Phase 2: Foundational (blocks every story)
 

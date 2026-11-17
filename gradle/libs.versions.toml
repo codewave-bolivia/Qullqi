@@ -19,6 +19,7 @@ sqldelight = "2.4.1"
 biometric = "1.1.0"
 coreSplashscreen = "1.2.0"
 ktor = "3.6.1"
+browser = "1.10.0"
 kotlinx-serialization = "1.13.0"
 
 [libraries]
@@ -48,6 +49,7 @@ sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", 
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
