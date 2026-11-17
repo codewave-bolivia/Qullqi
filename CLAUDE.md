@@ -14,6 +14,11 @@ The application targets multiple platforms:
 - iOS
 - Desktop
 
+The application is a client of the Qullqi backend (`BackendQullpi`), which is the authority for
+sessions, verification status, identity data and money. Only the endpoints approved in
+constitution Principle I may be used (M2 auth, M3 KYC, `GET /me`); SQLDelight keeps device-only
+data and caches (§14).
+
 **Important:** This development environment is responsible for Kotlin application development. A separate Builder process is responsible for generating and maintaining portable platform versions and platform-specific build outputs.
 
 Claude must respect this separation at all times.
@@ -621,11 +626,24 @@ Spec Kit is mandatory for feature development, not an optional documentation too
 
 ---
 
-## 14. Local Data Source — SQLDelight
+## 14. Data Sources — Backend and SQLDelight
 
-The application is frontend-only. Until a backend exists, **SQLDelight is the single local data
-source**. The SQLDelight schema is where mock data and the relationships between tables are
-defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardcoded Kotlin lists.
+Constitution v2.0.0, Principle I: the **backend is authoritative**. Repository interfaces have a
+remote implementation (Ktor Client, approved for the endpoints listed in Principle I only) and a
+local one (SQLDelight). SQLDelight stores device-only data (accounts used on this device,
+preferences, biometrics flags, `deviceId`) and MAY cache backend responses. Synthetic seed data is
+used only by tests and an explicitly selected offline/demo build; release builds never present it
+as real accounts. Mock data MUST NOT be scattered across ViewModels, Composables or hardcoded
+Kotlin lists.
+
+> Remote rules (constitution, Technical Constraints): DTOs and error mapping stay in `data/`;
+> access/refresh tokens only in platform secure storage (Android Keystore), never in SQLDelight,
+> logs or plain preferences; PINs and OTP codes are never stored or logged; HTTPS mandatory for
+> production releases — temporary exception: cleartext allowed in debug and `develop` pre-release
+> builds until the first release promoted to `master`, when the release build must disable
+> cleartext and use `https://` (constitution v2.1.0); base URL from build configuration; remote tests
+> use Ktor `MockEngine`. Endpoints outside the approved scope (e.g. M4 balance/transactions) need
+> a new amendment.
 
 > Status (2026-11-13): SQLDelight 2.4.1 installed by spec 002 (`specs/002-local-data-layer/`),
 > database `QullqiDatabase`. Only the Android `SqlDriver` and `PinHasher` exist
@@ -681,9 +699,9 @@ defined. Mock data MUST NOT be scattered across ViewModels, Composables or hardc
 - SQLDelight belongs exclusively to the data layer (`data/`). Repository implementations map
   generated SQLDelight types to domain models. ViewModels and UI MUST NOT import generated
   SQLDelight classes.
-- Repository interfaces are the contract. When a backend is provided, it is added behind the same
-  interfaces (as a remote source, with SQLDelight as cache or replaced), without changes to
-  ViewModels or UI.
+- Repository interfaces are the contract. The backend is added behind the same interfaces (remote
+  implementation, with SQLDelight as cache and device-only store); the implementation is chosen in
+  `AppDependencies`, without changes to ViewModels or UI.
 - Reactive reads use SQLDelight's coroutines extensions (`asFlow()` / `mapToList`) and are
   exposed as `Flow` from repositories.
 - Data-layer tests run against an in-memory database with the same schema and seed.

@@ -1,51 +1,67 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0 (MINOR: materially expanded data-source guidance)
+- Version change: 2.0.1 → 2.1.0 (MINOR: time-boxed exception added to Principle I transport rule)
 - Modified principles:
-  - I. Frontend-Only with Replaceable Data Sources: "mock or in-memory data sources" →
-    SQLDelight as single local data source; mock data and table relations defined in the schema
-- Modified sections:
-  - Technical Constraints: added "Local persistence: SQLDelight" rules
-  - Development Workflow and Quality Gates: Constitution Check now lists SQLDelight tables,
-    relations, seed data and migrations
-- Added sections: none (CLAUDE.md gained §14 "Local Data Source — SQLDelight")
+  - I. Backend-Authoritative Data: "release builds HTTPS only; cleartext only in debug" →
+    HTTPS mandatory for production releases; cleartext allowed in debug and `develop`
+    pre-release builds until the first release promoted to `master`, where the release build
+    must disable cleartext and use https (exception expires automatically)
+- Added sections: none
 - Removed sections: none
-- Templates requiring updates: none modified by this command
-  - .specify/templates/plan-template.md: ⚠ review at next /speckit-plan (data-model step should
-    map to SQLDelight tables and seed)
+- Reason: owner decision 2026-11-17 (spec 004 clarify, C1): no production TLS backend yet; the
+  develop pre-release APK must reach a test backend over http.
+- Previous amendments on this branch (not yet integrated): 2.0.0 Principle I backend-authoritative
+  + Ktor; 2.0.1 tests may live in androidHostTest.
 - Follow-up TODOs:
-  - SQLDelight plugin, dependencies, drivers and schema are not installed yet (deferred feature).
-  - iOS/Desktop SqlDriver require Builder or explicit approval (Principle IV).
-  - docs/references-views/ARCHITECTURE.md still lists MVI, Koin and DataStore; reconcile later.
+  - ✅ CLAUDE.md §14 remote rules updated to the exception.
+  - Spec 004: FR-002 and tasks updated (cleartext in both build types + release-readiness check).
 -->
 
 # Qullqi Constitution
 
 ## Core Principles
 
-### I. Frontend-Only with Replaceable Data Sources
+### I. Backend-Authoritative Data with Replaceable Sources
 
-Qullqi is a frontend application. No backend exists yet; one will provide the data in the future.
+Qullqi is a client of the Qullqi backend (`BackendQullpi`). The backend is the authority; the app
+only presents data and collects input.
 
 - All data MUST be accessed through repository interfaces declared in `shared/commonMain`.
-- Until a backend exists, SQLDelight is the single local data source. Mock data and the
-  relationships between tables MUST be defined in the SQLDelight schema (`.sq` files): tables with
-  primary keys, explicit foreign keys, and deterministic synthetic seed data as `INSERT`
-  statements. Mock data MUST NOT be hardcoded in ViewModels, Composables or Kotlin lists.
-- Seed data MUST be synthetic only. Real personal, financial or account data MUST NOT be committed.
-- SQLDelight generated types MUST stay inside the data layer; repositories map them to domain
-  models.
-- ViewModels and UI MUST depend only on repository interfaces or use cases, never on a concrete
-  data source, so that a backend-backed implementation can replace the mock without changing
-  presentation code.
-- Data models used by the UI MUST NOT mirror an assumed backend wire format. When an API contract
-  is provided, mapping happens inside the data layer.
-- The frontend MUST NOT contain secrets, privileged keys or credentials, and MUST NOT be treated
-  as the authority for authorization, balances or transaction validity.
-- No network client, external API, analytics or telemetry may be added without explicit approval.
+  ViewModels and UI MUST depend only on those interfaces or use cases, never on a concrete source.
+- **Approved remote scope** (and nothing more without a new amendment):
+  - M2 access and registration: `POST /auth/request-otp`, `/auth/verify-otp`, `/auth/register`,
+    `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/pin/reset`.
+  - M3 identity verification: `POST /my/kyc`, `GET /my/kyc`, and opening the Persona `hostedUrl`
+    returned by the backend in the system browser or a Custom Tab.
+  - M4 (partial): `GET /me` only, to feed `CurrentUserSource`. Any other M4 endpoint (balance,
+    transactions, transfers, payments) belongs to the M4 owner and needs its own approval.
+- The backend is the single source of truth for sessions, PIN attempts and lock, verification
+  status, identity data and money. The app MUST NOT decide or override any of them.
+- SQLDelight remains the local store for device-only data (accounts used on this device,
+  preferences, biometrics flags, `deviceId`) and MAY cache backend responses. Synthetic seed data
+  MAY only be used by tests and by an explicitly selected offline/demo build; release builds MUST
+  NOT present seed data as real accounts.
+- Remote and local implementations of the same repository interface MUST be interchangeable by
+  wiring (`AppDependencies`) without changes to ViewModels or UI.
+- Wire DTOs MUST stay in the data layer and be mapped to domain models there. Domain models MUST
+  NOT mirror the backend wire format.
+- Secrets: the app MUST NOT contain API keys, Persona keys or any privileged credential. Access and
+  refresh tokens MUST be stored only in platform secure storage (Android Keystore-backed); never
+  in SQLDelight, logs, plain preferences or crash reports. PINs and OTP codes MUST NOT be stored
+  or logged.
+- Transport: production releases MUST use HTTPS only. **Temporary exception (until the first
+  release promoted to `master`)**: cleartext HTTP is allowed in debug builds and in the `develop`
+  pre-release builds, so they can reach a test backend without TLS. Before the first promotion to
+  `master`, the release build MUST set `usesCleartextTraffic="false"` and use an `https://` base
+  URL; this check is part of that promotion and the exception then expires without a new
+  amendment. The base URL MUST come from build configuration, not hardcoded in screens or
+  ViewModels.
+- Any network client, endpoint, external SDK, analytics or telemetry outside the approved scope
+  above MUST NOT be added without explicit approval and an amendment.
 
-Rationale: the backend is unknown. Isolating data access behind interfaces lets it be plugged in
-later with a change confined to the data layer.
+Rationale: the backend now exists and must be authoritative for security and money. Keeping it
+behind the same repository interfaces confines the change to the data layer, and an explicit
+endpoint allow-list prevents M2/M3 work from reaching into M4.
 
 ### II. MVVM with Unidirectional State
 
@@ -64,7 +80,7 @@ The presentation architecture is MVVM.
   ViewModels or views.
 
 Rationale: shared, platform-free ViewModels let one presentation logic serve Android, iOS and
-Desktop and keep it unit-testable in `commonTest`.
+Desktop and keep it unit-testable on the JVM (`commonTest` / `androidHostTest`).
 
 ### III. Kotlin Multiplatform Portability
 
@@ -135,7 +151,9 @@ Rationale: a screen that only looks right on an Android phone fails two of three
   modified without coordination.
 - Requirements and acceptance criteria MUST NOT be invented or changed during implementation;
   deviations from the plan MUST be documented and approved.
-- ViewModels and domain logic MUST have unit tests in `commonTest`. Tests MUST NOT be disabled or
+- ViewModels and domain logic MUST have unit tests, in `commonTest` or, when they need a JVM-only
+  test driver (SQLite JDBC driver, Ktor `MockEngine` on JVM), in `androidHostTest`; such tests MUST
+  use only shared code and fakes, no Android framework classes. Tests MUST NOT be disabled or
   weakened to make a build pass.
 - A task MUST NOT be marked complete unless it is done and verified.
 
@@ -154,10 +172,20 @@ divergent implementations.
   the multiplatform `lifecycle-viewmodel` already in the catalog.
 - Layering inside `shared/src/commonMain/kotlin/com/codewave/qullqi/`:
   - `domain/`: models, use cases, business rules; no framework or UI dependencies.
-  - `data/`: repository implementations and data sources (mock now, backend later).
+  - `data/`: repository implementations: remote (backend) and local (SQLDelight).
   - `presentation/`: ViewModels, UI state and UI events.
   - `ui/` or `designsystem/`: Composables, theme and design tokens.
   Dependencies point inward: `ui → presentation → domain ← data`.
+- Remote access: **Ktor Client 3.x** (approved 2026-11-17) with `kotlinx-serialization-json`
+  for JSON. `ktor-client-core`, `ktor-client-content-negotiation` and
+  `ktor-serialization-kotlinx-json` in `commonMain`; engines per platform: OkHttp in
+  `androidMain`, Darwin in `iosMain` and Java/CIO in `jvmMain` (the last two fall under
+  Principle IV). Exact versions are pinned in the version catalog. Requests use the backend
+  envelope (`{success, message, status, data}` / `{error:{code,message,details}}`); error codes
+  are mapped to domain results in the data layer. Timeouts are explicit; no automatic retry of
+  non-idempotent calls (`register`, `pin/reset`, `POST /my/kyc`).
+- Secure token storage: an interface in `commonMain` with an Android implementation backed by
+  the Android Keystore; iOS/Desktop implementations fall under Principle IV.
 - Local persistence: SQLDelight, following `CLAUDE.md` §14.
   - Schema, queries, seed data and migrations in
     `shared/src/commonMain/sqldelight/com/codewave/qullqi/db/`.
@@ -171,8 +199,9 @@ divergent implementations.
   - Data-layer tests use an in-memory database with the same schema and seed.
 - Dependency injection: constructor injection is mandatory. Adopting a DI library is an
   architectural decision that requires approval and an amendment to this section.
-- Data: synthetic fixtures only. No real personal or financial data, secrets or production
-  endpoints in source, tests, screenshots or documentation.
+- Data: synthetic fixtures only. No real personal or financial data, secrets or tokens in
+  source, tests, screenshots or documentation. Remote calls in tests use fakes (Ktor
+  `MockEngine`), never a live backend.
 - Reference documentation: `docs/references-views/` (architecture, style guide, UI guidelines,
   reference views) describes intended screens and flows; where it conflicts with this
   constitution, the constitution prevails until the document is reconciled.
@@ -189,6 +218,8 @@ divergent implementations.
   - That no task modifies Builder-owned paths, or which approval permits it.
   - The repository interfaces involved, the SQLDelight tables, relations and seed data they
     require, and whether a migration is needed.
+  - The backend endpoints used, confirming each is inside Principle I's approved scope, and how
+    their errors map to domain results.
   - The responsive strategy for each new screen.
 - Gates before a feature is considered done:
   1. `./gradlew :shared:allTests` (or the subset runnable on the host) passes.
@@ -216,4 +247,4 @@ divergent implementations.
 - Compliance: every plan includes a Constitution Check; every review verifies Principles III–V
   and the quality gates. Unjustified complexity or new dependencies are grounds for rejection.
 
-**Version**: 1.1.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-12
+**Version**: 2.1.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
