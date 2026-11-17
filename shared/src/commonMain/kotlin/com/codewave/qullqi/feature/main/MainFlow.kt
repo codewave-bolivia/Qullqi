@@ -1,6 +1,9 @@
 package com.codewave.qullqi.feature.main
 
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.codewave.qullqi.feature.auth.AuthMessages
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,10 +55,14 @@ fun MainFlow(
         )
     }
     // Session ended by a rejected renewal (not by logout): back to login once (spec 004, FR-016a).
-    LaunchedEffect(Unit) {
-        deps.session.sessionExpired.collect { id ->
-            toast.show(AuthMessages.SESSION_EXPIRED)
-            actions.requireLogin(id)
+    // Only while visible: when AuthActivity runs on top (identity verification), AuthFlow handles it.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            deps.session.sessionExpired.collect { id ->
+                toast.show(AuthMessages.SESSION_EXPIRED)
+                actions.requireLogin(id)
+            }
         }
     }
     val locked by deps.appLock.locked.collectAsState()

@@ -14,6 +14,7 @@ import com.codewave.qullqi.feature.auth.login.EnableBiometricsSheet
 import com.codewave.qullqi.feature.auth.login.LoginEffect
 import com.codewave.qullqi.feature.auth.login.LoginMode
 import com.codewave.qullqi.feature.auth.login.LoginPhoneScreen
+import com.codewave.qullqi.feature.kyc.KycFlow
 import com.codewave.qullqi.feature.auth.login.LoginScreen
 import com.codewave.qullqi.feature.auth.login.LoginViewModel
 import com.codewave.qullqi.feature.auth.register.CodeStep
@@ -89,7 +90,7 @@ class AuthActions(
 
 /**
  * Root of AuthActivity (FR-031): splash, welcome, login, registration, PIN recovery and the M3 entry.
- * [kycEntry] is the slot M3 replaces; it calls `onDone` when verification ends.
+ * [kycEntry] is the M3 slot (default: [KycFlow], spec 005); it calls `onDone` when verification ends.
  */
 @Composable
 fun AuthFlow(
@@ -97,7 +98,7 @@ fun AuthFlow(
     start: AuthStart,
     onEnterMain: () -> Unit,
     onKycDone: () -> Unit,
-    kycEntry: @Composable (onDone: () -> Unit) -> Unit = { KycPlaceholderScreen(it) },
+    kycEntry: @Composable (onDone: () -> Unit) -> Unit = { KycFlow(deps, it) },
 ) {
     val startRoute = when (start) {
         AuthStart.Splash -> AuthRoute.Splash
@@ -125,6 +126,14 @@ fun AuthFlow(
             startRecover = { phone -> recoverId++; navigator.push(AuthRoute.RecoverPin(phone)) },
             recoverId = { recoverId },
         )
+    }
+    // Session renewal rejected while on an auth screen (e.g. identity verification): login again
+    // for that account (spec 004 FR-016a, spec 005 T021a).
+    LaunchedEffect(Unit) {
+        deps.session.sessionExpired.collect { id ->
+            toast.show(AuthMessages.SESSION_EXPIRED)
+            navigator.resetTo(AuthRoute.Login(id))
+        }
     }
     Box(Modifier.fillMaxSize()) {
         FlowHost(navigator) { route -> AuthRouteContent(route, deps, actions, kycEntry) }

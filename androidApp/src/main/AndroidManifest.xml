@@ -30,6 +30,25 @@
         </activity>
 
         <!-- Main area (M4). Only reachable from AuthActivity after authentication. -->
+        <!-- Identity provider redirect (spec 005): closes the Custom Tab and returns to AuthActivity.
+             Opaque theme: translucent + fixed orientation crashes on API 26. -->
+        <activity
+            android:name=".KycReturnActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Qullqi">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="qullqi" android:host="kyc" android:path="/result" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="false"

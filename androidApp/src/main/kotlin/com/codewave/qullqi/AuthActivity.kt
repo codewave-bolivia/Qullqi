@@ -27,7 +27,10 @@ class AuthActivity : FragmentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val start = parseStart(intent.getStringExtra(EXTRA_START))
-        val deps = (application as QullqiApplication).dependencies.copy(biometrics = AndroidBiometricAuthenticator(this))
+        val deps = (application as QullqiApplication).dependencies.copy(
+            biometrics = AndroidBiometricAuthenticator(this),
+            pageOpener = CustomTabPageOpener(this),
+        )
         setContent {
             QullqiTheme {
                 AuthFlow(
@@ -38,6 +41,12 @@ class AuthActivity : FragmentActivity() {
                 )
             }
         }
+    }
+
+    /** Return from the identity provider (KycReturnActivity): the KYC flow reacts to onResume. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     /** Clears the task so back from MainActivity never returns to auth screens (FR-033). */
