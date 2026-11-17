@@ -1,18 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 → 2.0.1 (PATCH: clarifies where unit tests live; no principle added or
-  removed)
+- Version change: 2.0.1 → 2.1.0 (MINOR: time-boxed exception added to Principle I transport rule)
 - Modified principles:
-  - II. MVVM rationale: "unit-testable in commonTest" → "on the JVM (commonTest / androidHostTest)"
-  - VII. Spec-Driven, Verified Delivery: ViewModel/domain tests may live in `androidHostTest` when
-    they need a JVM-only driver (SQLite JDBC, Ktor MockEngine); still shared code + fakes only
+  - I. Backend-Authoritative Data: "release builds HTTPS only; cleartext only in debug" →
+    HTTPS mandatory for production releases; cleartext allowed in debug and `develop`
+    pre-release builds until the first release promoted to `master`, where the release build
+    must disable cleartext and use https (exception expires automatically)
 - Added sections: none
 - Removed sections: none
-- Reason: /speckit-analyze on spec 004 (finding D1) — specs 002/003 already test in
-  androidHostTest because SQLDelight has no commonTest driver; the rule now matches practice.
-- Previous amendment (2.0.0, same branch, not yet integrated): Principle I backend-authoritative,
-  Ktor approved for M2/M3 + GET /me.
-- Follow-up TODOs: none (CLAUDE.md does not restate the test location rule).
+- Reason: owner decision 2026-11-17 (spec 004 clarify, C1): no production TLS backend yet; the
+  develop pre-release APK must reach a test backend over http.
+- Previous amendments on this branch (not yet integrated): 2.0.0 Principle I backend-authoritative
+  + Ktor; 2.0.1 tests may live in androidHostTest.
+- Follow-up TODOs:
+  - ✅ CLAUDE.md §14 remote rules updated to the exception.
+  - Spec 004: FR-002 and tasks updated (cleartext in both build types + release-readiness check).
 -->
 
 # Qullqi Constitution
@@ -47,9 +49,13 @@ only presents data and collects input.
   refresh tokens MUST be stored only in platform secure storage (Android Keystore-backed); never
   in SQLDelight, logs, plain preferences or crash reports. PINs and OTP codes MUST NOT be stored
   or logged.
-- Transport: release builds MUST use HTTPS only. Cleartext HTTP is allowed only in debug builds
-  for a local backend. The base URL MUST come from build configuration, not hardcoded in screens
-  or ViewModels.
+- Transport: production releases MUST use HTTPS only. **Temporary exception (until the first
+  release promoted to `master`)**: cleartext HTTP is allowed in debug builds and in the `develop`
+  pre-release builds, so they can reach a test backend without TLS. Before the first promotion to
+  `master`, the release build MUST set `usesCleartextTraffic="false"` and use an `https://` base
+  URL; this check is part of that promotion and the exception then expires without a new
+  amendment. The base URL MUST come from build configuration, not hardcoded in screens or
+  ViewModels.
 - Any network client, endpoint, external SDK, analytics or telemetry outside the approved scope
   above MUST NOT be added without explicit approval and an amendment.
 
@@ -241,4 +247,4 @@ divergent implementations.
 - Compliance: every plan includes a Constitution Check; every review verifies Principles III–V
   and the quality gates. Unjustified complexity or new dependencies are grounds for rejection.
 
-**Version**: 2.0.1 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
+**Version**: 2.1.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
