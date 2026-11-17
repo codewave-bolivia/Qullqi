@@ -1,28 +1,18 @@
 <!--
 Sync Impact Report
-- Version change: 1.1.0 → 2.0.0 (MAJOR: Principle I redefined — the app is no longer
-  frontend-only; the backend becomes authoritative)
+- Version change: 2.0.0 → 2.0.1 (PATCH: clarifies where unit tests live; no principle added or
+  removed)
 - Modified principles:
-  - I. "Frontend-Only with Replaceable Data Sources" → "Backend-Authoritative Data with
-    Replaceable Sources": approved remote scope limited to M2 auth, M3 KYC and GET /me (M4
-    partial); SQLDelight kept for device-only data and cache; seed only for tests/offline build;
-    secure token storage; HTTPS in release
-- Modified sections:
-  - Technical Constraints: Ktor Client 3.x + kotlinx-serialization approved; secure token storage;
-    `data/` layer now remote + local; tests use MockEngine
-  - Development Workflow and Quality Gates: Constitution Check lists backend endpoints and error
-    mapping
+  - II. MVVM rationale: "unit-testable in commonTest" → "on the JVM (commonTest / androidHostTest)"
+  - VII. Spec-Driven, Verified Delivery: ViewModel/domain tests may live in `androidHostTest` when
+    they need a JVM-only driver (SQLite JDBC, Ktor MockEngine); still shared code + fakes only
 - Added sections: none
 - Removed sections: none
-- Migration note for specifications:
-  - 002-local-data-layer / 003-access-registration: SQL repositories stay as local/offline
-    implementations; remote implementations are added behind the same interfaces (new spec).
-  - M3 (spec 004): KycRepository contract must follow the Persona hosted flow.
-- Follow-up TODOs:
-  - ✅ CLAUDE.md §1 and §14 updated to match v2.0.0.
-  - Version catalog entries for Ktor and kotlinx-serialization: added by the integration spec.
-  - iOS/Desktop Ktor engines and secure storage: Builder or explicit approval (Principle IV).
-  - Custom Tabs (androidx.browser) for the Persona URL: approve in spec 004 if used.
+- Reason: /speckit-analyze on spec 004 (finding D1) — specs 002/003 already test in
+  androidHostTest because SQLDelight has no commonTest driver; the rule now matches practice.
+- Previous amendment (2.0.0, same branch, not yet integrated): Principle I backend-authoritative,
+  Ktor approved for M2/M3 + GET /me.
+- Follow-up TODOs: none (CLAUDE.md does not restate the test location rule).
 -->
 
 # Qullqi Constitution
@@ -84,7 +74,7 @@ The presentation architecture is MVVM.
   ViewModels or views.
 
 Rationale: shared, platform-free ViewModels let one presentation logic serve Android, iOS and
-Desktop and keep it unit-testable in `commonTest`.
+Desktop and keep it unit-testable on the JVM (`commonTest` / `androidHostTest`).
 
 ### III. Kotlin Multiplatform Portability
 
@@ -155,7 +145,9 @@ Rationale: a screen that only looks right on an Android phone fails two of three
   modified without coordination.
 - Requirements and acceptance criteria MUST NOT be invented or changed during implementation;
   deviations from the plan MUST be documented and approved.
-- ViewModels and domain logic MUST have unit tests in `commonTest`. Tests MUST NOT be disabled or
+- ViewModels and domain logic MUST have unit tests, in `commonTest` or, when they need a JVM-only
+  test driver (SQLite JDBC driver, Ktor `MockEngine` on JVM), in `androidHostTest`; such tests MUST
+  use only shared code and fakes, no Android framework classes. Tests MUST NOT be disabled or
   weakened to make a build pass.
 - A task MUST NOT be marked complete unless it is done and verified.
 
@@ -249,4 +241,4 @@ divergent implementations.
 - Compliance: every plan includes a Constitution Check; every review verifies Principles III–V
   and the quality gates. Unjustified complexity or new dependencies are grounds for rejection.
 
-**Version**: 2.0.0 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
+**Version**: 2.0.1 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-17
