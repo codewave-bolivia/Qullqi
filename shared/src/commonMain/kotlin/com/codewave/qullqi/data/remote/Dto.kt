@@ -64,6 +64,14 @@ internal data class MeDto(
     val accountStatus: String? = null,
 )
 
+@Serializable internal data class KycStartBody(val ciType: String, val ciNumber: String, val birthDate: String)
+
+@Serializable
+internal data class KycDto(val kycStatus: String, val hostedUrl: String? = null, val declineReason: String? = null)
+
+/** Wrapper so `GET my/kyc` can return "no verification" (`data: null`) as a success. */
+internal data class KycOrNone(val dto: KycDto?)
+
 /**
  * Integer from an error's `details`: the first of [keys] present. The backend mixes spellings
  * (`attemptsLeft` vs documented `attempts_left`), so callers pass both (spec 004, T057).

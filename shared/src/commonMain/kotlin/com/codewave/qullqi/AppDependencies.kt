@@ -1,12 +1,11 @@
 package com.codewave.qullqi
 
 import com.codewave.qullqi.data.LocalDataReset
-import com.codewave.qullqi.data.MockKycProcessor
 import com.codewave.qullqi.data.SqlAccountPreferenceRepository
-import com.codewave.qullqi.data.SqlKycRepository
 import com.codewave.qullqi.data.SqlRegistrationRepository
 import com.codewave.qullqi.data.SqlSessionRepository
 import com.codewave.qullqi.data.remote.QullqiApi
+import com.codewave.qullqi.data.remote.RemoteKycRepository
 import com.codewave.qullqi.data.remote.RemoteRegistrationRepository
 import com.codewave.qullqi.data.remote.RemoteSessionRepository
 import com.codewave.qullqi.data.remote.TokenStore
@@ -23,6 +22,9 @@ import com.codewave.qullqi.domain.security.NoBiometrics
 import com.codewave.qullqi.domain.security.PinHasher
 import com.codewave.qullqi.domain.session.AppLock
 import com.codewave.qullqi.domain.system.Clock
+import com.codewave.qullqi.domain.system.ExternalPageOpener
+import com.codewave.qullqi.domain.system.NoPageOpener
+import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.domain.system.IdGenerator
 import com.codewave.qullqi.domain.system.OtpCodeGenerator
 import kotlinx.coroutines.CoroutineDispatcher
@@ -38,6 +40,10 @@ data class AppDependencies(
     val clock: Clock,
     /** Debug builds only: lets the owner clear the device data from the splash (spec 004, FR-021). */
     val debugReset: LocalDataReset?,
+    /** Today's date on the device (spec 005 age check). */
+    val today: Today,
+    /** Opens the identity provider's page; AuthActivity injects the Custom Tab one (spec 005). */
+    val pageOpener: ExternalPageOpener = NoPageOpener,
 ) {
     val currentUser: CurrentUserSource get() = session
 
@@ -52,6 +58,7 @@ data class AppDependencies(
             httpEngine: HttpClientEngine,
             baseUrl: String,
             tokens: TokenStore,
+            today: Today,
             biometrics: BiometricAuthenticator = NoBiometrics,
         ): AppDependencies {
             val api = QullqiApi(httpEngine, baseUrl, debug)
@@ -61,7 +68,8 @@ data class AppDependencies(
                 session = session,
                 registration = RemoteRegistrationRepository(api, session, tokens, deviceId),
                 preferences = SqlAccountPreferenceRepository(db, clock, io),
-                kyc = SqlKycRepository(db, clock, ids, MockKycProcessor(), io),
+                kyc = RemoteKycRepository(api),
+                today = today,
                 biometrics = biometrics,
                 appLock = AppLock(clock),
                 clock = clock,
@@ -77,12 +85,15 @@ data class AppDependencies(
             ids: IdGenerator,
             otp: OtpCodeGenerator,
             io: CoroutineDispatcher,
+            today: Today,
+            kyc: KycRepository,
             biometrics: BiometricAuthenticator = NoBiometrics,
         ) = AppDependencies(
             session = SqlSessionRepository(db, hasher, clock, io),
             registration = SqlRegistrationRepository(db, hasher, clock, ids, otp, io),
             preferences = SqlAccountPreferenceRepository(db, clock, io),
-            kyc = SqlKycRepository(db, clock, ids, MockKycProcessor(), io),
+            kyc = kyc,
+            today = today,
             biometrics = biometrics,
             appLock = AppLock(clock),
             clock = clock,

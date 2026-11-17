@@ -28,19 +28,6 @@ insertSamples {
     ('usr-locked',     '2026-01', 1767225600000),
     ('usr-new',        '2026-01', 1767225600000);
 
-  INSERT INTO kyc_attempt (
-    id, user_id, document_type, document_number, front_ref, back_ref, selfie_ref,
-    extracted_full_name, extracted_document_number, extracted_birth_date, extracted_expiry_date,
-    declaration_accepted_at, state, rejection_reason, created_at, finished_at
-  ) VALUES
-    ('att-verified-1', 'usr-verified', 'CI', '9000001', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
-     'Lucía Prueba Quispe', '9000001', '1995-03-14', '2031-03-14', 1767229200000, 'APPROVED', NULL, 1767229200000, 1767229203000),
-    ('att-review-1', 'usr-review', 'PASSPORT', 'P9000005', 'placeholder:passport', NULL, 'placeholder:selfie',
-     'Valeria Ejemplo Mamani', 'P9000005', '1998-07-02', '2030-07-02', 1767229200000, 'REVIEW', NULL, 1767229200000, 1767229203000),
-    ('att-rejected-1', 'usr-rejected', 'CI', '9000010', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
-     'Diego Muestra Flores', '9000010', '1990-11-23', '2029-11-23', 1767229200000, 'REJECTED', 'Documento ilegible', 1767229200000, 1767229203000),
-    ('att-locked-1', 'usr-locked', 'CI', '9000004', 'placeholder:ci-front', 'placeholder:ci-back', 'placeholder:selfie',
-     'Sofía Ficticia Rojas', '9000004', '1993-05-30', '2032-05-30', 1767229200000, 'APPROVED', NULL, 1767229200000, 1767229203000);
 }
 
 -- Children first; phone confirmations may have no user, so they are deleted explicitly.
@@ -48,7 +35,6 @@ deleteAll {
   DELETE FROM current_session;
   DELETE FROM account_preference;
   DELETE FROM phone_confirmation;
-  DELETE FROM kyc_attempt;
   DELETE FROM terms_acceptance;
   DELETE FROM credential;
   DELETE FROM user;

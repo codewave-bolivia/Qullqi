@@ -1,38 +1,33 @@
 package com.codewave.qullqi.domain.repository
 
 import com.codewave.qullqi.domain.model.DocumentType
-import com.codewave.qullqi.domain.model.KycAttempt
-import com.codewave.qullqi.domain.model.KycDraftChange
-import com.codewave.qullqi.domain.model.UserId
-import kotlinx.coroutines.flow.Flow
+import com.codewave.qullqi.domain.model.SimpleDate
+import com.codewave.qullqi.domain.model.Verification
 
+/** Identity verification against the backend (spec 005, contracts/kyc-repository.md). */
 interface KycRepository {
-    /** Newest first; earlier attempts are never overwritten (FR-017). */
-    fun attempts(userId: UserId): Flow<List<KycAttempt>>
-    suspend fun start(userId: UserId, type: DocumentType): StartResult
-    /** @throws IllegalArgumentException if an image value is not a placeholder reference. */
-    suspend fun update(attemptId: String, change: KycDraftChange)
-    suspend fun submit(attemptId: String): SubmitResult
-    suspend fun process(attemptId: String): KycOutcome
-    /** Deletes a draft; no-op for any other state. */
-    suspend fun discard(attemptId: String)
+    /** Latest verification of the logged-in user; `Found(null)` = never started (FR-002). */
+    suspend fun current(): KycRead
+
+    /** Creates a verification and returns the provider page; never retried automatically (FR-008). */
+    suspend fun start(type: DocumentType, number: String, birthDate: SimpleDate): KycStart
 }
 
-sealed interface StartResult {
-    data object AlreadyVerified : StartResult
-    data object AttemptOpen : StartResult
-    data class Started(val attemptId: String) : StartResult
+sealed interface KycRead {
+    data class Found(val verification: Verification?) : KycRead
+    data object Unavailable : KycRead
 }
 
-enum class MissingItem { DOCUMENT_NUMBER, FRONT_IMAGE, BACK_IMAGE, SELFIE, EXTRACTED_DATA, DECLARATION }
-
-sealed interface SubmitResult {
-    data object Submitted : SubmitResult
-    data class Missing(val items: Set<MissingItem>) : SubmitResult
+sealed interface KycStart {
+    data class Started(val pageUrl: String) : KycStart
+    data object AlreadyVerified : KycStart
+    /** A verification is already open: re-read with [KycRepository.current] and resume. */
+    data object InProgress : KycStart
+    data object DocumentTaken : KycStart
+    data class Invalid(val fields: Set<KycField>) : KycStart
+    /** No more attempts allowed: "Contacta a soporte". */
+    data object Refused : KycStart
+    data object Unavailable : KycStart
 }
 
-sealed interface KycOutcome {
-    data object Approved : KycOutcome
-    data object UnderReview : KycOutcome
-    data class Rejected(val reason: String) : KycOutcome
-}
+enum class KycField { NUMBER, BIRTH_DATE, TYPE }
