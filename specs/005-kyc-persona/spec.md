@@ -229,8 +229,7 @@ finishes or the backend changes it.
 
 - Q: How is the provider page opened? → A: In-app web view (owner, 2026-11-17), replacing the Custom
   Tab: the return link is intercepted inside the app, no deep-link activity, no `androidx.browser`
-  (FR-005a/b, FR-006). Needs the camera permission and a constitution amendment (Principle I lists
-  only "system browser or Custom Tab").
+  (FR-005a/b, FR-006). Needs the camera permission; constitution amended to v2.2.0.
 - Q: Allow choosing document photos from files in the web view? → A: No. Camera only; the owner
   removed the upload step from the provider flow (FR-005b, FR-005c).
 
@@ -252,8 +251,8 @@ finishes or the backend changes it.
 
 - Spec 004 (session, `/me`, HTTP client, error handling) — waiting.
 - Constitution v2.1.0 Principle I: `POST /my/kyc`, `GET /my/kyc` and opening the provider page are
-  approved; **opening it in an in-app web view requires amending Principle I** (it currently says
-  "system browser or a Custom Tab"). `androidx.browser` is no longer used. New Android permission:
+  approved; the in-app web view is allowed by constitution **v2.2.0** with its safeguards
+  (branch `docs/000-constitution-webview`, pending integration). `androidx.browser` is no longer used. New Android permission:
   `CAMERA` (runtime, FR-005b).
 - Shared areas likely touched (coordinate): `domain/repository/KycRepository.kt` and `domain/model/Kyc.kt`
   (contract replaced for the provider flow), `AndroidManifest.xml` (web view activity, `CAMERA`),
