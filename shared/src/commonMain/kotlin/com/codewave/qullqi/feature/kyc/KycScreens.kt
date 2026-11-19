@@ -168,9 +168,15 @@ fun KycWaitingScreen(state: KycState, onEvent: (KycEvent) -> Unit) {
             iconTint = if (state.phase == WaitPhase.Offline) Q.colors.warn else Q.colors.ac,
         ) {
             Spacer(Modifier.weight(1f))
-            QPrimaryButton("Ya terminé", { onEvent(KycEvent.CheckNow) })
+            // Not finished: the only useful action is going back to the provider (checking again
+            // would show the same screen). Offline: retry the check. Both can leave for home.
+            if (state.phase == WaitPhase.Offline) {
+                QPrimaryButton("Reintentar", { onEvent(KycEvent.CheckNow) })
+            } else {
+                QPrimaryButton("Volver a la verificación", { onEvent(KycEvent.ReopenProvider) }, enabled = !state.busy)
+            }
             Spacer(Modifier.height(QSpacing.x10))
-            QTextButton("Volver a la verificación", { onEvent(KycEvent.ReopenProvider) })
+            QTextButton("Hacerlo más tarde", { onEvent(KycEvent.Finish) })
         }
     }
 }

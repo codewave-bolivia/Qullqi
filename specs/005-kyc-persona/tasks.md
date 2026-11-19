@@ -142,6 +142,8 @@ white frame. Back / Persona's close fades back to the KYC waiting screen.
 
 - [X] T053 [US1] No navigation behind the opening provider page: on `PageOpen.Opened` the flow stays on the current screen (only `inProvider = true`); on `Resumed` it resets to the waiting screen and polls, so the KYC screen change no longer animates under the WebView fade (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycViewModel.kt`, tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/kyc/KycViewModelTest.kt`)
 
+- [X] T054 [US2] "No terminaste la verificación": primary "Volver a la verificación", text "Hacerlo más tarde" (no useless "Ya terminé"); offline: "Reintentar" + "Hacerlo más tarde"; back on the KYC root goes home (`BackHandler` → `Finish`); loader fallback 20 s (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycScreens.kt`, `KycFlow.kt`, `androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt`)
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.

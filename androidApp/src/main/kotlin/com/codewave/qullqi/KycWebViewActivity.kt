@@ -134,8 +134,8 @@ class KycWebViewActivity : ComponentActivity() {
     }
 
     /**
-     * Persona renders with JavaScript after the document loads: reveal the page only once its
-     * content (a button and some text) is on screen, plus two frames to paint. Read-only check, no
+     * Persona renders with JavaScript after the document loads, first a white loading screen: reveal
+     * the page only once its theme is applied (see [PAINTED_JS]), plus a couple of frames to paint. Read-only check, no
      * bridge to app code; the loader timeout still applies.
      */
     private fun whenPainted(view: WebView) {
@@ -181,11 +181,16 @@ class KycWebViewActivity : ComponentActivity() {
         private const val RETURN_SCHEME = "qullqi"
         private const val RETURN_HOST = "kyc"
         private const val PROVIDER_DOMAIN = "withpersona.com"
-        private const val LOADER_TIMEOUT_MS = 8_000L
+        private const val LOADER_TIMEOUT_MS = 20_000L // slow provider loads keep the loader, not a white page
         private const val PAINT_POLL_MS = 150L
         private const val PAINT_SETTLE_MS = 50L // ~2 frames after the content is in the DOM
+        // Painted = the provider's theme is applied: its own loading screen is white with a spinner
+        // (and, in sandbox, a banner with buttons and text), so content alone is not enough.
+        // ponytail: assumes a non-white Persona theme (Nocturne); a light theme waits for the timeout.
         private const val PAINTED_JS =
-            "(function(){var b=document.body;return !!(b&&document.querySelector('button')&&b.innerText.trim().length>0)})()"
+            "(function(){var b=document.body;if(!b||!document.querySelector('button'))return false;" +
+                "var bg=getComputedStyle(b).backgroundColor;" +
+                "return bg!=='rgb(255, 255, 255)'&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'})()"
 
         fun intent(context: Context, url: String): Intent =
             Intent(context, KycWebViewActivity::class.java).putExtra(EXTRA_URL, url)

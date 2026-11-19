@@ -121,8 +121,9 @@ finishes or the backend changes it.
   Intenta de nuevo."; data kept; nothing created twice.
 - Persona returns but the result is not ready yet: the waiting screen checks again for up to 60 s,
   then shows "Estamos revisando tus datos" (in review) instead of an error.
-- The customer returns to the app without Persona's return link (switches apps manually): the waiting
-  screen offers "Ya terminé" (check now) and "Volver a Persona".
+- The customer returns to the app without finishing in Persona: "No terminaste la verificación" with
+  "Volver a la verificación" (primary) and "Hacerlo más tarde" (home). No "check now" there: the
+  status is known to be unfinished.
 - Document already used by another account (number read by the provider): the backend declines
   with `document_in_use` → "Este documento ya está asociado a otra cuenta."
 - Under 18 (birth date read by the provider): the backend declines with `underage` → "Debes ser
@@ -178,8 +179,9 @@ finishes or the backend changes it.
   web view MUST close itself and the app MUST show the waiting screen and check the result; closing
   the web view with the close button or back does the same.
 - **FR-007**: The waiting screen MUST check the result every 5 s for up to 60 s; pending after that
-  is shown as "in review" (not as an error). It MUST also offer "Ya terminé" and "Volver a la
-  verificación".
+  is shown as "in review" (not as an error). Not finished → "Volver a la verificación" + "Hacerlo
+  más tarde"; no connection → "Reintentar" + "Hacerlo más tarde". Back on any KYC root screen goes
+  home.
 - **FR-008**: Creating a verification MUST NOT be retried automatically (spec 004 FR-004); a
   connection failure keeps the user on the intro with the connection message.
 

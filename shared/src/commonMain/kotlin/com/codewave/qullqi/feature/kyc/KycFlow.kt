@@ -1,6 +1,8 @@
 package com.codewave.qullqi.feature.kyc
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +19,7 @@ import com.codewave.qullqi.navigation.FlowNavigator
  * [onDone] returns to the main area (spec 003 hand-off). A rejected session renewal while verifying is
  * handled by AuthFlow for every auth screen (spec 005 T021a).
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun KycFlow(deps: AppDependencies, onDone: () -> Unit) {
     val vm = viewModel { KycViewModel(deps.kyc, deps.session, deps.providerPage) }
@@ -38,6 +41,10 @@ fun KycFlow(deps: AppDependencies, onDone: () -> Unit) {
     }
     // Back from the provider page = AuthActivity resumes (research R2).
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { vm.onEvent(KycEvent.Resumed) }
+
+    // Root of the KYC flow: back leaves for home (the outer flow has nothing to show behind it).
+    // Inner screens still go back through FlowHost, whose handler is registered later and wins.
+    BackHandler { vm.onEvent(KycEvent.Finish) }
 
     FlowHost(navigator) { screen ->
         when (screen) {
