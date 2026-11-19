@@ -15,8 +15,10 @@
   the WebView background is Nocturne `qullqi_bg` (never the default white); the page stays hidden
   under a Nocturne loader ("Abriendo la verificación…") until the first provider page has
   painted its content (after `onPageFinished`, a read-only `evaluateJavascript` check every 150 ms
-  for a button and a themed visible background: at 3 points down the middle (25/50/75 % height) the first opaque background up from the visible element is not near-white — Persona first shows its own white loading layer (not necessarily on `body`), with a sandbox banner that has buttons and text; fallback 20 s, so a slow load keeps the loader instead of showing white), then fades in (`QMotion.ENTERING_MS`). The WebView is hidden with its own `View.alpha`: a Compose
-  `Modifier.alpha` does not hide WebView content (it draws through its own render path).
+  for a button and a themed visible background: at 3 points down the middle (25/50/75 % height) the first opaque background up from the visible element is not near-white — Persona first shows its own white loading layer (not necessarily on `body`), with a sandbox banner that has buttons and text; fallback 20 s, so a slow load keeps the loader instead of showing white), then fades in (`QMotion.ENTERING_MS`). The WebView keeps drawing under an opaque Nocturne loader (a
+  hidden WebView, `View.alpha = 0`, stops drawing and shows its stale white frame when revealed;
+  a Compose `Modifier.alpha` does not hide it); the loader is removed from
+  `WebView.postVisualStateCallback`, i.e. once the themed DOM state is actually on screen.
 - **WebView safeguards** (constitution v2.2.0 Principle I):
   - `javaScriptEnabled = true`, `domStorageEnabled = true` (the provider needs them);
     `mediaPlaybackRequiresUserGesture = false`; `allowFileAccess = false`,

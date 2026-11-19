@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import com.codewave.qullqi.designsystem.QMotion
 import com.codewave.qullqi.feature.kyc.ProviderWebScreen
 
 /**
@@ -61,10 +60,9 @@ class KycWebViewActivity : ComponentActivity() {
         }
         // T050: loader until Persona's first page has painted; fallback so it never hangs.
         var loading by mutableStateOf(true)
-        val reveal: () -> Unit = {
-            loading = false
-            webView?.animate()?.alpha(1f)?.setDuration(QMotion.ENTERING_MS.toLong())?.start()
-        }
+        // The WebView stays visible (so it keeps drawing) under an opaque loader; hiding it with
+        // alpha 0 stops its drawing and the stale white frame shows when it is revealed.
+        val reveal: () -> Unit = { loading = false }
         onFirstPage = reveal
         window.decorView.postDelayed({ if (onFirstPage != null) { onFirstPage = null; reveal() } }, LOADER_TIMEOUT_MS)
         setContent {
@@ -86,9 +84,6 @@ class KycWebViewActivity : ComponentActivity() {
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         // T048: Nocturne instead of the WebView's default white before the provider paints.
         setBackgroundColor(ContextCompat.getColor(context, R.color.qullqi_bg))
-        // Hidden until the provider has painted (T049/T050). The WebView draws through its own
-        // render path, so a Compose alpha does not hide it: the View's own alpha does.
-        alpha = 0f
         // Debug builds only: inspect the provider page from chrome://inspect (never in release).
         WebView.setWebContentsDebuggingEnabled(applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
         settings.javaScriptEnabled = true
@@ -135,7 +130,7 @@ class KycWebViewActivity : ComponentActivity() {
 
     /**
      * Persona renders with JavaScript after the document loads, first a white loading screen: reveal
-     * the page only once its theme is applied (see [PAINTED_JS]), plus a couple of frames to paint. Read-only check, no
+     * the page only once its theme is applied (see [PAINTED_JS]) and that state is on screen. Read-only check, no
      * bridge to app code; the loader timeout still applies.
      */
     private fun whenPainted(view: WebView) {
@@ -144,7 +139,12 @@ class KycWebViewActivity : ComponentActivity() {
         view.evaluateJavascript(PAINTED_JS) { painted ->
             if (onFirstPage == null) return@evaluateJavascript
             if (painted == "true") {
-                view.postDelayed({ onFirstPage = null; reveal() }, PAINT_SETTLE_MS)
+                // Fires once this DOM state is actually drawn on screen, not just computed.
+                view.postVisualStateCallback(0, object : WebView.VisualStateCallback() {
+                    override fun onComplete(requestId: Long) {
+                        if (onFirstPage != null) { onFirstPage = null; reveal() }
+                    }
+                })
             } else {
                 view.postDelayed({ whenPainted(view) }, PAINT_POLL_MS)
             }
@@ -183,7 +183,6 @@ class KycWebViewActivity : ComponentActivity() {
         private const val PROVIDER_DOMAIN = "withpersona.com"
         private const val LOADER_TIMEOUT_MS = 20_000L // slow provider loads keep the loader, not a white page
         private const val PAINT_POLL_MS = 150L
-        private const val PAINT_SETTLE_MS = 50L // ~2 frames after the content is in the DOM
         // Painted = what is on screen is themed: Persona first shows its own white loading layer
         // (with, in sandbox, a banner that has buttons and text), not necessarily on <body>. At 3
         // points down the middle, the first opaque background up from the visible element must not

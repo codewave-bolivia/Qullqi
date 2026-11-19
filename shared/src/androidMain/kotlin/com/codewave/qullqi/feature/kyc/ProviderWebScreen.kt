@@ -32,12 +32,12 @@ import com.codewave.qullqi.designsystem.QullqiTheme
 /**
  * Frame of the identity provider page (spec 005 FR-005a): only the platform web view built by
  * [page]; the provider shows its own close control and system back leaves. While [loading], a
- * Nocturne loader shows over the hidden page and fades out; the host fades the page in (T049).
+ * opaque Nocturne loader covers the page (which keeps drawing underneath) and then fades out (T049).
  */
 @Composable
 fun ProviderWebScreen(loading: Boolean, page: (Context) -> View) {
     QullqiTheme {
-        // The page itself is revealed by the host (View alpha); this only fades the loader out.
+        // The page draws underneath all the time; an opaque loader covers it until it is painted.
         val loaderAlpha by animateFloatAsState(
             targetValue = if (loading) 1f else 0f,
             animationSpec = tween(QMotion.ENTERING_MS, easing = QMotion.easeInOut),
@@ -46,7 +46,7 @@ fun ProviderWebScreen(loading: Boolean, page: (Context) -> View) {
             AndroidView(modifier = Modifier.fillMaxSize(), factory = page)
             if (loaderAlpha > 0f) {
                 Column(
-                    Modifier.fillMaxSize().alpha(loaderAlpha),
+                    Modifier.fillMaxSize().alpha(loaderAlpha).background(Q.colors.bg),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
