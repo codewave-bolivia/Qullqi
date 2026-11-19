@@ -146,6 +146,8 @@ white frame. Back / Persona's close fades back to the KYC waiting screen.
 
 - [X] T055 [US2] Same as T053 for "Volver a la verificación": opening the page no longer switches the waiting screen to the "Completa la verificación" phase under the fading WebView; visible state is untouched until the user comes back (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycViewModel.kt`)
 
+- [X] T056 [US1] Back home from KYC showed an empty dark screen: MainFlow covers its veil before opening AuthActivity for "Verificar" and nothing lifted it when AuthActivity finished back. MainFlow reveals the veil on every `ON_RESUME` (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/main/MainFlow.kt`)
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.

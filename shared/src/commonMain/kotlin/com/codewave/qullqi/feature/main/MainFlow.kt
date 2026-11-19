@@ -1,5 +1,6 @@
 package com.codewave.qullqi.feature.main
 
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -46,6 +47,9 @@ fun MainFlow(
     val toast = remember { QToastState() }
     val veil = rememberVeilState(startCovered = true)
     val scope = rememberCoroutineScope()
+    // "Verificar" covers this activity with the veil before AuthActivity opens on top; when that
+    // finishes back here nothing else would lift it (empty dark screen). Reveal on every resume.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { scope.launch { veil.reveal() } }
     val actions = remember {
         MainActions(
             toast = toast,
