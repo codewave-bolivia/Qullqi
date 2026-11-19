@@ -81,8 +81,8 @@ Paths: `S` = `shared/src/commonMain/kotlin/com/codewave/qullqi`, `SQ` =
 - [X] T028 [P] Grep guard: no `pageUrl`/`hostedUrl` logged or stored (`S/feature/kyc/**`, `S/data/remote/**`, `A/**`); `adb shell run-as com.codewave.qullqi ls -R` shows no images (SC-004)
 - [X] T029 [P] Update `CLAUDE.md` §2 tree (`feature/kyc/`, `KycReturnActivity`, `CustomTabPageOpener`, `2.sqm`, `databases/2.db`, `KycAttempt.sq` removed) and §14 status (schema v3); `docs/references-views` untouched
 - [X] T030 Full gates: `./gradlew :shared:verifyCommonMainQullqiDatabaseMigration :shared:testAndroidHostTest`, CI command (CLAUDE.md §16.1), `./gradlew :androidApp:assembleDebug assembleRelease`
-- [ ] T031 Device walkthrough: quickstart scenarios 1–15 with the Persona sandbox (owner); measure "Verificar" → provider page (SC-001 < 1 min, ≤ 3 screens); record results in `specs/005-kyc-persona/quickstart.md`
-- [ ] T032 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/005-kyc-persona` → OK
+- [X] T031 Device walkthrough: quickstart scenarios 1–15 with the Persona sandbox (owner); measure "Verificar" → provider page (SC-001 < 1 min, ≤ 3 screens); record results in `specs/005-kyc-persona/quickstart.md`
+- [X] T032 Spec header `**Status**: Ready`; `scripts/branches.sh check feature/005-kyc-persona` → OK
 
 ## Phase 8: Migration to an in-app WebView (rev. 2026-11-17, supersedes T001, T015–T017)
 
