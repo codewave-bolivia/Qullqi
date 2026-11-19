@@ -119,7 +119,7 @@ of T019 and the field errors of T018/T025.
 - [X] T044 [US1] Remote: `POST my/kyc` without body; map `underage`, `document_in_use` (`shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteKycRepository.kt`, `Dto.kt`, `QullqiApi.kt`); remove `today` wiring (`AppDependencies.kt`, `androidApp/src/main/kotlin/com/codewave/qullqi/QullqiApplication.kt`)
 - [X] T045 [US1] `KycViewModel`/`KycScreens`/`KycFlow` (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/`): no Document screen; "Continuar" creates the verification and opens the provider; "Intentar de nuevo" returns to the intro; camera-denied block on the intro; texts for the new reasons
 - [X] T046 [US1] Tests: delete `KycRulesTest`; rewrite `KycViewModelTest`; update `RemoteKycRepositoryTest` (no body, new reasons) in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/`
-- [ ] T047 Backend (`BackendQullpi`, coordinate): `POST /my/kyc` without body; webhook reads Persona's extracted birth date and identification number, declines `underage` / `document_in_use`, stores verified values; document in `endpoints.md`
+- [X] T047 Backend (`BackendQullpi`, coordinate): `POST /my/kyc` without body; webhook reads Persona's extracted birth date and identification number, declines `underage` / `document_in_use`, stores verified values; document in `endpoints.md`
 
 ## Dependencies & execution order
 
