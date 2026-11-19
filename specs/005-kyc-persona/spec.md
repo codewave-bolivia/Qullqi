@@ -145,7 +145,7 @@ finishes or the backend changes it.
 - **FR-001**: `kycIntro` MUST explain what is needed (document at hand, good light, a few minutes)
   and show the privacy notice: the document and selfie are processed by a verification provider on
   behalf of Qullqi; acceptance is required to continue.
-- **FR-002**: On opening, the app MUST read the current verification from the backend and route:
+- **FR-002** (the current verification is the user's latest one; earlier declined ones are history): On opening, the app MUST read the current verification from the backend and route:
   none or rejected → intro; created-not-finished → resume (US2); in review → in-review result;
   approved → "Ya verificaste tu identidad".
 
@@ -241,6 +241,9 @@ finishes or the backend changes it.
 - Q: What is the "Tu documento" form for? → A: It only duplicated what Persona reads and promised a
   comparison that never happened. Removed (option A): the provider reads type, number and birth date;
   the backend checks age (≥ 18) and uniqueness on the verified data (FR-003, FR-003a).
+- Q: After a retry the app stayed on "Comprobando…" and then "No pudimos comprobar" although the
+  backend had approved. Why? → A: Backend bug: `GET /my/kyc` failed with two verifications for the
+  user. The current verification is the **latest one** (FR-002); fixed in the backend.
 
 ## Assumptions
 
