@@ -184,13 +184,18 @@ class KycWebViewActivity : ComponentActivity() {
         private const val LOADER_TIMEOUT_MS = 20_000L // slow provider loads keep the loader, not a white page
         private const val PAINT_POLL_MS = 150L
         private const val PAINT_SETTLE_MS = 50L // ~2 frames after the content is in the DOM
-        // Painted = the provider's theme is applied: its own loading screen is white with a spinner
-        // (and, in sandbox, a banner with buttons and text), so content alone is not enough.
-        // ponytail: assumes a non-white Persona theme (Nocturne); a light theme waits for the timeout.
+        // Painted = what is on screen is themed: Persona first shows its own white loading layer
+        // (with, in sandbox, a banner that has buttons and text), not necessarily on <body>. At 3
+        // points down the middle, the first opaque background up from the visible element must not
+        // be (near) white.
+        // ponytail: assumes a dark Persona theme (Nocturne); a light theme waits for the timeout.
         private const val PAINTED_JS =
-            "(function(){var b=document.body;if(!b||!document.querySelector('button'))return false;" +
-                "var bg=getComputedStyle(b).backgroundColor;" +
-                "return bg!=='rgb(255, 255, 255)'&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'})()"
+            "(function(){if(!document.body||!document.querySelector('button'))return false;" +
+                "function bg(e){for(;e;e=e.parentElement){var c=getComputedStyle(e).backgroundColor;" +
+                "var m=c.match(/[\\d.]+/g);if(m&&(m.length<4||+m[3]>0))return m}return null}" +
+                "return [0.25,0.5,0.75].every(function(f){" +
+                "var m=bg(document.elementFromPoint(innerWidth/2,innerHeight*f));" +
+                "return m&&!(+m[0]>235&&+m[1]>235&&+m[2]>235)})})()"
 
         fun intent(context: Context, url: String): Intent =
             Intent(context, KycWebViewActivity::class.java).putExtra(EXTRA_URL, url)
