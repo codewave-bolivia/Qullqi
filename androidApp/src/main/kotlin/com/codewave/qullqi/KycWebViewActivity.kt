@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
@@ -63,6 +64,10 @@ class KycWebViewActivity : ComponentActivity() {
 
     @SuppressLint("SetJavaScriptEnabled") // the provider's page needs JavaScript; no JS bridge is added
     private fun buildWebView(context: Context, startHost: String?) = WebView(context).apply {
+        // Compose's AndroidView gives the view WRAP_CONTENT params; a WebView with wrap_content height
+        // lays the page out with a 0 px viewport, so the provider's 100%/100vh content is clipped
+        // (only fixed elements show). MATCH_PARENT gives the page the real height.
+        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         // Debug builds only: inspect the provider page from chrome://inspect (never in release).
         WebView.setWebContentsDebuggingEnabled(applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
         settings.javaScriptEnabled = true
