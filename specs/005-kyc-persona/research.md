@@ -13,8 +13,9 @@
   hosted page assumes a full browser.
 - **Smooth hand-off** (rev. 2026-11-19): the activity cross-fades in and out (`fade_in`/`fade_out`);
   the WebView background is Nocturne `qullqi_bg` (never the default white); the page stays hidden
-  under a Nocturne loader ("Abriendo la verificación…") until the first provider page finishes
-  loading (fallback 8 s), then fades in (`QMotion.ENTERING_MS`).
+  under a Nocturne loader ("Abriendo la verificación…") until the first provider page has
+  painted its content (after `onPageFinished`, a read-only `evaluateJavascript` check every 150 ms
+  for a button and visible text; fallback 8 s), then fades in (`QMotion.ENTERING_MS`).
 - **WebView safeguards** (constitution v2.2.0 Principle I):
   - `javaScriptEnabled = true`, `domStorageEnabled = true` (the provider needs them);
     `mediaPlaybackRequiresUserGesture = false`; `allowFileAccess = false`,
