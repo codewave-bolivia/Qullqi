@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import com.codewave.qullqi.designsystem.QMotion
 import com.codewave.qullqi.feature.kyc.ProviderWebScreen
 
 /**
@@ -60,8 +61,12 @@ class KycWebViewActivity : ComponentActivity() {
         }
         // T050: loader until Persona's first page has painted; fallback so it never hangs.
         var loading by mutableStateOf(true)
-        onFirstPage = { loading = false }
-        window.decorView.postDelayed({ loading = false }, LOADER_TIMEOUT_MS)
+        val reveal: () -> Unit = {
+            loading = false
+            webView?.animate()?.alpha(1f)?.setDuration(QMotion.ENTERING_MS.toLong())?.start()
+        }
+        onFirstPage = reveal
+        window.decorView.postDelayed({ if (onFirstPage != null) { onFirstPage = null; reveal() } }, LOADER_TIMEOUT_MS)
         setContent {
             BackHandler {
                 val view = webView
@@ -81,6 +86,9 @@ class KycWebViewActivity : ComponentActivity() {
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         // T048: Nocturne instead of the WebView's default white before the provider paints.
         setBackgroundColor(ContextCompat.getColor(context, R.color.qullqi_bg))
+        // Hidden until the provider has painted (T049/T050). The WebView draws through its own
+        // render path, so a Compose alpha does not hide it: the View's own alpha does.
+        alpha = 0f
         // Debug builds only: inspect the provider page from chrome://inspect (never in release).
         WebView.setWebContentsDebuggingEnabled(applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
         settings.javaScriptEnabled = true
