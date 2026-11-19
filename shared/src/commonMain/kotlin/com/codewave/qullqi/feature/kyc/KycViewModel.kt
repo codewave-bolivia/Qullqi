@@ -96,9 +96,10 @@ class KycViewModel(
             }
             KycEvent.Resumed -> if (inProvider) {
                 inProvider = false
+                val finished = providerPage.consumeFinished()
                 setState { copy(screen = KycScreen.Waiting) }
                 emit(KycEffect.Go(KycScreen.Waiting, reset = true))
-                poll()
+                poll(finishedInProvider = finished)
             }
             KycEvent.CheckNow -> poll()
             KycEvent.ReopenProvider -> reopen()
@@ -198,8 +199,12 @@ class KycViewModel(
         }
     }
 
-    /** Research R3: read now, then every 5 s for up to 60 s; pending at the end = in review. */
-    private fun poll() {
+    /**
+     * Research R3: read now, then every 5 s for up to 60 s; pending at the end = in review.
+     * [finishedInProvider]: the user ended through the provider's return link, so `CREATED` only
+     * means the backend has not received the webhook yet: keep checking instead of "not finished".
+     */
+    private fun poll(finishedInProvider: Boolean = false) {
         polling?.cancel()
         setState { copy(phase = WaitPhase.Checking, message = null) }
         polling = viewModelScope.launch {
@@ -212,7 +217,7 @@ class KycViewModel(
                     when (r.verification?.status) {
                         KycStatus.APPROVED -> return@launch result(KycOutcome.Approved(already = false))
                         KycStatus.DECLINED -> return@launch result(KycOutcome.Rejected(reasonText(r.verification.declineReason)))
-                        KycStatus.CREATED -> return@launch setState { copy(phase = WaitPhase.NotFinished) }
+                        KycStatus.CREATED -> if (!finishedInProvider) return@launch setState { copy(phase = WaitPhase.NotFinished) }
                         KycStatus.PENDING, null -> Unit
                     }
                 }

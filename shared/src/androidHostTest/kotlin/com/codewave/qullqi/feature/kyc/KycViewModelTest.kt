@@ -36,6 +36,9 @@ class KycViewModelTest : MainDispatcherTest() {
             return if (results.size > 1) results.removeAt(0) else results.first()
         }
         override fun openCameraSettings() { settingsOpened++ }
+        /** Set to simulate the provider's return link ("Hecho"). */
+        var finished = false
+        override fun consumeFinished() = finished.also { finished = false }
     }
 
     private class Setup(val vm: KycViewModel, val kyc: FakeKycRepository, val opener: Opener)
@@ -87,6 +90,32 @@ class KycViewModelTest : MainDispatcherTest() {
         assertEquals(KycScreen.Waiting, s.vm.state.value.screen) // shown on return
         advanceUntilIdle()
         assertEquals(KycOutcome.Approved(already = false), s.vm.state.value.outcome)
+    }
+
+    @Test fun finishedInProviderKeepsCheckingWhileTheWebhookIsPending() = runTest(dispatcher) {
+        // "Hecho" in Persona: the backend still says CREATED until the webhook arrives.
+        val s = setup(
+            reads = mutableListOf(
+                KycRead.Found(null),
+                found(KycStatus.CREATED, url = "https://provider.test/inq_1"),
+                found(KycStatus.CREATED, url = "https://provider.test/inq_1"),
+                found(KycStatus.APPROVED),
+            ),
+        )
+        begin(s.vm)
+        s.opener.finished = true
+        s.vm.onEvent(KycEvent.Resumed)
+        advanceUntilIdle()
+        assertEquals(KycOutcome.Approved(already = false), s.vm.state.value.outcome)
+    }
+
+    @Test fun finishedInProviderWithoutWebhookEndsInReview() = runTest(dispatcher) {
+        val s = setup(reads = mutableListOf(KycRead.Found(null), found(KycStatus.CREATED, url = "https://provider.test/inq_1")))
+        begin(s.vm)
+        s.opener.finished = true
+        s.vm.onEvent(KycEvent.Resumed)
+        advanceUntilIdle()
+        assertEquals(KycOutcome.InReview, s.vm.state.value.outcome)
     }
 
     @Test fun declineReasonsFromTheDocument() = runTest(dispatcher) {

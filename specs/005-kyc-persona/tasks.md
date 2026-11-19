@@ -148,6 +148,8 @@ white frame. Back / Persona's close fades back to the KYC waiting screen.
 
 - [X] T056 [US1] Back home from KYC showed an empty dark screen: MainFlow covers its veil before opening AuthActivity for "Verificar" and nothing lifted it when AuthActivity finished back. MainFlow reveals the veil on every `ON_RESUME` (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/main/MainFlow.kt`)
 
+- [X] T057 [US1] "Hecho" in Persona showed "No terminaste" because the backend is still `CREATED` until the webhook: the WebView returns `RESULT_OK` on the return link (`KycWebViewActivity`), `AndroidProviderPage` launches it for result and exposes `ProviderPage.consumeFinished()`; `KycViewModel.poll(finishedInProvider)` keeps polling on `CREATED` and ends in review (`shared/src/commonMain/kotlin/com/codewave/qullqi/domain/system/ProviderPage.kt`, `feature/kyc/KycViewModel.kt`, `androidApp/src/main/kotlin/com/codewave/qullqi/AndroidProviderPage.kt`, `KycWebViewActivity.kt`; 2 tests in `KycViewModelTest`)
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.

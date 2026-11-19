@@ -95,7 +95,8 @@ class KycWebViewActivity : ComponentActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val uri = request.url
                 return when {
-                    uri.scheme == RETURN_SCHEME && uri.host == RETURN_HOST -> { finish(); true }
+                    // Return link = the user finished in the provider (the webhook may still be on its way).
+                    uri.scheme == RETURN_SCHEME && uri.host == RETURN_HOST -> { setResult(RESULT_OK); finish(); true }
                     isAllowed(uri, startHost) -> false
                     else -> { openOutside(uri); true }
                 }

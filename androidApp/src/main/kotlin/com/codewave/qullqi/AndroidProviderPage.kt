@@ -1,6 +1,7 @@
 package com.codewave.qullqi
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -26,6 +27,15 @@ class AndroidProviderPage(private val activity: ComponentActivity) : ProviderPag
         pending = null
     }
 
+    /** Set by the page's result (delivered before the activity resumes), read once by the flow. */
+    private var finished = false
+
+    private val page = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        finished = result.resultCode == Activity.RESULT_OK
+    }
+
+    override fun consumeFinished(): Boolean = finished.also { finished = false }
+
     override suspend fun open(url: String): PageOpen {
         if (!hasCamera()) {
             val answer = CompletableDeferred<Boolean>().also { pending = it }
@@ -36,7 +46,8 @@ class AndroidProviderPage(private val activity: ComponentActivity) : ProviderPag
                 return PageOpen.CameraDenied(permanent)
             }
         }
-        activity.startActivity(KycWebViewActivity.intent(activity, url))
+        finished = false
+        page.launch(KycWebViewActivity.intent(activity, url))
         if (Build.VERSION.SDK_INT < 34) activity.fadeTransition()
         return PageOpen.Opened
     }

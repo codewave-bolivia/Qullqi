@@ -121,6 +121,9 @@ finishes or the backend changes it.
   Intenta de nuevo."; data kept; nothing created twice.
 - Persona returns but the result is not ready yet: the waiting screen checks again for up to 60 s,
   then shows "Estamos revisando tus datos" (in review) instead of an error.
+- The customer taps "Hecho" in Persona (return link) before the backend has the webhook: the status
+  is still "started"; the app keeps checking (FR-007) instead of "not finished", and shows "in review"
+  if it is still unchanged after 60 s.
 - The customer returns to the app without finishing in Persona: "No terminaste la verificación" with
   "Volver a la verificación" (primary) and "Hacerlo más tarde" (home). No "check now" there: the
   status is known to be unfinished.
