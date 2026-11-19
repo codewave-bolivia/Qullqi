@@ -60,13 +60,13 @@
 - `CurrentUserContractTest` keeps its contract checks using `user.verification` updates instead of
   the KYC trigger.
 
-## R5. Birth date without a date library
+## R5. No document data in the app (rev. 2026-11-17, supersedes the birth-date input)
 
-- **Decision**: input as 8 digits shown `DD/MM/AAAA` (numeric keyboard, auto slashes); validation
-  in `domain`: real calendar date (month lengths, leap years), in the past, age ≥ 18 against an
-  injected `Today` (`() -> SimpleDate`, `androidApp` uses `java.time.LocalDate.now()`; tests fixed).
-  Sent as ISO `YYYY-MM-DD`.
-- **Rationale**: no `kotlinx-datetime` dependency for one field; the backend validates again.
+- **Decision**: the app sends `POST /my/kyc` with no body. Persona reads type, number and birth date
+  from the document; the backend, on the webhook, declines `underage` (< 18) or `document_in_use`
+  (number already on another account) and stores the verified values.
+- **Rationale**: the form duplicated the provider's reading, promised a comparison that never ran
+  (`dataMatch` was always null) and enforced uniqueness on unverified input.
 
 ## R6. Backend gaps handled in the app
 
@@ -74,7 +74,7 @@
   `hostedUrl` comes back and routes by a fresh `GET` after return.
 - Expired page address (H1): reopening always uses the latest `GET /my/kyc` `hostedUrl`.
 - Attempt limit undefined (H2): `403 kyc_rejected` → "Contacta a soporte".
-- No CI complement (C2): not asked.
+- No document data is asked at all (R5).
 
 ## R7. Decline reasons (FR-010)
 

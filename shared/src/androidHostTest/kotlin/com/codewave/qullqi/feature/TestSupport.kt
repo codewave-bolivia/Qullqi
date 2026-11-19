@@ -1,11 +1,8 @@
 package com.codewave.qullqi.feature
 
-import com.codewave.qullqi.domain.model.DocumentType
-import com.codewave.qullqi.domain.model.SimpleDate
 import com.codewave.qullqi.domain.repository.KycRead
 import com.codewave.qullqi.domain.repository.KycRepository
 import com.codewave.qullqi.domain.repository.KycStart
-import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.AppDependencies
 import com.codewave.qullqi.data.FakeClock
 import com.codewave.qullqi.data.FakeIdGenerator
@@ -63,15 +60,12 @@ fun testEnv(io: TestDispatcher, withSamples: Boolean = true): TestEnv {
         ids = FakeIdGenerator(),
         otp = SampleOtpCodeGenerator,
         io = io,
-        today = TEST_TODAY,
         kyc = FakeKycRepository(),
         biometrics = bio,
     )
     return TestEnv(t, deps, clock, bio)
 }
 
-/** Fixed "today" for age checks (spec 005). */
-val TEST_TODAY = Today { SimpleDate(2026, 11, 17) }
 
 /** Scriptable [KycRepository]: `reads` are consumed in order (the last one repeats). */
 class FakeKycRepository(
@@ -80,15 +74,16 @@ class FakeKycRepository(
 ) : KycRepository {
     var currentCalls = 0
         private set
-    val starts = mutableListOf<Triple<DocumentType, String, SimpleDate>>()
+    var starts = 0
+        private set
 
     override suspend fun current(): KycRead {
         currentCalls++
         return if (reads.size > 1) reads.removeAt(0) else reads.first()
     }
 
-    override suspend fun start(type: DocumentType, number: String, birthDate: SimpleDate): KycStart {
-        starts += Triple(type, number, birthDate)
+    override suspend fun start(): KycStart {
+        starts++
         return startResult
     }
 }

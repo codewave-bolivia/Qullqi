@@ -101,7 +101,8 @@ class QullqiApi(engine: HttpClientEngine, baseUrl: String, debug: Boolean) {
         if (it is ApiResult.Ok) ApiResult.Ok(it.value.dto) else it as ApiResult<Nothing>
     }
 
-    internal suspend fun kycStart(body: KycStartBody): ApiResult<KycDto> = call { post("my/kyc") { setBody(body) } }
+    /** No body: the provider reads the document data (spec 005 FR-003). */
+    internal suspend fun kycStart(): ApiResult<KycDto> = call { post("my/kyc") }
 
     /** Public endpoints: the bearer plugin neither adds the session token nor tries to renew on 401. */
     private fun HttpRequestBuilder.skipSession() {

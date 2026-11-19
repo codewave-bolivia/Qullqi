@@ -1,7 +1,5 @@
 package com.codewave.qullqi.domain.system
 
-import com.codewave.qullqi.domain.model.SimpleDate
-
 /**
  * Opens the identity provider's page inside the app (spec 005 FR-005a/b; Android: camera
  * permission, then a WebView screen). The app never stores or logs the page address.
@@ -26,7 +24,3 @@ object NoProviderPage : ProviderPage {
     override fun openCameraSettings() = Unit
 }
 
-/** Today's date on the device, for the age check (spec 005 research R5). */
-fun interface Today {
-    fun date(): SimpleDate
-}

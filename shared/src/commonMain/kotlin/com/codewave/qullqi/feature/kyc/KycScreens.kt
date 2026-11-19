@@ -19,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import com.codewave.qullqi.designsystem.Q
 import com.codewave.qullqi.designsystem.QRadius
 import com.codewave.qullqi.designsystem.QScreen
@@ -31,8 +29,6 @@ import com.codewave.qullqi.designsystem.components.QIcon
 import com.codewave.qullqi.designsystem.components.QPrimaryButton
 import com.codewave.qullqi.designsystem.components.QSecondaryButton
 import com.codewave.qullqi.designsystem.components.QTextButton
-import com.codewave.qullqi.designsystem.components.QTextField
-import com.codewave.qullqi.domain.model.DocumentType
 import org.jetbrains.compose.resources.DrawableResource
 
 // Spec 005 screens. Capture happens in the provider's pages; these screens only collect the
@@ -61,7 +57,7 @@ private fun KycScaffold(
     }
 }
 
-/** FR-005b: shown on Intro/Document when the camera was denied. */
+/** FR-005b: shown on the intro when the camera was denied. */
 @Composable
 private fun CameraNeeded(state: KycState, onEvent: (KycEvent) -> Unit) {
     if (state.cameraDenied == null) return
@@ -138,57 +134,6 @@ fun KycIntroScreen(state: KycState, onEvent: (KycEvent) -> Unit) {
             { onEvent(KycEvent.Continue) },
             enabled = state.privacyAccepted && !state.busy,
         )
-    }
-}
-
-/** FR-003/FR-004: type, number and birth date; no names (they come from the document). */
-@Composable
-fun KycDocumentScreen(state: KycState, onEvent: (KycEvent) -> Unit) {
-    KycScaffold(
-        title = "Tu documento",
-        help = "Usaremos estos datos para comparar con tu documento.",
-    ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(QSpacing.x10)) {
-            listOf(DocumentType.CI to "CI", DocumentType.PASSPORT to "Pasaporte").forEach { (type, label) ->
-                val pick = { onEvent(KycEvent.Type(type)) }
-                if (state.documentType == type) QPrimaryButton(label, pick, Modifier.weight(1f))
-                else QSecondaryButton(label, pick, Modifier.weight(1f))
-            }
-        }
-        Spacer(Modifier.height(QSpacing.x16))
-        QTextField(
-            value = state.documentNumber,
-            onValueChange = { onEvent(KycEvent.Number(it)) },
-            label = if (state.documentType == DocumentType.CI) "Número de CI" else "Número de pasaporte",
-            help = state.numberError,
-            valid = if (state.numberError != null) false else null,
-        )
-        Spacer(Modifier.height(QSpacing.x16))
-        QTextField(
-            value = formatBirth(state.birthDigits),
-            onValueChange = { onEvent(KycEvent.BirthDigits(it)) },
-            label = "Fecha de nacimiento (DD/MM/AAAA)",
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done,
-            help = state.birthError,
-            valid = if (state.birthError != null) false else null,
-        )
-        Message(state.message)
-        CameraNeeded(state, onEvent)
-        Spacer(Modifier.weight(1f))
-        QPrimaryButton(
-            if (state.busy) "Preparando…" else "Continuar a la verificación",
-            { onEvent(KycEvent.Submit) },
-            enabled = state.documentReady,
-        )
-    }
-}
-
-/** "15041992" → "15/04/1992" while typing. */
-internal fun formatBirth(digits: String): String = buildString {
-    digits.forEachIndexed { i, ch ->
-        if (i == 2 || i == 4) append('/')
-        append(ch)
     }
 }
 

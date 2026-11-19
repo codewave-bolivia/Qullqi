@@ -24,7 +24,6 @@ import com.codewave.qullqi.domain.session.AppLock
 import com.codewave.qullqi.domain.system.Clock
 import com.codewave.qullqi.domain.system.ProviderPage
 import com.codewave.qullqi.domain.system.NoProviderPage
-import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.domain.system.IdGenerator
 import com.codewave.qullqi.domain.system.OtpCodeGenerator
 import kotlinx.coroutines.CoroutineDispatcher
@@ -40,8 +39,6 @@ data class AppDependencies(
     val clock: Clock,
     /** Debug builds only: lets the owner clear the device data from the splash (spec 004, FR-021). */
     val debugReset: LocalDataReset?,
-    /** Today's date on the device (spec 005 age check). */
-    val today: Today,
     /** Opens the identity provider page (camera permission + WebView on Android, spec 005). */
     val providerPage: ProviderPage = NoProviderPage,
 ) {
@@ -58,7 +55,6 @@ data class AppDependencies(
             httpEngine: HttpClientEngine,
             baseUrl: String,
             tokens: TokenStore,
-            today: Today,
             biometrics: BiometricAuthenticator = NoBiometrics,
         ): AppDependencies {
             val api = QullqiApi(httpEngine, baseUrl, debug)
@@ -69,7 +65,6 @@ data class AppDependencies(
                 registration = RemoteRegistrationRepository(api, session, tokens, deviceId),
                 preferences = SqlAccountPreferenceRepository(db, clock, io),
                 kyc = RemoteKycRepository(api),
-                today = today,
                 biometrics = biometrics,
                 appLock = AppLock(clock),
                 clock = clock,
@@ -85,7 +80,6 @@ data class AppDependencies(
             ids: IdGenerator,
             otp: OtpCodeGenerator,
             io: CoroutineDispatcher,
-            today: Today,
             kyc: KycRepository,
             biometrics: BiometricAuthenticator = NoBiometrics,
         ) = AppDependencies(
@@ -93,7 +87,6 @@ data class AppDependencies(
             registration = SqlRegistrationRepository(db, hasher, clock, ids, otp, io),
             preferences = SqlAccountPreferenceRepository(db, clock, io),
             kyc = kyc,
-            today = today,
             biometrics = biometrics,
             appLock = AppLock(clock),
             clock = clock,

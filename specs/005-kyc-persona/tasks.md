@@ -109,6 +109,18 @@ replaced. **Independent test**: quickstart scenarios 2–4, 12, 14, 15.
 - [X] T041 Full gates: `./gradlew :shared:testAndroidHostTest`, CI command (CLAUDE.md §16.1), `:androidApp:assembleDebug assembleRelease` (portrait guard), grep: no `addJavascriptInterface`, no `setWebContentsDebuggingEnabled(true)`, no URL logging in `androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt`
 - [X] T042 Update `CLAUDE.md` §2 tree (`KycWebViewActivity.kt`, `AndroidProviderPage.kt`; remove `KycReturnActivity.kt`, `CustomTabPageOpener.kt`) and mark T001/T015/T016/T017 as superseded in this file
 
+## Phase 9: Remove the document form (rev. 2026-11-17, option A)
+
+**Decision**: spec FR-003/FR-003a — the provider reads type, number and birth date; the backend checks
+age and uniqueness on verified data. Supersedes T006 rules (dates/number), T009, the document screen
+of T019 and the field errors of T018/T025.
+
+- [X] T043 [US1] Domain/contract: `KycRepository.start()` without parameters; remove `KycStart.Invalid`, `KycStart.DocumentTaken`, `KycField`, `DocumentType`, `SimpleDate`, `documentNumberValid`, `Today`; add `DeclineReason.UNDERAGE`, `DOCUMENT_IN_USE` (`shared/src/commonMain/kotlin/com/codewave/qullqi/domain/model/Kyc.kt`, `domain/repository/KycRepository.kt`, `domain/system/ProviderPage.kt`)
+- [X] T044 [US1] Remote: `POST my/kyc` without body; map `underage`, `document_in_use` (`shared/src/commonMain/kotlin/com/codewave/qullqi/data/remote/RemoteKycRepository.kt`, `Dto.kt`, `QullqiApi.kt`); remove `today` wiring (`AppDependencies.kt`, `androidApp/src/main/kotlin/com/codewave/qullqi/QullqiApplication.kt`)
+- [X] T045 [US1] `KycViewModel`/`KycScreens`/`KycFlow` (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/`): no Document screen; "Continuar" creates the verification and opens the provider; "Intentar de nuevo" returns to the intro; camera-denied block on the intro; texts for the new reasons
+- [X] T046 [US1] Tests: delete `KycRulesTest`; rewrite `KycViewModelTest`; update `RemoteKycRepositoryTest` (no body, new reasons) in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/`
+- [ ] T047 Backend (`BackendQullpi`, coordinate): `POST /my/kyc` without body; webhook reads Persona's extracted birth date and identification number, declines `underage` / `document_in_use`, stores verified values; document in `endpoints.md`
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.

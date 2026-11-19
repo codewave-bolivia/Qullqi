@@ -2,26 +2,21 @@ package com.codewave.qullqi.feature.kyc
 
 import androidx.lifecycle.viewModelScope
 import com.codewave.qullqi.domain.model.DeclineReason
-import com.codewave.qullqi.domain.model.DocumentType
 import com.codewave.qullqi.domain.model.KycStatus
-import com.codewave.qullqi.domain.model.SimpleDate
 import com.codewave.qullqi.domain.model.Verification
-import com.codewave.qullqi.domain.model.documentNumberValid
-import com.codewave.qullqi.domain.repository.KycField
 import com.codewave.qullqi.domain.repository.KycRead
 import com.codewave.qullqi.domain.repository.KycRepository
 import com.codewave.qullqi.domain.repository.KycStart
 import com.codewave.qullqi.domain.repository.SessionRepository
 import com.codewave.qullqi.domain.system.PageOpen
 import com.codewave.qullqi.domain.system.ProviderPage
-import com.codewave.qullqi.domain.system.Today
 import com.codewave.qullqi.feature.FlowViewModel
 import com.codewave.qullqi.feature.auth.AuthMessages
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-enum class KycScreen { Loading, Intro, Document, Waiting, Result }
+enum class KycScreen { Loading, Intro, Waiting, Result }
 
 enum class WaitPhase { InProvider, Checking, NotFinished, Offline }
 
@@ -40,29 +35,16 @@ data class KycState(
     /** A verification was started and not finished in the provider (spec 005 US2). */
     val pendingResume: Boolean = false,
     val privacyAccepted: Boolean = false,
-    val documentType: DocumentType = DocumentType.CI,
-    val documentNumber: String = "",
-    /** 0–8 digits, shown as DD/MM/AAAA. */
-    val birthDigits: String = "",
-    val numberError: String? = null,
-    val birthError: String? = null,
     val busy: Boolean = false,
     val message: String? = null,
     val phase: WaitPhase = WaitPhase.InProvider,
     val outcome: KycOutcome? = null,
     val cameraDenied: CameraDenied? = null,
-) {
-    val documentReady: Boolean get() =
-        documentNumberValid(documentNumber) && birthDigits.length == KycViewModel.BIRTH_DIGITS && !busy
-}
+)
 
 sealed interface KycEvent {
     data class AcceptPrivacy(val accepted: Boolean) : KycEvent
     data object Continue : KycEvent
-    data class Type(val type: DocumentType) : KycEvent
-    data class Number(val value: String) : KycEvent
-    data class BirthDigits(val value: String) : KycEvent
-    data object Submit : KycEvent
     /** AuthActivity resumed: the user is back from the provider page (research R2). */
     data object Resumed : KycEvent
     data object CheckNow : KycEvent
@@ -87,7 +69,6 @@ class KycViewModel(
     private val kyc: KycRepository,
     private val session: SessionRepository,
     private val providerPage: ProviderPage,
-    private val today: Today,
     private val pollEveryMillis: Long = POLL_EVERY_MS,
     private val pollForMillis: Long = POLL_FOR_MS,
 ) : FlowViewModel<KycState, KycEffect>(KycState()) {
@@ -105,22 +86,15 @@ class KycViewModel(
         when (event) {
             is KycEvent.AcceptPrivacy -> setState { copy(privacyAccepted = event.accepted) }
             KycEvent.Continue -> if (current.privacyAccepted) {
-                if (current.pendingResume) reopen() else go(KycScreen.Document)
+                if (current.pendingResume) reopen() else start()
             }
-            is KycEvent.Type -> setState { copy(documentType = event.type, numberError = null) }
-            is KycEvent.Number -> setState {
-                copy(documentNumber = event.value.filter(Char::isLetterOrDigit).take(NUMBER_MAX), numberError = null, message = null)
-            }
-            is KycEvent.BirthDigits -> setState {
-                copy(birthDigits = event.value.filter(Char::isDigit).take(BIRTH_DIGITS), birthError = null, message = null)
-            }
-            KycEvent.Submit -> submit()
             KycEvent.Resumed -> if (current.screen == KycScreen.Waiting && current.phase == WaitPhase.InProvider) poll()
             KycEvent.CheckNow -> poll()
             KycEvent.ReopenProvider -> reopen()
+            // A new verification; the provider reads the document again.
             KycEvent.Retry -> {
-                setState { copy(documentNumber = "", birthDigits = "", numberError = null, birthError = null, message = null) }
-                go(KycScreen.Document)
+                setState { copy(screen = KycScreen.Intro, pendingResume = false, outcome = null, message = null) }
+                emit(KycEffect.Go(KycScreen.Intro, reset = true))
             }
             KycEvent.AllowCamera -> when (current.cameraDenied) {
                 CameraDenied.Settings -> providerPage.openCameraSettings()
@@ -161,36 +135,17 @@ class KycViewModel(
         }
     }
 
-    private fun submit() {
-        val s = current
-        if (s.busy) return
-        val birth = SimpleDate.parseDigits(s.birthDigits)
-        val numberError = if (documentNumberValid(s.documentNumber)) null else NUMBER_INVALID
-        val birthError = when {
-            birth == null -> DATE_INVALID
-            !birth.isAdultOn(today.date()) -> UNDER_AGE
-            else -> null
-        }
-        if (numberError != null || birthError != null || birth == null) {
-            setState { copy(numberError = numberError, birthError = birthError) }
-            return
-        }
+    /** FR-003/FR-005: no document data; the provider reads it. Never retried automatically (FR-008). */
+    private fun start() {
+        if (current.busy) return
         setState { copy(busy = true, message = null) }
         viewModelScope.launch {
-            // Never retried automatically (FR-008).
-            val r = kyc.start(s.documentType, s.documentNumber, birth)
+            val r = kyc.start()
             setState { copy(busy = false) }
             when (r) {
                 is KycStart.Started -> openProvider(r.pageUrl)
                 KycStart.AlreadyVerified -> result(KycOutcome.Approved(already = true))
                 KycStart.InProgress -> reopen()
-                KycStart.DocumentTaken -> setState { copy(numberError = DOCUMENT_TAKEN) }
-                is KycStart.Invalid -> setState {
-                    copy(
-                        numberError = if (KycField.NUMBER in r.fields || KycField.TYPE in r.fields) NUMBER_INVALID else null,
-                        birthError = if (KycField.BIRTH_DATE in r.fields) DATE_REFUSED else null,
-                    )
-                }
                 KycStart.Refused -> result(KycOutcome.Refused)
                 KycStart.Unavailable -> setState { copy(message = AuthMessages.UNAVAILABLE) }
             }
@@ -269,22 +224,16 @@ class KycViewModel(
     }
 
     companion object {
-        const val BIRTH_DIGITS = 8
-        const val NUMBER_MAX = 15
         const val POLL_EVERY_MS = 5_000L
         const val POLL_FOR_MS = 60_000L
-
-        const val NUMBER_INVALID = "Revisa el número de documento."
-        const val DATE_INVALID = "Revisa la fecha."
-        const val UNDER_AGE = "Debes ser mayor de 18 años para verificar tu identidad."
-        const val DATE_REFUSED = "Revisa tu fecha de nacimiento."
-        const val DOCUMENT_TAKEN = "Este documento ya está asociado a otra cuenta."
 
         /** FR-010 / research R7. */
         fun reasonText(reason: DeclineReason?): String = when (reason) {
             DeclineReason.DATA_MISMATCH -> "Los datos no coinciden con tu documento."
             DeclineReason.DOCUMENT -> "No pudimos leer tu documento o está vencido."
             DeclineReason.IDENTITY -> "No pudimos confirmar que eres tú."
+            DeclineReason.UNDERAGE -> "Debes ser mayor de 18 años para verificar tu identidad."
+            DeclineReason.DOCUMENT_IN_USE -> "Este documento ya está asociado a otra cuenta."
             DeclineReason.OTHER, null -> "No pudimos verificar tu identidad."
         }
     }

@@ -19,14 +19,14 @@
 | # | Steps | Expected |
 |---|---|---|
 | 1 | Not verified user → "Verificar" → intro | Requirements + privacy; "Continuar" disabled until accepted |
-| 2 | CI, `1234567`, birth `15/04/1992` → continue | Camera permission prompt → Persona sandbox opens inside the app (Nocturne bar, close button) |
+| 2 | Accept privacy → "Continuar" (no document form) | Camera permission prompt → Persona sandbox opens inside the app (Nocturne bar, close button) |
 | 3 | Complete sandbox as "approved" | WebView closes on return; "Comprobando…" then "Identidad verificada"; main area "Verificado" |
 | 4 | Start again with another user, close the WebView early (X) | "No terminaste la verificación" + "Volver a la verificación" reopens Persona |
 | 5 | Re-enter "Verificar" with an unfinished verification | Intro shows "Tienes una verificación pendiente" → resumes |
-| 6 | Sandbox "declined" | Reason text + "Intentar de nuevo" → empty document step |
+| 6 | Sandbox "declined" | Reason text + "Intentar de nuevo" → intro (new verification) |
 | 7 | Sandbox "needs review" / slow webhook | After 60 s: "Estamos revisando tus datos" |
-| 8 | Birth date making the user 17 | Error before contacting the backend |
-| 9 | Airplane mode on "Continuar a la verificación" | Connection message, data kept, nothing created |
+| 8 | Sandbox document of a minor | Declined: "Debes ser mayor de 18 años…" |
+| 9 | Airplane mode on "Continuar" | Connection message on the intro, nothing created |
 | 10 | `adb shell run-as com.codewave.qullqi ls -R` | No images, no page address stored (SC-004) |
 | 11 | Upgrade from a spec 004 build | Opens fine; `kyc_attempt` gone |
 | 12 | `adb shell am start -a android.intent.action.VIEW -d qullqi://kyc/result` | No app activity handles it (no exported deep link) |

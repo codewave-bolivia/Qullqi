@@ -44,8 +44,8 @@ Spec 004 is integrated (PR #14); implementation proceeds on this branch.
 ### User Story 1 - Verify my identity end to end (Priority: P1)
 
 A logged-in, not verified customer opens "Verificar mi identidad", reads the requirements and the
-privacy notice, chooses CI or passport, types the document number and birth date, continues to
-Persona, completes the capture there and comes back to the app, which shows the result.
+privacy notice, continues to Persona (no form: the provider reads the document), completes the
+capture there and comes back to the app, which shows the result.
 
 **Why this priority**: it is the milestone: without it the customer can never operate money (M4).
 
@@ -55,11 +55,11 @@ and sees "Identidad verificada"; the main area shows "Verificado".
 **Acceptance Scenarios**:
 
 1. **Given** a not verified user on `kycIntro`, **When** they accept the privacy notice and continue,
-   **Then** the document step opens; without accepting, "Continuar" stays disabled.
-2. **Given** the document step, **When** the type is chosen, the number is 5–15 letters/digits and the
-   birth date makes them 18 or older, **Then** "Continuar a la verificación" is enabled.
-3. **Given** valid data, **When** they continue, **Then** the Persona page opens and the app shows a
-   waiting screen behind it.
+   **Then** the verification is created and the Persona page opens (the app shows a waiting screen
+   behind it); without accepting, "Continuar" stays disabled.
+2. *(Removed 2026-11-17: no document form; see FR-003.)*
+3. **Given** Persona's page, **Then** the user photographs the document and takes the selfie there;
+   the app never asks for the document type, number or birth date.
 4. **Given** Persona finishes and returns to the app, **Then** the app checks the result and shows:
    approved → "Identidad verificada"; in review → "Estamos revisando tus datos"; rejected →
    "No pudimos verificarte" with the reason and "Intentar de nuevo".
@@ -92,13 +92,14 @@ the app offers "Continuar verificación" and opens Persona again.
 
 A rejected customer reads why and starts a new verification.
 
-**Independent Test**: dev user with a rejected verification taps "Intentar de nuevo" and reaches the
-document step with fields empty.
+**Independent Test**: dev user with a rejected verification taps "Intentar de nuevo" and starts a new
+verification from the intro.
 
 **Acceptance Scenarios**:
 
 1. **Given** a rejected result, **Then** the reason is shown in plain Spanish (document unreadable,
-   data mismatch, identity not verified, other) and "Intentar de nuevo" opens the document step.
+   data mismatch, identity not verified, under 18, document already used, other) and "Intentar de
+   nuevo" returns to the intro to start a new verification.
 2. **Given** the backend refuses another attempt, **Then** the screen says "Contacta a soporte" and
    offers to go to the main area.
 
@@ -122,8 +123,10 @@ finishes or the backend changes it.
   then shows "Estamos revisando tus datos" (in review) instead of an error.
 - The customer returns to the app without Persona's return link (switches apps manually): the waiting
   screen offers "Ya terminé" (check now) and "Volver a Persona".
-- Document number already used by another account: "Este documento ya está asociado a otra cuenta."
-- Under 18: "Debes ser mayor de 18 años para verificar tu identidad." before contacting the backend.
+- Document already used by another account (number read by the provider): the backend declines
+  with `document_in_use` → "Este documento ya está asociado a otra cuenta."
+- Under 18 (birth date read by the provider): the backend declines with `underage` → "Debes ser
+  mayor de 18 años para verificar tu identidad."
 - Camera permission denied (or "don't ask again"): the provider page does not open; the app explains
   and offers "Permitir cámara" (FR-005b).
 - Already verified (e.g. verified on another device): the intro shows "Ya verificaste tu identidad"
@@ -148,11 +151,13 @@ finishes or the backend changes it.
 
 **Document data**
 
-- **FR-003**: The document step MUST ask for type (CI or passport), number (5–15 letters or digits,
-  no spaces) and birth date (a past date; age ≥ 18 years on the device's date), and MUST NOT ask for
-  names (they come from the document).
-- **FR-004**: The birth date MUST be entered without the system keyboard defaulting to letters, in
-  day/month/year order, and validated live.
+- **FR-003**: The app MUST NOT ask for any document data (type, number, birth date, names). The
+  provider reads them from the photographed document and the backend receives them through the
+  webhook (owner decision 2026-11-17, option A).
+- **FR-003a**: The backend MUST decline a verification whose document shows an age under 18
+  (`underage`) or whose document number already belongs to another account (`document_in_use`);
+  the app shows those reasons as fixed Spanish texts (FR-010).
+- **FR-004**: *(Removed: no birth date input.)*
 
 **Provider**
 
@@ -176,7 +181,7 @@ finishes or the backend changes it.
   is shown as "in review" (not as an error). It MUST also offer "Ya terminé" and "Volver a la
   verificación".
 - **FR-008**: Creating a verification MUST NOT be retried automatically (spec 004 FR-004); a
-  connection failure keeps the entered data.
+  connection failure keeps the user on the intro with the connection message.
 
 **Results**
 
@@ -207,7 +212,8 @@ finishes or the backend changes it.
 - **Verification (KYC inquiry)**: status (`CREATED` not finished · `PENDING` in review · `APPROVED`
   · `DECLINED`), provider page address (only while `CREATED`), decline reason code, timestamps.
   Lives in the backend; the app keeps no copy beyond the screen state.
-- **Document data (draft)**: type, number, birth date; in memory only until sent.
+- **Document data**: read by the provider and stored by the backend from the webhook; the app
+  never handles it.
 - **Privacy acceptance**: shown and accepted per verification (not stored in M3).
 
 ## Success Criteria *(mandatory)*
@@ -232,6 +238,9 @@ finishes or the backend changes it.
   (FR-005a/b, FR-006). Needs the camera permission; constitution amended to v2.2.0.
 - Q: Allow choosing document photos from files in the web view? → A: No. Camera only; the owner
   removed the upload step from the provider flow (FR-005b, FR-005c).
+- Q: What is the "Tu documento" form for? → A: It only duplicated what Persona reads and promised a
+  comparison that never happened. Removed (option A): the provider reads type, number and birth date;
+  the backend checks age (≥ 18) and uniqueness on the verified data (FR-003, FR-003a).
 
 ## Assumptions
 

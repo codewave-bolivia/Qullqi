@@ -64,8 +64,6 @@ internal data class MeDto(
     val accountStatus: String? = null,
 )
 
-@Serializable internal data class KycStartBody(val ciType: String, val ciNumber: String, val birthDate: String)
-
 @Serializable
 internal data class KycDto(val kycStatus: String, val hostedUrl: String? = null, val declineReason: String? = null)
 

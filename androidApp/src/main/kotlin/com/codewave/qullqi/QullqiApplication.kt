@@ -7,10 +7,7 @@ import com.codewave.qullqi.data.KeystoreTokenStore
 import com.codewave.qullqi.domain.system.Clock
 import com.codewave.qullqi.domain.system.UuidIdGenerator
 import io.ktor.client.engine.okhttp.OkHttp
-import com.codewave.qullqi.domain.model.SimpleDate
-import com.codewave.qullqi.domain.system.Today
 import kotlinx.coroutines.Dispatchers
-import java.time.LocalDate
 
 /**
  * Builds the shared dependencies once per process so AuthActivity and MainActivity use the same
@@ -33,7 +30,6 @@ class QullqiApplication : Application() {
             httpEngine = OkHttp.create(),
             baseUrl = BuildConfig.API_BASE_URL,
             tokens = KeystoreTokenStore(this),
-            today = Today { LocalDate.now().let { SimpleDate(it.year, it.monthValue, it.dayOfMonth) } },
         )
     }
 }
