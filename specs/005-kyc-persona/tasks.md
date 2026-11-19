@@ -121,6 +121,25 @@ of T019 and the field errors of T018/T025.
 - [X] T046 [US1] Tests: delete `KycRulesTest`; rewrite `KycViewModelTest`; update `RemoteKycRepositoryTest` (no body, new reasons) in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/`
 - [X] T047 Backend (`BackendQullpi`, coordinate): `POST /my/kyc` without body; webhook reads Persona's extracted birth date and identification number, declines `underage` / `document_in_use`, stores verified values; document in `endpoints.md`
 
+## Phase 10: Smooth hand-off to the provider page (rev. 2026-11-19)
+
+**Problem** (owner, device): after "Continuar" the activity switch is abrupt and the WebView shows a
+white screen for ~1 s before Persona renders. Window background is already Nocturne (`Theme.Qullqi`);
+the white comes from the WebView's default background and Persona's first paint before its theme.
+
+**Goal**: Intro → provider page fades on the Nocturne background, with a Nocturne loader until
+Persona has painted; no white frame at any point. Android only; no new dependencies.
+
+**Independent test**: on the device, tap "Continuar" on "Verifica tu identidad": the screen fades to
+the Nocturne background with a loader, then Persona fades in; record a screen video and check no
+white frame. Back / Persona's close fades back to the KYC waiting screen.
+
+- [ ] T048 [US1] Dark WebView before any page: in `buildWebView` call `setBackgroundColor(ContextCompat.getColor(context, R.color.qullqi_bg))` before `loadUrl` (`androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt`)
+- [ ] T049 [US1] Hide until painted: `ProviderWebScreen(loading: Boolean, page)` draws the WebView at alpha 0 while `loading`, with a centered `CircularProgressIndicator` (`Q.colors.ac`, `QSize.iconResult`) and caption "Abriendo la verificación…" (`Q.type.bodySm`, `Q.colors.tx2`) on `Q.colors.bg`; when `loading` turns false the WebView fades in with `animateFloatAsState` using a `QMotion` duration token (no literal values) (`shared/src/androidMain/kotlin/com/codewave/qullqi/feature/kyc/ProviderWebScreen.kt`)
+- [ ] T050 [US1] Loading signal: `KycWebViewActivity` holds `var loading by mutableStateOf(true)`; set it to false in `WebViewClient.onPageFinished` of the first allowed `https` page (only once; later navigations inside Persona do not show the loader again); fallback timeout of 8 s so the user never stays on the loader if `onPageFinished` never arrives (`androidApp/src/main/kotlin/com/codewave/qullqi/KycWebViewActivity.kt`)
+- [ ] T051 [US1] Cross-fade instead of the system slide: open and close `KycWebViewActivity` with `android.R.anim.fade_in` / `android.R.anim.fade_out` — API 34+: `overrideActivityTransition(OVERRIDE_TRANSITION_OPEN|CLOSE, …)` in `onCreate`; below: `overridePendingTransition` after `startActivity` (`androidApp/src/main/kotlin/com/codewave/qullqi/AndroidProviderPage.kt`) and in `finish()` (`KycWebViewActivity.kt`)
+- [ ] T052 Update research R1 (WebView background, loader, cross-fade) and quickstart (new scenario: no white frame on open/close) in `specs/005-kyc-persona/research.md`, `specs/005-kyc-persona/quickstart.md`; build `:androidApp:assembleDebug`, run `:shared:testAndroidHostTest`, verify on device
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.
