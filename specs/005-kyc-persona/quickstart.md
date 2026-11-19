@@ -33,3 +33,4 @@
 | 14 | Deny camera (then "don't ask again") | Page does not open; "Necesitamos tu cámara…" → "Permitir cámara" asks again / opens app settings |
 | 15 | Tap a non-provider link inside Persona (e.g. privacy policy) | Opens in the system browser, not in the app |
 | 13 | Revoke the session in the backend while in Persona, return | "Tu sesión expiró. Ingresa tu PIN." → login for that account (T021a) |
+| 16 | Tap "Continuar"; then close Persona | Fade to Nocturne loader, Persona fades in; fade back on close; no white frame (screen recording) |

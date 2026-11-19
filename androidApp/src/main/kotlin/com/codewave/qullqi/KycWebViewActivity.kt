@@ -23,6 +23,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import com.codewave.qullqi.feature.kyc.ProviderWebScreen
 
@@ -34,10 +37,14 @@ import com.codewave.qullqi.feature.kyc.ProviderWebScreen
 class KycWebViewActivity : ComponentActivity() {
 
     private var webView: WebView? = null
+    private var onFirstPage: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // T051: cross-fade in and out (API 34+ here; older APIs in AndroidProviderPage and finish()).
+        fadeTransition()
+        fadeTransition(closing = true)
         val url = intent.getStringExtra(EXTRA_URL)
         // Never restore the page after process death or recreation: the flow re-reads the status.
         if (savedInstanceState != null || url == null || !isAllowed(Uri.parse(url), startHost = null)) {
@@ -51,12 +58,16 @@ class KycWebViewActivity : ComponentActivity() {
             if (uri.getQueryParameter("is-webview") != null) url
             else uri.buildUpon().appendQueryParameter("is-webview", "true").build().toString()
         }
+        // T050: loader until Persona's first page has painted; fallback so it never hangs.
+        var loading by mutableStateOf(true)
+        onFirstPage = { loading = false }
+        window.decorView.postDelayed({ loading = false }, LOADER_TIMEOUT_MS)
         setContent {
             BackHandler {
                 val view = webView
                 if (view != null && view.canGoBack()) view.goBack() else finish()
             }
-            ProviderWebScreen { context ->
+            ProviderWebScreen(loading) { context ->
                 buildWebView(context, startHost).also { webView = it; it.loadUrl(pageUrl) }
             }
         }
@@ -68,6 +79,8 @@ class KycWebViewActivity : ComponentActivity() {
         // lays the page out with a 0 px viewport, so the provider's 100%/100vh content is clipped
         // (only fixed elements show). MATCH_PARENT gives the page the real height.
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        // T048: Nocturne instead of the WebView's default white before the provider paints.
+        setBackgroundColor(ContextCompat.getColor(context, R.color.qullqi_bg))
         // Debug builds only: inspect the provider page from chrome://inspect (never in release).
         WebView.setWebContentsDebuggingEnabled(applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0)
         settings.javaScriptEnabled = true
@@ -82,6 +95,13 @@ class KycWebViewActivity : ComponentActivity() {
                     uri.scheme == RETURN_SCHEME && uri.host == RETURN_HOST -> { finish(); true }
                     isAllowed(uri, startHost) -> false
                     else -> { openOutside(uri); true }
+                }
+            }
+
+            override fun onPageFinished(view: WebView, url: String) {
+                if (isAllowed(Uri.parse(url), startHost)) {
+                    onFirstPage?.invoke()
+                    onFirstPage = null // only the first page shows the loader
                 }
             }
 
@@ -124,7 +144,12 @@ class KycWebViewActivity : ComponentActivity() {
         CookieManager.getInstance().removeAllCookies(null)
         WebStorage.getInstance().deleteAllData()
         super.onDestroy()
-        noTransition(closing = true)
+    }
+
+    @Suppress("DEPRECATION")
+    override fun finish() {
+        super.finish()
+        if (android.os.Build.VERSION.SDK_INT < 34) fadeTransition(closing = true)
     }
 
     companion object {
@@ -132,6 +157,7 @@ class KycWebViewActivity : ComponentActivity() {
         private const val RETURN_SCHEME = "qullqi"
         private const val RETURN_HOST = "kyc"
         private const val PROVIDER_DOMAIN = "withpersona.com"
+        private const val LOADER_TIMEOUT_MS = 8_000L
 
         fun intent(context: Context, url: String): Intent =
             Intent(context, KycWebViewActivity::class.java).putExtra(EXTRA_URL, url)

@@ -74,11 +74,17 @@ class AuthActivity : FragmentActivity() {
 }
 
 /** The veil already animated in Compose; the activity switch itself must not add a system animation. */
+internal fun Activity.noTransition(closing: Boolean = false) = activityTransition(closing, 0, 0)
+
+/** Cross-fade between activities (spec 005 T051: provider page). */
+internal fun Activity.fadeTransition(closing: Boolean = false) =
+    activityTransition(closing, android.R.anim.fade_in, android.R.anim.fade_out)
+
 @Suppress("DEPRECATION")
-internal fun Activity.noTransition(closing: Boolean = false) {
+private fun Activity.activityTransition(closing: Boolean, enter: Int, exit: Int) {
     if (Build.VERSION.SDK_INT >= 34) {
-        overrideActivityTransition(if (closing) Activity.OVERRIDE_TRANSITION_CLOSE else Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+        overrideActivityTransition(if (closing) Activity.OVERRIDE_TRANSITION_CLOSE else Activity.OVERRIDE_TRANSITION_OPEN, enter, exit)
     } else {
-        overridePendingTransition(0, 0)
+        overridePendingTransition(enter, exit)
     }
 }
