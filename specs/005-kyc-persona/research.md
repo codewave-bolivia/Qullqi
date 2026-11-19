@@ -3,7 +3,7 @@
 ## R1. Opening the provider page — in-app WebView (rev. 2026-11-17, supersedes Custom Tab)
 
 - **Decision**: `KycWebViewActivity` (androidApp, `exported="false"`, portrait, `Theme.Qullqi`)
-  hosting an Android `WebView` inside a Compose screen (Nocturne top bar with a close button).
+  hosting an Android `WebView` inside a Compose screen (no app bar: Persona shows its own close; system back leaves).
   Opened through `ProviderPage` (`commonMain` interface, see contracts/kyc-repository.md):
   `suspend fun open(url): PageOpen` — `AuthActivity` first requests `CAMERA` at runtime
   (`ActivityResultContracts.RequestPermission`, registered in `onCreate`, awaited with a
@@ -36,8 +36,8 @@
 
 ## R2. Detecting the return
 
-- The WebView intercepts `qullqi://kyc/result` and finishes; the close button and back (when the page
-  cannot go back) also finish it. In every case `AuthActivity` resumes → the KYC flow polls (same
+- The WebView intercepts `qullqi://kyc/result` and finishes; system back (when the page cannot go back)
+  also finishes it; Persona's own close ends on the redirect. In every case `AuthActivity` resumes → the KYC flow polls (same
   resume-based detection as before, R3). No deep link reaches the app from outside.
 
 ## R3. Polling (FR-007)

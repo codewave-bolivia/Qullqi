@@ -56,7 +56,7 @@ class KycWebViewActivity : ComponentActivity() {
                 val view = webView
                 if (view != null && view.canGoBack()) view.goBack() else finish()
             }
-            ProviderWebScreen(onClose = { finish() }) { context ->
+            ProviderWebScreen { context ->
                 buildWebView(context, startHost).also { webView = it; it.loadUrl(pageUrl) }
             }
         }
