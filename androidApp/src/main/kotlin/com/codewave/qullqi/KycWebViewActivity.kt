@@ -99,10 +99,7 @@ class KycWebViewActivity : ComponentActivity() {
             }
 
             override fun onPageFinished(view: WebView, url: String) {
-                if (isAllowed(Uri.parse(url), startHost)) {
-                    onFirstPage?.invoke()
-                    onFirstPage = null // only the first page shows the loader
-                }
+                if (onFirstPage != null && isAllowed(Uri.parse(url), startHost)) whenPainted(view)
             }
 
             override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
@@ -128,6 +125,24 @@ class KycWebViewActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Persona renders with JavaScript after the document loads: reveal the page only once its
+     * content (a button and some text) is on screen, plus two frames to paint. Read-only check, no
+     * bridge to app code; the loader timeout still applies.
+     */
+    private fun whenPainted(view: WebView) {
+        val reveal = onFirstPage ?: return
+        if (isDestroyed) return
+        view.evaluateJavascript(PAINTED_JS) { painted ->
+            if (onFirstPage == null) return@evaluateJavascript
+            if (painted == "true") {
+                view.postDelayed({ onFirstPage = null; reveal() }, PAINT_SETTLE_MS)
+            } else {
+                view.postDelayed({ whenPainted(view) }, PAINT_POLL_MS)
+            }
+        }
+    }
+
     private fun openOutside(uri: Uri) {
         if (uri.scheme == "https" || uri.scheme == "http") {
             runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
@@ -135,6 +150,7 @@ class KycWebViewActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        onFirstPage = null // stops the paint check before the view is destroyed
         webView?.let {
             it.stopLoading()
             it.clearCache(true)
@@ -158,6 +174,10 @@ class KycWebViewActivity : ComponentActivity() {
         private const val RETURN_HOST = "kyc"
         private const val PROVIDER_DOMAIN = "withpersona.com"
         private const val LOADER_TIMEOUT_MS = 8_000L
+        private const val PAINT_POLL_MS = 150L
+        private const val PAINT_SETTLE_MS = 50L // ~2 frames after the content is in the DOM
+        private const val PAINTED_JS =
+            "(function(){var b=document.body;return !!(b&&document.querySelector('button')&&b.innerText.trim().length>0)})()"
 
         fun intent(context: Context, url: String): Intent =
             Intent(context, KycWebViewActivity::class.java).putExtra(EXTRA_URL, url)
