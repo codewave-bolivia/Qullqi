@@ -140,6 +140,8 @@ white frame. Back / Persona's close fades back to the KYC waiting screen.
 - [X] T051 [US1] Cross-fade instead of the system slide: open and close `KycWebViewActivity` with `android.R.anim.fade_in` / `android.R.anim.fade_out` — API 34+: `overrideActivityTransition(OVERRIDE_TRANSITION_OPEN|CLOSE, …)` in `onCreate`; below: `overridePendingTransition` after `startActivity` (`androidApp/src/main/kotlin/com/codewave/qullqi/AndroidProviderPage.kt`) and in `finish()` (`KycWebViewActivity.kt`)
 - [X] T052 Update research R1 (WebView background, loader, cross-fade) and quickstart (new scenario: no white frame on open/close) in `specs/005-kyc-persona/research.md`, `specs/005-kyc-persona/quickstart.md`; build `:androidApp:assembleDebug`, run `:shared:testAndroidHostTest`, verify on device
 
+- [X] T053 [US1] No navigation behind the opening provider page: on `PageOpen.Opened` the flow stays on the current screen (only `inProvider = true`); on `Resumed` it resets to the waiting screen and polls, so the KYC screen change no longer animates under the WebView fade (`shared/src/commonMain/kotlin/com/codewave/qullqi/feature/kyc/KycViewModel.kt`, tests in `shared/src/androidHostTest/kotlin/com/codewave/qullqi/feature/kyc/KycViewModelTest.kt`)
+
 ## Dependencies & execution order
 
 - **Phase 8 (WebView)** runs before T031/T032: T033 → T034 → T035; T036 → T037 → T038 → T039 (androidApp); T040 after T034; T041/T042 last.

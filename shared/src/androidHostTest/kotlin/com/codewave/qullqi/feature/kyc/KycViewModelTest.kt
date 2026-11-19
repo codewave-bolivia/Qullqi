@@ -77,12 +77,14 @@ class KycViewModelTest : MainDispatcherTest() {
         val s = setup(reads = mutableListOf(KycRead.Found(null), found(KycStatus.PENDING), found(KycStatus.APPROVED)))
         begin(s.vm)
         assertEquals(listOf("https://provider.test/inq_1"), s.opener.urls)
-        assertEquals(KycScreen.Waiting, s.vm.state.value.screen)
+        // Nothing navigates behind the opening provider page (T053).
+        assertEquals(KycScreen.Intro, s.vm.state.value.screen)
         assertEquals(WaitPhase.InProvider, s.vm.state.value.phase)
         val readsBefore = s.kyc.currentCalls
         advanceTimeBy(30_000) // user in the provider: no polling yet
         assertEquals(readsBefore, s.kyc.currentCalls)
         s.vm.onEvent(KycEvent.Resumed)
+        assertEquals(KycScreen.Waiting, s.vm.state.value.screen) // shown on return
         advanceUntilIdle()
         assertEquals(KycOutcome.Approved(already = false), s.vm.state.value.outcome)
     }
@@ -200,7 +202,7 @@ class KycViewModelTest : MainDispatcherTest() {
         s.vm.onEvent(KycEvent.AllowCamera)
         runCurrent()
         assertEquals(listOf("https://provider.test/inq_1", "https://provider.test/inq_1"), s.opener.urls)
-        assertEquals(KycScreen.Waiting, s.vm.state.value.screen)
+        assertEquals(KycScreen.Intro, s.vm.state.value.screen)
         assertNull(s.vm.state.value.cameraDenied)
         assertEquals(1, s.kyc.starts) // the verification is not created twice
     }

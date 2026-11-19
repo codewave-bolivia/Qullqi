@@ -43,7 +43,7 @@
 ## R2. Detecting the return
 
 - The WebView intercepts `qullqi://kyc/result` and finishes; system back (when the page cannot go back)
-  also finishes it; Persona's own close ends on the redirect. In every case `AuthActivity` resumes → the KYC flow polls (same
+  also finishes it; Persona's own close ends on the redirect. Nothing navigates while the page is in front (a screen change would animate under the opening page); in every case `AuthActivity` resumes → the flow shows the waiting screen and polls (same
   resume-based detection as before, R3). No deep link reaches the app from outside.
 
 ## R3. Polling (FR-007)

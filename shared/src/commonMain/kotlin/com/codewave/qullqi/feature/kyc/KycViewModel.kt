@@ -62,7 +62,7 @@ sealed interface KycEffect {
 }
 
 /**
- * M3 identity verification (spec 005): intro → document → provider page → waiting → result.
+ * M3 identity verification (spec 005): intro → provider page → (on return) waiting → result.
  * The provider (Persona) captures the document; the backend owns the status.
  */
 class KycViewModel(
@@ -78,6 +78,12 @@ class KycViewModel(
     /** Provider page waiting for the camera permission; memory only, never stored or logged. */
     private var pendingUrl: String? = null
 
+    /**
+     * The provider page is in front. No navigation happens behind it (it would animate under the
+     * opening page); the waiting screen appears when the user comes back (T053).
+     */
+    private var inProvider = false
+
     init {
         viewModelScope.launch { load() }
     }
@@ -88,7 +94,12 @@ class KycViewModel(
             KycEvent.Continue -> if (current.privacyAccepted) {
                 if (current.pendingResume) reopen() else start()
             }
-            KycEvent.Resumed -> if (current.screen == KycScreen.Waiting && current.phase == WaitPhase.InProvider) poll()
+            KycEvent.Resumed -> if (inProvider) {
+                inProvider = false
+                setState { copy(screen = KycScreen.Waiting) }
+                emit(KycEffect.Go(KycScreen.Waiting, reset = true))
+                poll()
+            }
             KycEvent.CheckNow -> poll()
             KycEvent.ReopenProvider -> reopen()
             // A new verification; the provider reads the document again.
@@ -176,8 +187,8 @@ class KycViewModel(
             when (val r = providerPage.open(url)) {
                 PageOpen.Opened -> {
                     pendingUrl = null
-                    setState { copy(screen = KycScreen.Waiting, phase = WaitPhase.InProvider, message = null, cameraDenied = null) }
-                    emit(KycEffect.Go(KycScreen.Waiting))
+                    inProvider = true
+                    setState { copy(phase = WaitPhase.InProvider, message = null, cameraDenied = null) }
                 }
                 is PageOpen.CameraDenied -> setState {
                     copy(cameraDenied = if (r.permanent) CameraDenied.Settings else CameraDenied.Ask)
@@ -216,11 +227,6 @@ class KycViewModel(
         polling?.cancel()
         setState { copy(screen = KycScreen.Result, outcome = outcome, busy = false) }
         emit(KycEffect.Go(KycScreen.Result, reset = true))
-    }
-
-    private fun go(screen: KycScreen) {
-        setState { copy(screen = screen) }
-        emit(KycEffect.Go(screen))
     }
 
     companion object {
