@@ -188,7 +188,8 @@ class KycViewModel(
                 PageOpen.Opened -> {
                     pendingUrl = null
                     inProvider = true
-                    setState { copy(phase = WaitPhase.InProvider, message = null, cameraDenied = null) }
+                    // Visible state stays as it is while the page fades in over it (T053/T055).
+                    setState { copy(message = null, cameraDenied = null) }
                 }
                 is PageOpen.CameraDenied -> setState {
                     copy(cameraDenied = if (r.permanent) CameraDenied.Settings else CameraDenied.Ask)
