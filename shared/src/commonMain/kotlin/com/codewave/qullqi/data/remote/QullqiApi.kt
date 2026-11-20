@@ -96,6 +96,14 @@ class QullqiApi(engine: HttpClientEngine, baseUrl: String, debug: Boolean) {
 
     internal suspend fun me(): ApiResult<MeDto> = call { get("me") }
 
+    /** `GET my/kyc`: `data: null` means no verification yet → `Ok(null)` (spec 005). */
+    internal suspend fun kycCurrent(): ApiResult<KycDto?> = call<KycOrNone> { get("my/kyc") }.let {
+        if (it is ApiResult.Ok) ApiResult.Ok(it.value.dto) else it as ApiResult<Nothing>
+    }
+
+    /** No body: the provider reads the document data (spec 005 FR-003). */
+    internal suspend fun kycStart(): ApiResult<KycDto> = call { post("my/kyc") }
+
     /** Public endpoints: the bearer plugin neither adds the session token nor tries to renew on 401. */
     private fun HttpRequestBuilder.skipSession() {
         attributes.put(AuthCircuitBreaker, Unit)
@@ -108,6 +116,7 @@ class QullqiApi(engine: HttpClientEngine, baseUrl: String, debug: Boolean) {
             response.status.isSuccess() -> {
                 @Suppress("UNCHECKED_CAST")
                 if (T::class == Unit::class) ApiResult.Ok(Unit as T)
+                else if (T::class == KycOrNone::class) ApiResult.Ok(KycOrNone(response.body<Envelope<KycDto>>().data) as T)
                 else response.body<Envelope<T>>().data?.let { ApiResult.Ok(it) } ?: ApiResult.Unavailable
             }
             status >= 500 -> ApiResult.Unavailable

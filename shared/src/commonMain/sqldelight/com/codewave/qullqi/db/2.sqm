@@ -1,0 +1,7 @@
+-- Schema v2 → v3 (spec 005): identity verification moved to the provider (Persona) and the
+-- backend; the local capture model of spec 002 is removed. Its trigger wrote user.verification.
+
+DROP TRIGGER IF EXISTS kyc_attempt_final_sets_user_status;
+DROP INDEX IF EXISTS kyc_attempt_one_open;
+DROP INDEX IF EXISTS kyc_attempt_history;
+DROP TABLE IF EXISTS kyc_attempt;

@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Identity verification (spec 005): the provider page takes document photos and a selfie. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- TEMPORARY (constitution v2.1.0): set usesCleartextTraffic to false + https release URL
          before the first master release (spec 004, T055). -->
@@ -30,6 +33,14 @@
         </activity>
 
         <!-- Main area (M4). Only reachable from AuthActivity after authentication. -->
+        <!-- Identity provider page in a WebView (spec 005, constitution v2.2.0). Not exported. -->
+        <activity
+            android:name=".KycWebViewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:theme="@style/Theme.Qullqi" />
+
         <activity
             android:name=".MainActivity"
             android:exported="false"

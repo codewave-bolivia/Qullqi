@@ -1,5 +1,8 @@
 package com.codewave.qullqi.feature
 
+import com.codewave.qullqi.domain.repository.KycRead
+import com.codewave.qullqi.domain.repository.KycRepository
+import com.codewave.qullqi.domain.repository.KycStart
 import com.codewave.qullqi.AppDependencies
 import com.codewave.qullqi.data.FakeClock
 import com.codewave.qullqi.data.FakeIdGenerator
@@ -57,7 +60,30 @@ fun testEnv(io: TestDispatcher, withSamples: Boolean = true): TestEnv {
         ids = FakeIdGenerator(),
         otp = SampleOtpCodeGenerator,
         io = io,
+        kyc = FakeKycRepository(),
         biometrics = bio,
     )
     return TestEnv(t, deps, clock, bio)
+}
+
+
+/** Scriptable [KycRepository]: `reads` are consumed in order (the last one repeats). */
+class FakeKycRepository(
+    var reads: MutableList<KycRead> = mutableListOf(KycRead.Found(null)),
+    var startResult: KycStart = KycStart.Started("https://provider.test/inq_1"),
+) : KycRepository {
+    var currentCalls = 0
+        private set
+    var starts = 0
+        private set
+
+    override suspend fun current(): KycRead {
+        currentCalls++
+        return if (reads.size > 1) reads.removeAt(0) else reads.first()
+    }
+
+    override suspend fun start(): KycStart {
+        starts++
+        return startResult
+    }
 }

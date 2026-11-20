@@ -57,7 +57,8 @@ Qullqi/
 │       │   │   ├── AppDependencies.kt · QullqiRoot.kt   # wiring; single-window host for iOS/Desktop
 │       │   │   ├── designsystem/     # Nocturne tokens, theme, type, motion, veil, components/  [shared]
 │       │   │   ├── navigation/       # FlowNavigator, FlowHost (per-activity back stacks)       [shared]
-│       │   │   ├── feature/auth/     # AuthFlow (AuthActivity): start/, login/, register/, recover/, KYC slot
+│       │   │   ├── feature/auth/     # AuthFlow (AuthActivity): start/, login/ (+ by phone), register/, recover/; kycEntry → feature/kyc
+│       │   │   ├── feature/kyc/      # M3 identity verification (spec 005): KycFlow, KycViewModel, screens (Persona in an in-app WebView)
 │       │   │   ├── feature/main/     # MainFlow (MainActivity): M4 content slot, UnlockScreen, placeholder
 │       │   │   ├── Greeting.kt
 │       │   │   ├── GreetingUtil.kt
@@ -68,13 +69,15 @@ Qullqi/
 │       │   │   │   ├── security/     # PinHasher, BiometricAuthenticator interfaces
 │       │   │   │   ├── session/      # AppLock (5-minute re-authentication)
 │       │   │   │   └── system/       # Clock, IdGenerator, OtpCodeGenerator
-│       │   │   └── data/             # Sql*Repository, MockKycProcessor, LocalDataReset; db/DatabaseFactory
-│       │   ├── sqldelight/com/codewave/qullqi/db/   # User, PhoneConfirmation, KycAttempt, AccountPreference, Seed .sq  [shared]
+│       │   │   └── data/             # remote/ (QullqiApi Ktor, Remote{Session,Registration,Kyc}Repository, Dto, TokenStore, Device), Sql*Repository (tests only), LocalDataReset; db/DatabaseFactory
+│       │   ├── sqldelight/com/codewave/qullqi/db/   # User, Device, PhoneConfirmation, AccountPreference, Seed .sq; 1.sqm, 2.sqm  [shared]
+│       │   ├── sqldelight/databases/                # 1.db, 2.db schema snapshots (migration verification)  [shared]
 │       │   └── composeResources/   # font/ (Inter 400/500, OFL), drawable/ph_*.xml (Phosphor, MIT)
 │       ├── commonTest/kotlin/com/codewave/qullqi/SharedCommonTest.kt
 │       ├── androidMain/kotlin/com/codewave/qullqi/
 │       │   ├── Platform.android.kt
-│       │   └── data/                 # AndroidDatabaseFactory, Pbkdf2PinHasher
+│       │   ├── data/                 # AndroidDatabaseFactory, KeystoreTokenStore, Pbkdf2PinHasher (tests)
+│       │   └── feature/kyc/          # ProviderWebScreen (Compose frame around the WebView)
 │       ├── androidHostTest/kotlin/com/codewave/qullqi/
 │       │   ├── SharedLogicAndroidHostTest.kt
 │       │   ├── data/                 # data-layer tests (in-memory SQLite)
@@ -93,6 +96,8 @@ Qullqi/
 │       ├── kotlin/com/codewave/qullqi/
 │       │   ├── QullqiApplication.kt  # builds AppDependencies once per process
 │       │   ├── AuthActivity.kt       # launcher: system launch screen + AuthFlow
+│       │   ├── KycWebViewActivity.kt # Persona page in a WebView (not exported; camera only; constitution v2.2.0)
+│       │   ├── AndroidProviderPage.kt # CAMERA permission, then KycWebViewActivity
 │       │   ├── MainActivity.kt       # MainFlow (M4) + AppLock on onStop/onStart
 │       │   └── AndroidBiometricAuthenticator.kt
 │       └── res/                      # ic_qullqi + adaptive icon, values/themes.xml (Theme.Qullqi[.Starting]), colors.xml
@@ -656,6 +661,8 @@ Kotlin lists.
 > the backend (dev profile: same phones `+5917000000N`, PIN `1234`, code `123456`). In debug
 > builds, long-press the splash wordmark → "Reiniciar datos" clears device data and credentials.
 >
+> Spec 005: schema v3 (`2.sqm` drops the local `kyc_attempt`); identity verification lives in
+> Persona + backend (`RemoteKycRepository`); `databases/2.db` is the v2 snapshot.
 > Spec 004: schema v2 (`1.sqm`: name columns, `device` table); `databases/1.db` is the v1 snapshot
 > checked by `:shared:verifyCommonMainQullqiDatabaseMigration`. Backend address per build:
 > `qullqi.api.url.debug` / `qullqi.api.url.release` Gradle properties (`androidApp` BuildConfig).
